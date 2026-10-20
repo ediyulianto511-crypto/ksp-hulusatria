@@ -314,7 +314,7 @@ window.KSP_CONFIG = {
   <main>
     <div class="top"><button id="burger" aria-label="Buka menu">Menu</button><span>HS GROUP / <b id="crumb">Dashboard</b></span></div>
     <div class="wrap" id="view"></div>
-    <div class="foot">HS GROUP · KSP Hulusatria Madani · versi 6.8</div>
+    <div class="foot">HS GROUP · KSP Hulusatria Madani · versi 6.9</div>
   </main>
 </div>
 
@@ -1463,7 +1463,7 @@ function masukApp(){
     if(!PROF||!PROF.aktif){var m=PROF?"Akun Anda dinonaktifkan. Hubungi Ketua.":"Akun ini belum terdaftar sebagai karyawan. Hubungi Ketua.";return SB.auth.signOut().then(function(){tampilLogin();$("#err").textContent=m})}
     ROLE=PROF.jabatan;$("#who").textContent=(PROF.nama||PROF.hp)+" · "+PROF.jabatan;
     DB=SBDB;$("#login").hidden=true;$("#app").hidden=false;$("#view").innerHTML='<div class="panel"><div class="empty"><b>Memuat data...</b>Mohon tunggu sebentar.</div></div>';
-    return muatProfil().then(loadAll).then(function(){go("dash")});
+    return muatProfil().then(loadAll).then(function(){go("dash");if(window.matchMedia("(max-width:820px)").matches)openM()});
   }).catch(function(e){tampilLogin();$("#err").textContent=sbErr(e)})}
 function muatProfil(){return SB.from("profiles").select("user_id,hp,nama,jabatan,kar_no,aktif").then(function(r){PROFS=r.data||[]}).catch(function(){})}
 function profilHp(hp){hp=hpNorm(hp);return PROFS.filter(function(p){return p.hp==hp})[0]||null}
