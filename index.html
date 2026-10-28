@@ -570,10 +570,18 @@ function aktifPin(no){return LOAN.filter(function(l){return l.no==no&&sisaP(l)>0
 // Persen denda per hari. Pinjaman hasil impor yang belum punya angka denda memakai denda dari Regulasi (sesuai jenis & plafon).
 function dendaPct(l){var p=+l.denda||0;if(p>0||!(l.imp||l.denda==null))return p;var k=l.model||"bl",t=tierOf(k,+l.pokok||+l.saldoAwal||0);return (t&&t.denda)||+rule(k).denda||0}
 function dendaB(l,asOf){var sp=sisaP(l),pct=dendaPct(l);if(sp<=0||pct<=0||!asOf)return 0;
-  var J=jadL(l),paid=dibayar(l),cum=0,tot=0,T=tagih(l),now=new Date(asOf+"T00:00:00");
-  J.forEach(function(d,i){var a=i==J.length-1?T-l.ang*(J.length-1):l.ang;cum+=a;if(cum<=paid)return;
-    var un=Math.min(a,cum-paid),h=Math.floor((now-new Date(d+"T00:00:00"))/864e5);if(h>0)tot+=Math.round(un*pct/100*h)});
-  return tot}
+  // Denda dihitung per hari dari sisa angsuran yang lewat jatuh bayar, dikurangi denda yang sudah dibayar.
+  // Pembayaran diproses urut tanggal: denda dulu, sisanya untuk angsuran tertua.
+  // Bila ada uang masuk ke angsuran, denda sampai hari itu dianggap selesai (lunas/dibebaskan);
+  // bila uang hanya cukup untuk sebagian denda, sisa dendanya terbawa ke hari berikutnya.
+  var J=jadL(l),T=tagih(l),hr=function(d){return Math.floor(new Date(d+"T00:00:00")/864e5)},now=hr(asOf),acc=0,t0=-1e9;
+  var rem=J.map(function(d,i){return i==J.length-1?T-l.ang*(J.length-1):l.ang}),due=J.map(hr);
+  var P=PAY.filter(function(x){return x.id==l.id&&(x.imp||x.tg<=asOf)}).slice().sort(function(a,b){return a.imp&&!b.imp?-1:b.imp&&!a.imp?1:a.tg<b.tg?-1:a.tg>b.tg?1:0});
+  var jalan=function(t){rem.forEach(function(r,i){if(r<=0)return;var h=t-Math.max(due[i],t0);if(h>0)acc+=r*pct/100*h})};
+  P.forEach(function(p){var t=p.imp?-1e9:hr(p.tg);if(t>t0){jalan(t);t0=t}acc=(+p.jml||0)>0?0:acc-(+p.denda||0);
+    var v=+p.jml||0;for(var i=0;i<rem.length&&v>0;i++){var k=Math.min(v,rem[i]);rem[i]-=k;v-=k}});
+  if(now>t0)jalan(now);
+  return Math.max(0,Math.round(acc))}
 function lunasOf(l,asOf){return sisaP(l)+dendaB(l,asOf)}
 function saldoLalu(no,asOf){return aktifPin(no).reduce(function(a,l){return a+lunasOf(l,asOf)},0)}
 function tupPct(){var v=REG.m&&REG.m.mg&&REG.m.mg.tup;return (v===""||v==null)?null:+v}
@@ -725,7 +733,7 @@ function inst(l,asOf){asOf=asOf||today();var J=jadL(l),T=tagih(l),paid=dibayar(l
     var st=sisa<=0?"done":h>0?"late":h==0?"today":h>=-7?"soon":"wait";
     return {ke:i+1,n:J.length,tg:d,amt:a,by:by,sisa:sisa,denda:dn,telat:h,st:st,top:top&&sisa<=0}})}
 function ringkas(l){var I=inst(l),due=I.filter(function(x){return x.sisa>0&&x.telat>=0}),nx=I.filter(function(x){return x.sisa>0})[0];
-  return {I:I,due:due,next:nx,tung:due.reduce(function(a,x){return a+x.sisa},0),denda:due.reduce(function(a,x){return a+x.denda},0),late:due.filter(function(x){return x.telat>0}).length}}
+  return {I:I,due:due,next:nx,tung:due.reduce(function(a,x){return a+x.sisa},0),denda:dendaB(l,today()),late:due.filter(function(x){return x.telat>0}).length}}
 function tagCount(){return LOAN.filter(function(l){return sisaP(l)>0&&ringkas(l).due.length}).length}
 var KOL=[null,["Kol 1","Lancar"],["Kol 2","Dalam perhatian khusus"],["Kol 3","Kurang lancar"],["Kol 4","Diragukan"],["Kol 5","Macet"]],tagKol=0,tag2K=0;
 function kolOf(l,asOf){if(sisaP(l)<=0)return null;var I=inst(l,asOf),late=I.filter(function(x){return x.sisa>0&&x.telat>0}),k=(l.model||"bl"),f=k=="mg"?30/7:k=="dm"?30/14:1;
@@ -1640,9 +1648,9 @@ function kartuData(l){
   return I}
 function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
-  var dend=I.reduce(function(s,x){return s+(x.sisa>0?x.denda:0)},0),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
+  var dend=dendaB(l,today()),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var W=720,RH=40,info=[["Nama",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Pinjaman ke-",pinUrut(l)+" dari "+LOAN.filter(function(q){return q.no==l.no}).length],["Status",pinStatus(l)],["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Plafon",rp(+l.pokok||0)],["Tenor",l.tenor+" kali"],["Angsuran per "+per,rp(+l.ang||0)],["Total pengembalian",rp(tagih(l))]];
-  var H=212+84+42+info.length*40+30+44+I.length*RH+30+6*44+30+150+(lunas?0:50);
+  var H=212+84+42+info.length*40+30+44+I.length*RH+30+7*44+30+150+(lunas?0:50);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
@@ -1666,7 +1674,7 @@ function kartuGambar(l){
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
     rumus=hk?hk+" hari × "+pct+"% × "+(TL.some(function(r){return r.by>0})?"sisa angsuran yang belum dibayar":rp(+l.ang||0)):"";
-  var sum=[["Total sudah dibayar",rp(dibayar(l)),false],["Sisa pinjaman",rp(sisa),true],["Hari kena denda",hk+" hari",false],["Denda berjalan",rp(dend),false,rumus],["Denda sudah dibayar",rp(dbyr),false],["Angsuran lunas",I.filter(function(r){return r.sisa<=0}).length+" dari "+I.length,false]];
+  var sum=[["Total sudah dibayar",rp(dibayar(l)),false],["Sisa pinjaman",rp(sisa),false],["Hari kena denda",hk+" hari",false],["Denda berjalan",rp(dend),false,rumus],["Total tanggungan",rp(sisa+dend),true,"sisa pinjaman + denda berjalan"],["Denda sudah dibayar",rp(dbyr),false],["Angsuran lunas",I.filter(function(r){return r.sisa<=0}).length+" dari "+I.length,false]];
   sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);
     if(r[3]){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText("("+r[3]+")",W-50,y+28);y+=30}y+=44});
   x.textAlign="center";
