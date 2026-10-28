@@ -1776,6 +1776,8 @@ function kartuData(l){
     var go=function(rem,mt){while(rem>0&&k<I.length){var x=I[k],t=Math.min(rem,x.amt-x.pd);x.pd+=t;rem-=t;x.tb=p.tg;if(mt&&x.mt.indexOf(mt)<0)x.mt.push(mt);if(x.pd>=x.amt)k++}};
     go(rem,mt);if(+p.pb>0)go(+p.pb,"Potongan bunga")});
   return I}
+var SERIF='"Noto Serif","Droid Serif",Georgia,serif';
+function fontSiap(){try{return Promise.race([Promise.all(['16px "Noto Serif"','bold 16px "Noto Serif"','italic 16px "Noto Serif"'].map(function(f){return document.fonts.load(f)})),new Promise(function(r){setTimeout(r,2500)})]).catch(function(){})}catch(e){return Promise.resolve()}}
 function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
   var dend=dendaB(l,today()),bd=sisaP(l)>0?bdInfo(l,today()):null,pbK=bd?bd.pb:0,sisa=Math.max(0,sisaP(l)-pbK),lunas=sisaP(l)<=0;
@@ -1787,35 +1789,35 @@ function kartuGambar(l){
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
   if(ada){x.save();x.beginPath();x.arc(90,75,54,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,36,21,108,108);x.restore()}
-  x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px sans-serif";x.fillText("HULUSATRIA MADANI",ada?168:40,74);
-  x.fillStyle="#F3D9DE";x.font="20px sans-serif";x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
-  x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold 28px sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText("BUKU ANGSURAN",W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
-  var y=212;if(STRUK_REK){x.fillStyle=B;x.fillRect(0,y,W,84);x.fillStyle=U;x.textAlign="left";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,y+28);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,y+64);y+=84}
+  x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px "+SERIF;x.fillText("HULUSATRIA MADANI",ada?168:40,74);
+  x.fillStyle="#F3D9DE";x.font="20px "+SERIF;x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
+  x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold 28px "+SERIF;if("letterSpacing" in x)x.letterSpacing="3px";x.fillText("BUKU ANGSURAN",W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
+  var y=212;if(STRUK_REK){x.fillStyle=B;x.fillRect(0,y,W,84);x.fillStyle=U;x.textAlign="left";x.font="18px "+SERIF;x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,y+28);var fs=24;do{x.font="bold "+fs+"px "+SERIF;fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,y+64);y+=84}
   y+=20;var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
-  x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";var PL=PAY.filter(function(q){return q.id==l.id}).sort(function(a,b){return (a.tg+(a.jam||""))<(b.tg+(b.jam||""))?-1:1}).pop();x.fillText(PL?"Angsuran terakhir diinput: "+tgl(PL.tg)+(PL.jam?" pukul "+PL.jam:""):"Belum ada angsuran masuk",W/2,y+14);y+=62;
+  x.textAlign="center";x.fillStyle="#555";x.font="20px "+SERIF;var PL=PAY.filter(function(q){return q.id==l.id}).sort(function(a,b){return (a.tg+(a.jam||""))<(b.tg+(b.jam||""))?-1:1}).pop();x.fillText(PL?"Angsuran terakhir diinput: "+tgl(PL.tg)+(PL.jam?" pukul "+PL.jam:""):"Belum ada angsuran masuk",W/2,y+14);y+=62;
   // Data anggota (2 baris pertama) dipisah garis dari data pinjaman.
-  var judul=function(t){x.textAlign="center";x.fillStyle="#111";x.font="bold 21px sans-serif";if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(t,W/2,y);if("letterSpacing" in x)x.letterSpacing="0px";y+=36};
+  var judul=function(t){x.textAlign="center";x.fillStyle="#111";x.font="bold 21px "+SERIF;if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(t,W/2,y);if("letterSpacing" in x)x.letterSpacing="0px";y+=36};
   judul("DATA ANGGOTA");
   info.forEach(function(r,i){if(i==4){y+=2;x.fillStyle="#E3D3D7";x.fillRect(40,y-22,W-80,2);y+=26;judul("DATA PINJAMAN")}
-    x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);
-    if(r[2]){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText("("+r[2]+")",W-50,y+28);y+=30}y+=40});
+    x.textAlign="left";x.fillStyle="#666";x.font="22px "+SERIF;x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px "+SERIF;x.fillText(String(r[1]),W-50,y);
+    if(r[2]){x.fillStyle="#999";x.font="italic 17px "+SERIF;x.fillText("("+r[2]+")",W-50,y+28);y+=30}y+=40});
   // Tabel angsuran dua lajur berjejar (kiri: ke-1 s/d separuh, kanan: sisanya).
   y+=10;var hN=Math.ceil(I.length/2),GW=(W-70)/2,b5=[0,24,93,166,240,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
   [0,1].forEach(function(g){var X=30+g*(GW+10),yy=y;if(g&&I.length<2)return;
     // Kepala tabel 78 px: "Tanggal" di atas, dipecah jadi Jatuh bayar | Pembayaran.
     var cm=function(k){return X+(b5[k]+b5[k+1])/2};
-    x.fillStyle=U;x.fillRect(X,yy,GW,78);x.fillStyle="#fff";x.textAlign="center";x.font="bold 13px sans-serif";
+    x.fillStyle=U;x.fillRect(X,yy,GW,78);x.fillStyle="#fff";x.textAlign="center";x.font="bold 13px "+SERIF;
     x.fillText("Ke",cm(0),yy+44);x.fillText("Tanggal",X+(b5[1]+b5[3])/2,yy+26);
     x.fillStyle="rgba(255,255,255,.5)";x.fillRect(X+b5[1]+6,yy+38,b5[3]-b5[1]-12,1);x.fillStyle="#fff";
-    x.font="bold 11px sans-serif";x.fillText("Jatuh bayar",cm(1),yy+60);x.fillText("Pembayaran",cm(2),yy+60);
-    x.font="bold 13px sans-serif";x.fillText("Setoran",cm(3),yy+28);x.fillText("angsuran",cm(3),yy+46);x.font="12px sans-serif";x.fillText("(Rp)",cm(3),yy+64);
-    x.font="bold 13px sans-serif";x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+54);yy+=78;
+    x.font="bold 11px "+SERIF;x.fillText("Jatuh bayar",cm(1),yy+60);x.fillText("Pembayaran",cm(2),yy+60);
+    x.font="bold 13px "+SERIF;x.fillText("Setoran",cm(3),yy+28);x.fillText("angsuran",cm(3),yy+46);x.font="12px "+SERIF;x.fillText("(Rp)",cm(3),yy+64);
+    x.font="bold 12px "+SERIF;x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+54);yy+=78;
     var L=I.slice(g*hN,g*hN+hN);
     L.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(X,yy,GW,RH)}
-      x.font="14px sans-serif";x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),X+12,yy+26);
+      x.font="14px "+SERIF;x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),X+12,yy+26);
       if(r.pd>0){x.fillText(tgP(r.tg),X+(b5[1]+b5[2])/2,yy+26);x.fillText(tgP(r.tb),X+(b5[2]+b5[3])/2,yy+26);
         x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-8,yy+26);
-        x.textAlign="center";x.fillStyle="#222";x.font="bold 13px sans-serif";x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
+        x.textAlign="center";x.fillStyle="#222";x.font="bold 13px "+SERIF;x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
       yy+=RH});
     x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(X,y,GW,78+hN*RH)});
   y+=78+hN*RH+40;
@@ -1832,18 +1834,18 @@ function kartuGambar(l){
     ["Saldo pinjaman",rp(sisa),false,pbK?"pokok + bunga diakui "+bd.n+" kali − (setoran masuk − denda terbayar)":"pokok + bunga − (setoran masuk − denda terbayar)"],
     (pbK||(l.model||"bl")=="bl"&&sisaP(l)>0?(function(){var sp=Math.min(sisa,saldoPokok(l,today())),bk=Math.max(0,sisa-sp);return [["Saldo pokok",rp(sp),false,"termasuk bunga yang belum/kurang terbayar"],["Bunga diakui ke depan",rp(bk),false,Math.round(bk/Math.max(1,bd?bd.bpb:(tagih(l)-l.pokok)/(l.tenor||1)))+" × "+rp(bd?bd.bpb:Math.round((tagih(l)-l.pokok)/(l.tenor||1)))]]})():[]),["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo pinjaman + sisa denda − simpanan anggota"]];
   sum=[].concat.apply([],sum.map(function(r){return !r.length?[]:Array.isArray(r[0])?r:[r]}));
-  sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);
-    if(r[3]){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText("("+r[3]+")",W-50,y+28);y+=30}y+=44});
+  sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px "+SERIF;x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" "+SERIF;x.fillText(r[1],W-50,y);
+    if(r[3]){x.fillStyle="#999";x.font="italic 17px "+SERIF;x.fillText("("+r[3]+")",W-50,y+28);y+=30}y+=44});
   x.textAlign="center";
-  if(!lunas){x.fillStyle=U;x.font="italic 19px sans-serif";x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-150);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-124)}
-  else{x.fillStyle="#2E8B57";x.font="bold 30px sans-serif";x.fillText("PINJAMAN LUNAS",W/2,H-120)}
-  x.fillStyle=U;x.font="bold 22px sans-serif";x.fillText("Konfirmasi: 0822-3484-1989 (WA/telepon)",W/2,H-75);
-  x.fillStyle="#999";x.font="18px sans-serif";x.fillText("Dibuat otomatis oleh aplikasi KSP Hulusatria",W/2,H-38);
+  if(!lunas){x.fillStyle=U;x.font="italic 19px "+SERIF;x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-150);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-124)}
+  else{x.fillStyle="#2E8B57";x.font="bold 30px "+SERIF;x.fillText("PINJAMAN LUNAS",W/2,H-120)}
+  x.fillStyle=U;x.font="bold 22px "+SERIF;x.fillText("Konfirmasi: 0822-3484-1989 (WA/telepon)",W/2,H-75);
+  x.fillStyle="#999";x.font="18px "+SERIF;x.fillText("Dibuat otomatis oleh aplikasi KSP Hulusatria",W/2,H-38);
   return c}
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-kartu]");if(!b)return;
   var l=LOAN.filter(function(q){return q.id==b.dataset.kartu})[0];if(!l)return;
-  try{var c=kartuGambar(l);strukLihat({no:"Buku-Angsuran-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku angsuran "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
-    document.getElementById("strukJ").textContent="Buku angsuran · "+l.nama}catch(err){console.error(err)}});
+  fontSiap().then(function(){try{var c=kartuGambar(l);strukLihat({no:"Buku-Angsuran-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku angsuran "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
+    document.getElementById("strukJ").textContent="Buku angsuran · "+l.nama}catch(err){console.error(err)}})});
 function strukWA(l,p){
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
