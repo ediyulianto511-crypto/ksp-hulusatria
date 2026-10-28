@@ -1631,7 +1631,7 @@ function kartuGambar(l){
   x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold 28px sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText("BUKU ANGSURAN",W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
   var y=212;if(STRUK_REK){x.fillStyle=B;x.fillRect(0,y,W,84);x.fillStyle=U;x.textAlign="left";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,y+28);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,y+64);y+=84}
   y+=20;var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
-  x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";x.fillText("Per "+tgl(today())+" pukul "+z(d.getHours())+":"+z(d.getMinutes()),W/2,y+14);y+=62;
+  x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";var PL=PAY.filter(function(q){return q.id==l.id}).sort(function(a,b){return (a.tg+(a.jam||""))<(b.tg+(b.jam||""))?-1:1}).pop();x.fillText(PL?"Angsuran terakhir diinput: "+tgl(PL.tg)+(PL.jam?" pukul "+PL.jam:""):"Belum ada angsuran masuk",W/2,y+14);y+=62;
   info.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);y+=40});
   y+=10;var cx=[40,100,290,450,W-40];
   x.fillStyle=U;x.fillRect(30,y,W-60,44);x.fillStyle="#fff";x.font="bold 19px sans-serif";x.textAlign="left";x.fillText("Ke",cx[0]+8,y+29);x.fillText("Jatuh bayar",cx[1],y+29);x.fillText("Tgl bayar",cx[3],y+29);x.textAlign="right";x.fillText("Angsuran",cx[2]+130,y+29);x.fillText("Status",cx[4],y+29);y+=44;
