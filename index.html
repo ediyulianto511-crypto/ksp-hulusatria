@@ -604,7 +604,7 @@ function kolMaks(l){var key=LOAN.length+"|"+PAY.length+"|"+today();if(key!=KMK){
     var n=Math.max(!tel?1:tel*f<=90?2:tel*f<=120?3:tel*f<=180?4:5,!c?1:c<=3?2:c==4?3:c<=6?4:5);if(n>mx)mx=n});
   return KMC[l.id]=mx}
 function tkBlk(){var v=(REG.tk||{}).blk;return v===""?null:v==null?3:+v}
-function riwBuruk(no){var b=tkBlk();if(b==null)return [];return LOAN.filter(function(l){return l.no==no}).map(function(l){return {l:l,n:kolMaks(l)}}).filter(function(x){return x.n>=b})}
+function riwBuruk(no){var b=tkBlk();if(b==null)return [];var a=MEM.filter(function(d){return d.no==no})[0],nik=a&&a.nik,N={};N[no]=1;if(nik)MEM.forEach(function(d){if(d.nik==nik)N[d.no]=1});return LOAN.filter(function(l){return N[l.no]||(nik&&l.nik==nik)}).map(function(l){return {l:l,n:kolMaks(l)}}).filter(function(x){return x.n>=b})}
 function riwMsg(R){return "Pengajuan ditolak: riwayat pinjaman buruk. "+R.map(function(x){return x.l.id+" ("+(sisaP(x.l)>0?"berjalan":"sudah lunas")+") pernah "+KOL[x.n][0]+" "+KOL[x.n][1]}).join("; ")+". Sesuai Regulasi, anggota yang pernah "+KOL[tkBlk()][0]+" ke atas tidak bisa mengajukan pinjaman lagi."}
 function tupMsg(L,asOf){return "Belum bisa top up. "+L.map(function(x){var l=x.l;return x.kunci?l.id+" berstatus "+KOL[x.n][0]+" ("+KOL[x.n][1]+"): top up dikunci untuk Kol 3 ke atas, tunggakan harus dibereskan dulu":l.id+" ("+KOL[x.n][0]+", plafon "+rp(l.pokok)+"): saldo top up "+rp(x.s)+", batas "+rp(x.b)+" ("+x.t+"), kurang setor "+rp(x.s-x.b)}).join("; ")+"."}
 function terimaOf(l){return l.bersih-(l.lalu||0)}
@@ -892,7 +892,7 @@ function bindPin(){
         else jam={jenis:jg,nilai:jn,ket:$("#pgk").value.trim()}}
       if(m){o.className="err";o.textContent=m;return}
       var id="PJ-"+String(LOAN.reduce(function(a,x){var m=/^PJ-(\d+)$/.exec(x.id||"");return m?Math.max(a,+m[1]):a},0)+1).padStart(4,"0");
-      LOAN.push({mkt:$("#pmk").value,kat:r.t.i,model:pinModel,jam:jam,id:id,no:no,nama:a.nama,tg:tg,pokok:v,tenor:r.n,bunga:r.r.bunga,basis:r.r.basis,prov:r.prov,asr:r.asr,wj:r.wj,bm:r.bm,bt:r.bt,tot:r.tot,bersih:r.bersih,lalu:lalu,laluDenda:ld,lunasi:LA.map(function(l){return l.id}),ang:r.ang,denda:r.r.denda});
+      LOAN.push({nik:a.nik||"",mkt:$("#pmk").value,kat:r.t.i,model:pinModel,jam:jam,id:id,no:no,nama:a.nama,tg:tg,pokok:v,tenor:r.n,bunga:r.r.bunga,basis:r.r.basis,prov:r.prov,asr:r.asr,wj:r.wj,bm:r.bm,bt:r.bt,tot:r.tot,bersih:r.bersih,lalu:lalu,laluDenda:ld,lunasi:LA.map(function(l){return l.id}),ang:r.ang,denda:r.r.denda});
       LA.forEach(function(l){var pT=strukMeta({id:l.id,tg:tg,jml:sisaP(l),denda:dendaB(l,tg),ket:"Pelunasan top up dari "+id});PAY.push(pT);setTimeout(function(){strukWA(l,pT)},0)});
       var dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});LOAN[LOAN.length-1].docs=dk;PDOC={};lastPJ=id;
       if(r.wj>0)TX.push({no:no,nama:a.nama,jenis:"Simpanan wajib",tipe:"masuk",jml:r.wj,tg:tg,ket:"Potongan otomatis dari pinjaman "+id});
@@ -1038,7 +1038,7 @@ function bindForm(kar){
     else if(!d.ag)m="Pilih agama.";
     else if(!d.st)m="Pilih status perkawinan.";
     else if(!d.pk)m="Isi pekerjaan sesuai KTP.";
-    else if(MEM.some(function(x){return x.nik==d.nik}))m="NIK ini sudah terdaftar.";
+    else if(MEM.some(function(x){return x.nik==d.nik}))m=(function(){var x=MEM.filter(function(y){return y.nik==d.nik})[0],R=riwBuruk(x.no);return "NIK ini sudah terdaftar atas nama "+x.nama+" ("+x.no+")."+(R.length?" Perhatian: anggota ini punya riwayat pinjaman buruk, pengajuan pinjaman akan otomatis ditolak.":"")})();
     if(m){o.className="err";o.textContent=m;return}
     d.no=nomor();d.dt=Date.now();if(ktpFile){d.foto=1;simpanFoto(d.no,ktpFile);ktpFile=null;showOcr()}MEM.push(d);saveSoon();f.reset();initWil();$("#ktpinfo").textContent="";if($("#fno"))$("#fno").value=nomor();
     o.className="ok";o.textContent="Anggota "+d.no+" tersimpan. Data tersimpan dan tidak hilang saat halaman ditutup.";berhasil("Anggota berhasil disimpan",d.no+" · "+d.nama)};
