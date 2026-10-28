@@ -80,6 +80,11 @@ label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:14px 
 .tbl.wide td:first-child,.tbl.wide th:first-child{position:sticky;left:0;background:var(--panel)}
 @page{size:landscape;margin:12mm}
 .tbl tfoot td{font-weight:700}
+/* Tabel zebra: baris genap warna silver tipis, supaya mudah dipantau. */
+.tbl tbody tr:not(.alrow):nth-child(even)>td{background:#EEF0F2}
+:root[data-theme="dark"] .tbl tbody tr:not(.alrow):nth-child(even)>td{background:#2A2F33}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tbl tbody tr:not(.alrow):nth-child(even)>td{background:#2A2F33}}
+@media print{.tbl tbody tr:not(.alrow):nth-child(even)>td{background:#EEF0F2!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
 .banner{background:#FFFFFF;justify-content:center;padding:22px 24px;border-bottom:1px solid var(--line)}
 .logo{width:100%;max-width:300px;height:auto;display:block}
 .sbrand{background:#FFFFFF;border-radius:14px;padding:10px 12px;margin:0 0 16px}
