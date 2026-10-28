@@ -1705,9 +1705,10 @@ function kartuGambar(l){
   y+=78+hN*RH+40;
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
-    hD=function(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)},
-    hAll=I.reduce(function(s,r){var h=r.pd>=r.amt?(r.tb?hD(r.tg,r.tb):0):(r.telat>0?r.telat:0);return s+Math.max(0,h)},0),
-    rumus=hAll?hAll+" hari × "+pct+"% × "+rp(+l.ang||0):"";
+    // Hari yang benar-benar dikenai denda = (denda terbayar + sisa denda) ÷ denda per hari,
+    // jadi rumusnya selalu cocok dengan angka Denda berjalan (telat sebelum data diimpor tidak dihitung).
+    dHari=(+l.ang||0)*dendaPct(l)/100,hKena=dHari>0?Math.round((dbyr+dend)/dHari):0,
+    rumus=hKena?hKena+" hari × "+pct+"% × "+rp(+l.ang||0):"";
   // Urutan rincian sesuai permintaan ketua (28 Okt 2026).
   var setor=PAY.filter(function(q){return q.id==l.id&&!/^Pelunasan top up/.test(q.ket||"")}).reduce(function(s,q){return s+(+q.jml||0)+(+q.denda||0)},0),
     sim=(function(){try{return Math.max(0,+saldoSim(l.no)||0)}catch(e){return 0}})(),tup=sisa+dend,cls=Math.max(0,tup-sim);
