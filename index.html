@@ -1633,7 +1633,7 @@ function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
   var dend=I.reduce(function(s,x){return s+(x.sisa>0?x.denda:0)},0),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var W=720,RH=40,info=[["Nama",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Plafon",rp(+l.pokok||0)],["Tenor",l.tenor+" kali"],["Angsuran per "+per,rp(+l.ang||0)],["Total pengembalian",rp(tagih(l))]];
-  var H=212+84+42+info.length*40+30+44+I.length*RH+30+4*44+150+(lunas?0:50);
+  var H=212+84+42+info.length*40+30+44+I.length*RH+30+6*44+30+150+(lunas?0:50);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
@@ -1654,8 +1654,12 @@ function kartuGambar(l){
       x.fillStyle="#222";x.font="bold 18px sans-serif";x.fillText(r.mt.length?r.mt.join(" + "):"-",cx[4],y+27)}
     y+=RH});
   x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(30,y-I.length*RH-44,W-60,I.length*RH+44);y+=40;
-  var sum=[["Total sudah dibayar",rp(dibayar(l)),false],["Sisa pinjaman",rp(sisa),true],["Denda berjalan",rp(dend),false],["Angsuran lunas",I.filter(function(r){return r.sisa<=0}).length+" dari "+I.length,false]];
-  sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);y+=44});
+  var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
+    dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
+    rumus=hk?hk+" hari × "+pct+"% × "+(TL.some(function(r){return r.by>0})?"sisa angsuran yang belum dibayar":rp(+l.ang||0)):"";
+  var sum=[["Total sudah dibayar",rp(dibayar(l)),false],["Sisa pinjaman",rp(sisa),true],["Hari kena denda",hk+" hari",false],["Denda berjalan",rp(dend),false,rumus],["Denda sudah dibayar",rp(dbyr),false],["Angsuran lunas",I.filter(function(r){return r.sisa<=0}).length+" dari "+I.length,false]];
+  sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);
+    if(r[3]!=null){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText(r[3]?"("+r[3]+")":"",W-50,y+28);y+=30}y+=44});
   x.textAlign="center";
   if(!lunas){x.fillStyle=U;x.font="italic 19px sans-serif";x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-150);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-124)}
   else{x.fillStyle="#2E8B57";x.font="bold 30px sans-serif";x.fillText("PINJAMAN LUNAS",W/2,H-120)}
