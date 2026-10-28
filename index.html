@@ -709,7 +709,7 @@ function jurnal(){var J=[],add=function(tg,ref,ket,L){if(!tg)return;L=L.filter(f
   LOAN.forEach(function(l){if(l.imp)return;add(l.tg,l.id,"Realisasi pinjaman "+mdl(l).n+" · "+l.nama,[["Piutang pinjaman anggota",l.pokok,0],["Kas",0,l.bersih],["Pendapatan provisi",0,l.prov||0],["Titipan asuransi",0,l.asr||0],["Simpanan wajib",0,l.wj||0],["Pendapatan bunga",0,l.bm||0]])});
   var cum={};
   PAY.forEach(function(p,i){var l=LOAN.filter(function(x){return x.id==p.id})[0];if(!l||p.imp)return;if(l.imp){var dn0=p.denda||0,tp0=/^Pelunasan top up/.test(p.ket||"");add(p.tg,"AN-"+pad3(i+1),(tp0?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn0,0]].concat(+p.pb>0?[["Potongan bunga pinjaman",+p.pb,0]]:[]).concat([["Piutang pinjaman anggota",0,p.jml+(+p.pb||0)],["Pendapatan denda",0,dn0]]));return}var T=tagih(l),c=cum[l.id]||{b:0,k:0},b0=c.b;c.b+=p.jml+(+p.pb||0);
-    var pk=c.b>=T?l.pokok-c.k:pkKum(l,c.b)-pkKum(l,b0);c.k+=pk;cum[l.id]=c;var dn=p.denda||0,top=/^Pelunasan top up/.test(p.ket||"");
+    var pk=c.b>=T?l.pokok-c.k:(l.model||"bl")=="bl"?pkKum(l,c.b)-pkKum(l,b0):Math.round(p.jml*l.pokok/T);c.k+=pk;cum[l.id]=c;var dn=p.denda||0,top=/^Pelunasan top up/.test(p.ket||"");
     add(p.tg,"AN-"+pad3(i+1),(top?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn,0],["Piutang pinjaman anggota",0,pk],["Pendapatan bunga",0,p.jml-pk],["Pendapatan denda",0,dn]])});
   BU.forEach(function(b){add(b.tg,"BU-"+pad3(b.id),b.jenis+(b.ket?" · "+b.ket:""),[["Beban "+bebanNm(b.jenis),b.jml,0],["Kas",0,b.jml]])});
   J.sort(function(a,b){return a.tg<b.tg?-1:a.tg>b.tg?1:a.ref<b.ref?-1:1});return J}
