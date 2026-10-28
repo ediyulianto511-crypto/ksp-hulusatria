@@ -567,8 +567,8 @@ function mdl(l){return MODEL[l.model||"bl"]}
 function tagih(l){return l.tot!=null?l.tot:l.pokok+Math.round(l.pokok*l.bunga/100*l.tenor)}
 function dibayar(l){return PAY.filter(function(x){return x.id==l.id}).reduce(function(a,x){return a+x.jml+(+x.pb||0)},0)}
 /* Bunga diakui (khusus Bulanan, bunga per bulan): saat dilunasi/top up sebelum tenor habis, bunga ditagih minimal 6 kali;
-   lewat dari itu bunga = angsuran ke-berapa + 3 bulan maju, paling banyak sebanyak tenor. Sisa bunganya dipotong (pb). */
-function bdCfg(){var r=REG.m&&REG.m.bl&&REG.m.bl.bd;if(r===false)return null;r=r||{};return {min:r.min==null?6:+r.min,maju:r.maju==null?3:+r.maju}}
+   bunga = bulan berjalan + 6 bulan maju, paling banyak sebanyak tenor. Sisa bunganya dipotong (pb). */
+function bdCfg(){var r=REG.m&&REG.m.bl&&REG.m.bl.bd;if(r===false)return null;r=r||{};if(!r.v)r={};return {min:r.min==null?6:+r.min,maju:r.maju==null?6:+r.maju}}
 function bdInfo(l,tg){var c=bdCfg();if(!c||(l.model||"bl")!="bl"||l.basis=="total"||!l.tenor)return null;
   var bpb=(tagih(l)-l.pokok)/l.tenor;if(!(bpb>0))return null;
   var ke=jadL(l).filter(function(d){return d<=tg}).length,off=l.imp?impKe(l):0;ke+=off;
@@ -986,11 +986,11 @@ function regPage(){
 /* Warna kepala panel di halaman Regulasi: hijau, merah, biru, kuning, lalu berulang dari hijau. Huruf putih. */
 var HCOL=["#00A65A","#DD4B39","#00C0EF","#F39C12"],HCK={mg:0,dm:1,bl:2,pg:3,tk:4,gaji:5};
 function hcSt(k){return "--hb:"+HCOL[(HCK[k]||0)%4]+";--hf:#FFFFFF"}
-function bdPanel(dis){var c=bdCfg(),on=!!c;c=c||{min:6,maju:3};
+function bdPanel(dis){var c=bdCfg(),on=!!c;c=c||{min:6,maju:6};
   return '<div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px"><label for="r_bd_on" style="margin:0 0 6px">Bunga diakui saat pelunasan / top up</label><div class="field" style="max-width:260px"><select id="r_bd_on"'+dis+'><option value="1"'+(on?" selected":"")+'>Dipakai</option><option value="0"'+(on?"":" selected")+'>Tidak dipakai (bunga penuh)</option></select></div>'+
   '<label for="r_bd_min" style="margin:10px 0 6px">Bunga minimal (kali)</label><div class="field" style="max-width:220px"><input id="r_bd_min" type="text" inputmode="numeric" value="'+c.min+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">kali</span></div>'+
   '<label for="r_bd_maju" style="margin:10px 0 6px">Bunga maju (bulan)</label><div class="field" style="max-width:220px"><input id="r_bd_maju" type="text" inputmode="numeric" value="'+c.maju+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">bulan</span></div>'+
-  '<p class="mutp">Berlaku untuk bunga per bulan. Bunga yang ditagih = angsuran ke-berapa saat dilunasi + bunga maju, paling sedikit bunga minimal, paling banyak sebanyak tenor. Sisa bunganya dipotong. Contoh tenor 12, bunga Rp150.000/bulan: lunas di bulan ke-2 → 6 kali (Rp900.000); lunas di bulan ke-7 → 10 kali (Rp1.500.000).</p></div>'}
+  '<p class="mutp">Berlaku untuk bunga per bulan. Bunga yang ditagih = angsuran ke-berapa saat dilunasi + bunga maju, paling sedikit bunga minimal, paling banyak sebanyak tenor. Sisa bunganya dipotong. Contoh tenor 12, bunga Rp150.000/bulan, bunga maju 6: lunas di bulan ke-0 → 6 kali; bulan ke-2 → 8 kali; bulan ke-4 → 10 kali; bulan ke-7 → 12 kali (dibatasi tenor). Bunga dan denda angsuran yang telat tetap ditagih saat pelunasan.</p></div>'}
 function tkPanel(dis){var v=function(n){var x=tkPct(n);return x==null?"":pctTx(x)},inp=function(n,ph){return '<label for="r_tk'+n+'" style="margin:10px 0 6px">'+KOL[n][0]+' '+KOL[n][1]+': saldo top up maksimal (% dari plafon)</label><div class="field" style="max-width:220px"><input id="r_tk'+n+'" type="text" inputmode="decimal" placeholder="contoh '+ph+'" value="'+v(n)+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">%</span></div>'};
   return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt("tk")+'"><div><h3>Syarat top up per kolektibilitas</h3><p>Berlaku untuk semua model pinjaman, dicek saat realisasi top up</p></div></div>'+inp(1,30)+inp(2,10)+
   '<label for="r_tkb" style="margin:14px 0 6px">Tolak pengajuan baru bila anggota pernah</label><div class="field" style="max-width:260px"><select id="r_tkb"'+dis+'>'+[[3,"Kol 3 ke atas"],[4,"Kol 4 ke atas"],[5,"Kol 5 (macet)"],["","Tidak ditolak"]].map(function(o){return '<option value="'+o[0]+'"'+(String(tkBlk()==null?"":tkBlk())==String(o[0])?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div><p class="mutp">Dicek dari semua pinjaman anggota, termasuk yang sudah lunas, jadi karyawan baru tidak perlu tahu riwayatnya. Anggota itu juga diberi tanda Riwayat buruk di Data anggota.</p>'+'<p class="mutp" style="margin:12px 0 0"><b>Kol 3, Kol 4, dan Kol 5: top up dikunci.</b> Tunggakan harus dibereskan dulu sampai kembali Kol 1 atau Kol 2.</p><p class="mutp">Saldo top up = pokok + bunga + denda − setoran masuk. Contoh Kol 1 dengan 30%: plafon lalu Rp10.000.000, top up baru bisa kalau saldo top up Rp3.000.000 atau kurang. Kosongkan isian bila tanpa batas.</p></div>'}
@@ -1012,7 +1012,7 @@ function bindReg(){
         if(dd<0||dd>=100){er=K+"denda harian tidak valid.";return}
         rg.forEach(function(q){if(n1<=q[1]&&n2>=q[0])er=K+"rentang plafon tumpang tindih dengan kategori lain."});if(er)return;
         rg.push([n1,n2]);r.tier.push({min:n1,max:n2,prov:a?pa:"",asr:b?pb:"",wajib:c?pc:"",ns:nn,n:nn[0],bunga:bb,basis:k=="bl"?"periode":(bs||"total"),denda:dn?dd:""})}
-      if(k=="bl"&&!er){var bo=$("#r_bd_on");if(bo&&bo.value=="0")r.bd=false;else{var bm=Math.round(num(($("#r_bd_min")||{}).value||"6")),bj=Math.round(num(($("#r_bd_maju")||{}).value||"3"));if(!(bm>=0&&bm<=156&&bj>=0&&bj<=156)){er="Bunga diakui Bulanan: isi bunga minimal dan bunga maju dengan angka 0 sampai 156.";return}r.bd={min:bm,maju:bj}}}
+      if(k=="bl"&&!er){var bo=$("#r_bd_on");if(bo&&bo.value=="0")r.bd=false;else{var bm=Math.round(num(($("#r_bd_min")||{}).value||"6")),bj=Math.round(num(($("#r_bd_maju")||{}).value||"6"));if(!(bm>=0&&bm<=156&&bj>=0&&bj<=156)){er="Bunga diakui Bulanan: isi bunga minimal dan bunga maju dengan angka 0 sampai 156.";return}r.bd={min:bm,maju:bj,v:2}}}
       M[k]=r});
     var TK={};if(!er)[1,2].forEach(function(n){if(er)return;var e=$("#r_tk"+n),v=e?e.value.trim():"";if(!v){TK["k"+n]="";return}var x=num(v);if(!(x>0&&x<=100)){er="Syarat top up Kol "+n+" harus lebih dari 0 dan paling besar 100%.";return}TK["k"+n]=x});var be=$("#r_tkb");TK.blk=be?(be.value===""?"":+be.value):tkBlk();
     if(er){o.className="err";o.textContent=er;return}
