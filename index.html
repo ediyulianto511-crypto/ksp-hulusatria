@@ -566,7 +566,9 @@ function dibayar(l){return PAY.filter(function(x){return x.id==l.id}).reduce(fun
 function sisaP(l){return tagih(l)-dibayar(l)}
 function saldoPin(no){return LOAN.filter(function(l){return l.no==no}).reduce(function(a,l){return a+sisaP(l)},0)}
 function aktifPin(no){return LOAN.filter(function(l){return l.no==no&&sisaP(l)>0})}
-function dendaB(l,asOf){var sp=sisaP(l),pct=+l.denda||0;if(sp<=0||pct<=0||!asOf)return 0;
+// Persen denda per hari. Pinjaman hasil impor yang belum punya angka denda memakai denda dari Regulasi (sesuai jenis & plafon).
+function dendaPct(l){var p=+l.denda||0;if(p>0||!(l.imp||l.denda==null))return p;var k=l.model||"bl",t=tierOf(k,+l.pokok||+l.saldoAwal||0);return (t&&t.denda)||+rule(k).denda||0}
+function dendaB(l,asOf){var sp=sisaP(l),pct=dendaPct(l);if(sp<=0||pct<=0||!asOf)return 0;
   var J=jadL(l),paid=dibayar(l),cum=0,tot=0,T=tagih(l),now=new Date(asOf+"T00:00:00");
   J.forEach(function(d,i){var a=i==J.length-1?T-l.ang*(J.length-1):l.ang;cum+=a;if(cum<=paid)return;
     var un=Math.min(a,cum-paid),h=Math.floor((now-new Date(d+"T00:00:00"))/864e5);if(h>0)tot+=Math.round(un*pct/100*h)});
@@ -637,7 +639,7 @@ function cetakPinjaman(id){var l=LOAN.filter(function(x){return x.id==id})[0];if
   var pot=(l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0);
   var h='<div class="kc">'+kopHtml("Kartu Pinjaman")+'<table class="kv">'+kv("Nomor pinjaman",l.id)+kv("Anggota",l.no+" · "+ex(l.nama))+kv("Alamat",ex([a.al,a.rt?"RT "+a.rt:"",a.rw?"RW "+a.rw:"",a.kl,a.kc].filter(Boolean).join(", ")))+kv("No HP",ex(a.hp||"-"))+
   kv("Model pinjaman",m.n+(l.kat?" (kategori "+l.kat+")":""))+kv("Tanggal realisasi",tgl(l.tg))+kv("Plafon",rp(l.pokok))+kv("Potongan (provisi, asuransi, dll.)",rp(pot))+(l.lalu?kv("Pelunasan saldo pinjaman lalu",rp(l.lalu)+(l.laluDenda?" (sisa tagihan "+rp(l.lalu-l.laluDenda)+" + denda berjalan "+rp(l.laluDenda)+")":"")+(l.lunasi&&l.lunasi.length?" · "+l.lunasi.join(", "):"")):"")+
-  kv("Terima bersih","<b>"+rp(terimaOf(l))+"</b>")+kv("Total pengembalian",rp(tagih(l)))+kv("Angsuran","<b>"+rp(l.ang)+"</b> × "+l.tenor+" kali, tiap "+m.per)+kv("Denda keterlambatan",(l.denda||0)+"% per hari")+(l.jam?kv("Jaminan",ex(l.jam.jenis)+" · taksiran "+rp(l.jam.nilai)):"")+'</table>'+
+  kv("Terima bersih","<b>"+rp(terimaOf(l))+"</b>")+kv("Total pengembalian",rp(tagih(l)))+kv("Angsuran","<b>"+rp(l.ang)+"</b> × "+l.tenor+" kali, tiap "+m.per)+kv("Denda keterlambatan",dendaPct(l)+"% per hari")+(l.jam?kv("Jaminan",ex(l.jam.jenis)+" · taksiran "+rp(l.jam.nilai)):"")+'</table>'+
   '<table><thead><tr><th>Ke</th><th>Jatuh tempo</th><th class="num">Angsuran</th><th>Tanggal bayar</th><th class="num">Jumlah bayar</th><th>Paraf petugas</th></tr></thead><tbody>'+
   J.map(function(d,i){return "<tr><td>"+(i+1)+"</td><td>"+tgl(d)+'</td><td class="num">'+rp(i==J.length-1?tagih(l)-l.ang*(J.length-1):l.ang)+"</td><td></td><td></td><td></td></tr>"}).join("")+'</tbody></table>'+
   '<div class="ttd"><div>Anggota<br>'+ex(l.nama)+'</div><div>Petugas KSP Hulusatria Madani</div></div></div>';
@@ -717,7 +719,7 @@ function jnSel(id){var A=LOAN.filter(function(l){return sisaP(l)>0&&mktCocok(l)}
   return '<select id="'+id+'"><option value="">Semua jenis ('+A.length+')</option>'+MK.map(function(k){return '<option value="'+k+'"'+(tagJn==k?" selected":"")+'>'+MODEL[k].n+' ('+n(k)+')</option>'}).join("")+'</select>'}
 var tagJn="",tagMk="",tagF="due",tagQ="",tagOpen="",tag2M="",tag2S="";
 function hariAntara(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)}
-function inst(l,asOf){asOf=asOf||today();var J=jadL(l),T=tagih(l),paid=dibayar(l),cum=0,pct=+l.denda||0,top=PAY.some(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")});
+function inst(l,asOf){asOf=asOf||today();var J=jadL(l),T=tagih(l),paid=dibayar(l),cum=0,pct=dendaPct(l),top=PAY.some(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")});
   return J.map(function(d,i){var a=i==J.length-1?T-l.ang*(J.length-1):l.ang,prev=cum;cum+=a;var by=Math.max(0,Math.min(a,paid-prev)),sisa=a-by,h=hariAntara(d,asOf),dn=sisa>0&&h>0?Math.round(sisa*pct/100*h):0;
     var st=sisa<=0?"done":h>0?"late":h==0?"today":h>=-7?"soon":"wait";
     return {ke:i+1,n:J.length,tg:d,amt:a,by:by,sisa:sisa,denda:dn,telat:h,st:st,top:top&&sisa<=0}})}
