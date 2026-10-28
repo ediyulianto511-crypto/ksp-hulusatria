@@ -1525,6 +1525,25 @@ mulaiSB();
 #strukMsg[hidden]{display:none}
 </style>
 <div id="strukMsg" role="status" aria-live="polite" hidden></div>
+<style>
+#strukBg{position:fixed;inset:0;z-index:210;background:rgba(0,0,0,.55);display:flex;align-items:flex-end;justify-content:center}
+#strukBg[hidden]{display:none}
+#strukBox{background:var(--panel);color:var(--ink);width:min(480px,100%);max-height:94vh;overflow:auto;box-sizing:border-box;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px))}
+#strukBox h3{margin:0 0 4px;font-size:17px}
+#strukBox p{margin:0 0 12px;color:var(--mut);font-size:13.5px}
+#strukImg{display:block;width:100%;border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
+#strukBox button{display:block;width:100%;border:0;border-radius:12px;padding:13px;font-size:15.5px;font-weight:700;margin-bottom:8px;cursor:pointer}
+#strukBagi{background:#25D366;color:#fff}
+#strukSimpan{background:#E9F8EF;color:#1F7A45}
+#strukTutup{background:none;color:var(--mut)}
+</style>
+<div id="strukBg" hidden><div id="strukBox" role="dialog" aria-modal="true" aria-labelledby="strukJ">
+  <h3 id="strukJ">Struk pembayaran</h3><p id="strukP"></p>
+  <img id="strukImg" alt="Struk pembayaran">
+  <button type="button" id="strukBagi">Bagikan ke WA (manual)</button>
+  <button type="button" id="strukSimpan">Simpan gambar</button>
+  <button type="button" id="strukTutup">Tutup</button>
+</div></div>
 <script>
 // Rekening resmi KSP yang tampil di struk. Kosongkan bila tidak ingin ditampilkan.
 var STRUK_REK="BRI · No. Rek 0004-01-002422-30-7 · a.n. KSP Hulusatria Madani";
@@ -1567,17 +1586,30 @@ function strukGambar(d){
   x.fillStyle="#999";x.font="20px sans-serif";x.fillText("Simpan struk ini. No. struk tercatat di sistem KSP Hulusatria",W/2,H-35);
   return c;
 }
+var STRUK_LIHAT=null;
+function strukLihat(d,url,ket){STRUK_LIHAT={d:d,url:url};
+  document.getElementById("strukJ").textContent="Struk "+d.nama+" · "+rp(d.total);
+  document.getElementById("strukP").textContent=ket;
+  document.getElementById("strukImg").src=url;document.getElementById("strukBg").hidden=false}
+function strukBlob(){return fetch(STRUK_LIHAT.url).then(function(r){return r.blob()})}
+function strukUnduh(b,n){var u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)}
+document.getElementById("strukTutup").onclick=function(){document.getElementById("strukBg").hidden=true};
+document.getElementById("strukSimpan").onclick=function(){if(!STRUK_LIHAT)return;var n="Struk-"+STRUK_LIHAT.d.no+".png";strukBlob().then(function(b){strukUnduh(b,n)})};
+document.getElementById("strukBagi").onclick=function(){if(!STRUK_LIHAT)return;var d=STRUK_LIHAT.d,n="Struk-"+d.no+".png";
+  strukBlob().then(function(b){var f=new File([b],n,{type:"image/png"});
+    if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(function(){});
+    else{strukUnduh(b,n);alert("Gambar struk sudah disimpan. Kirim lewat WhatsApp dari galeri/unduhan.")}})};
 function strukWA(l,p){
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
-    if(hp.length<9){strukInfo("Struk tidak terkirim: nomor HP "+d.nama+" belum diisi di data anggota.",true);return}
-    var img=strukGambar(d).toDataURL("image/png").split(",")[1];
+    var cv=strukGambar(d),url=cv.toDataURL("image/png"),img=url.split(",")[1];
+    if(hp.length<9){strukLihat(d,url,"Belum terkirim otomatis: nomor HP "+d.nama+" belum diisi di data anggota.");return}
     var cap=(d.top?"Pinjaman lalu "+d.pinjaman+" sudah LUNAS melalui top up. ":d.lunas?"Pinjaman "+d.pinjaman+" sudah LUNAS. ":"Pembayaran "+d.ket.toLowerCase()+" "+d.pinjaman+" sudah kami terima. ")+(d.jam?"Waktu: "+tgl(d.tg)+" pukul "+d.jam+". ":"")+"Terima kasih, "+d.nama+". – KSP Hulusatria Madani";
     var go=function(tok){return fetch("/api/kirim-struk",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},
       body:JSON.stringify({target:hp,caption:cap,nama:"Struk-"+d.no+".png",image:img})}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok)throw new Error(j.error||("HTTP "+r.status));return j})})};
     var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
     sesi.then(go).then(function(){strukInfo("Struk terkirim ke WA "+d.nama+" ("+d.hp+").")})
-      .catch(function(e){strukInfo("Struk gagal terkirim ke WA "+d.nama+": "+e.message,true)});
+      .catch(function(e){strukLihat(d,url,/Fonnte belum dipasang/.test(e.message)?"Pengiriman otomatis ke WA belum aktif (Fonnte belum dipasang).":"Gagal terkirim otomatis ke WA: "+e.message)});
   }catch(e){console.error(e)}
 }
 </script>
