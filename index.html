@@ -600,7 +600,7 @@ function pctTx(x){return String(x).replace(".",",")}
 /* Syarat top up per kolektibilitas: Kol 1 dan Kol 2 punya batas saldo top up (% dari plafon), Kol 3 ke atas dikunci. */
 var TKDEF={k1:30,k2:10};
 function tkPct(n){var T=REG.tk||TKDEF,v=T["k"+n];return (v===""||v==null)?null:+v}
-function tupBlok(no,asOf){var R=[];aktifPin(no).forEach(function(l){var ko=kolOf(l,asOf),n=ko?ko.n:1,s=lunasOf(l,asOf);
+function tupBlok(no,asOf){var R=[];aktifPin(no).forEach(function(l){var ko=kolOf(l,asOf),n=ko?ko.n:1,s=lunasNet(l,asOf);
     if(n>=3){R.push({l:l,n:n,kunci:true,s:s});return}
     var B=[],pk=tkPct(n);if(pk!=null)B.push({b:Math.round(l.pokok*pk/100),t:KOL[n][0]+" maksimal "+pctTx(pk)+"% dari plafon"});
     if(!B.length)return;var m=B.reduce(function(a,x){return x.b<a.b?x:a});if(s>m.b)R.push({l:l,n:n,s:s,b:m.b,t:m.t})});
@@ -678,7 +678,7 @@ function cetakPinjaman(id){var l=LOAN.filter(function(x){return x.id==id})[0];if
   var pot=(l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0);
   var h='<div class="kc">'+kopHtml("Kartu Pinjaman")+'<table class="kv">'+kv("Nomor pinjaman",l.id)+kv("Anggota",l.no+" · "+ex(l.nama))+kv("Alamat",ex([a.al,a.rt?"RT "+a.rt:"",a.rw?"RW "+a.rw:"",a.kl,a.kc].filter(Boolean).join(", ")))+kv("No HP",ex(a.hp||"-"))+
   kv("Model pinjaman",m.n+(l.kat?" (kategori "+l.kat+")":""))+kv("Tanggal realisasi",tgl(l.tg))+kv("Plafon",rp(l.pokok))+kv("Potongan (provisi, asuransi, dll.)",rp(pot))+(l.lalu?kv("Pelunasan saldo pinjaman lalu",rp(l.lalu)+(l.laluDenda?" (sisa tagihan "+rp(l.lalu-l.laluDenda)+" + denda berjalan "+rp(l.laluDenda)+")":"")+(l.lunasi&&l.lunasi.length?" · "+l.lunasi.join(", "):"")):"")+
-  kv("Terima bersih","<b>"+rp(terimaOf(l))+"</b>")+kv("Total pengembalian",rp(tagih(l)))+kv("Angsuran","<b>"+rp(l.ang)+"</b> × "+l.tenor+" kali, tiap "+m.per)+kv("Denda keterlambatan",dendaPct(l)+"% per hari")+(l.jam?kv("Jaminan",ex(l.jam.jenis)+" · taksiran "+rp(l.jam.nilai)):"")+'</table>'+
+  kv("Terima bersih","<b>"+rp(terimaOf(l))+"</b>")+kv("Total pengembalian",(function(){var b=bdInfo(l,l.tg);return b&&b.pb?rp(tagih(l)-b.pb)+" (pokok + bunga diakui "+b.n+" kali; bertambah tiap bulan berjalan, paling banyak "+rp(tagih(l))+")":rp(tagih(l))})())+kv("Angsuran","<b>"+rp(l.ang)+"</b> × "+l.tenor+" kali, tiap "+m.per)+kv("Denda keterlambatan",dendaPct(l)+"% per hari")+(l.jam?kv("Jaminan",ex(l.jam.jenis)+" · taksiran "+rp(l.jam.nilai)):"")+'</table>'+
   '<table><thead><tr><th>Ke</th><th>Jatuh tempo</th><th class="num">Angsuran</th><th>Tanggal bayar</th><th class="num">Jumlah bayar</th><th>Paraf petugas</th></tr></thead><tbody>'+
   J.map(function(d,i){return "<tr><td>"+(i+1)+"</td><td>"+tgl(d)+'</td><td class="num">'+rp(i==J.length-1?tagih(l)-l.ang*(J.length-1):l.ang)+"</td><td></td><td></td><td></td></tr>"}).join("")+'</tbody></table>'+
   '<div class="ttd"><div>Anggota<br>'+ex(l.nama)+'</div><div>Petugas KSP Hulusatria Madani</div></div></div>';
@@ -1748,10 +1748,10 @@ function kartuData(l){
   return I}
 function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
-  var dend=dendaB(l,today()),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
+  var dend=dendaB(l,today()),bd=sisaP(l)>0?bdInfo(l,today()):null,pbK=bd?bd.pb:0,sisa=Math.max(0,sisaP(l)-pbK),lunas=sisaP(l)<=0;
   var W=720,RH=40,kq=sisaP(l)>0?kolOf(l):null,
     info=[["Nama anggota",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Kualitas pinjaman",kq?kq.kode+" · "+kq.nama:pinStatus(l)],
-      ["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Realisasi pinjaman",rp(+l.pokok||0)],["Jangka waktu",l.tenor+(m.hari==7?" minggu":m.hari==14?" × 2 minggu":" bulan")],["Jumlah angsuran",rp(+l.ang||0)+" / "+per],["Jumlah pengembalian",rp(tagih(l)),"bila tidak pernah melewati jatuh bayar, tanpa denda"]];
+      ["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Realisasi pinjaman",rp(+l.pokok||0)],["Jangka waktu",l.tenor+(m.hari==7?" minggu":m.hari==14?" × 2 minggu":" bulan")],["Jumlah angsuran",rp(+l.ang||0)+" / "+per],["Jumlah pengembalian",rp(tagih(l)-pbK),pbK?"pokok + bunga diakui "+bd.n+" kali, bertambah tiap bulan sampai "+rp(tagih(l)):"bila tidak pernah melewati jatuh bayar, tanpa denda"]];
   var H=212+84+42+info.length*40+92+30+30+78+Math.ceil(I.length/2)*RH+30+7*44+3*30+150+(lunas?0:50);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
@@ -1799,7 +1799,7 @@ function kartuGambar(l){
   var setor=PAY.filter(function(q){return q.id==l.id&&!/^Pelunasan top up/.test(q.ket||"")}).reduce(function(s,q){return s+(+q.jml||0)+(+q.denda||0)},0),
     sim=(function(){try{return Math.max(0,+saldoSim(l.no)||0)}catch(e){return 0}})(),tup=sisa+dend,cls=Math.max(0,tup-sim);
   var sum=[["Denda berjalan",rp(dbyr+dend),false,rumus],["Denda terbayar",rp(dbyr),false],["Sisa denda",rp(dend),false],["Jumlah setoran masuk",rp(setor),false],
-    ["Saldo pinjaman",rp(sisa),false,"pokok + bunga − (setoran masuk − denda terbayar)"],["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo pinjaman + sisa denda − simpanan anggota"]];
+    ["Saldo pinjaman",rp(sisa),false,pbK?"pokok + bunga diakui "+bd.n+" kali − (setoran masuk − denda terbayar)":"pokok + bunga − (setoran masuk − denda terbayar)"],["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo pinjaman + sisa denda − simpanan anggota"]];
   sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);
     if(r[3]){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText("("+r[3]+")",W-50,y+28);y+=30}y+=44});
   x.textAlign="center";
