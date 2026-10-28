@@ -111,6 +111,8 @@ main{margin-left:248px;min-height:100vh}
 .phead h3{margin:0;font-size:22px;color:var(--ma)}
 :root[data-theme="dark"] .phead h3{color:var(--ro)}
 .phead p{margin:2px 0 0;color:var(--mut);font-size:14px}
+.phead.hc{background:var(--hb);border-radius:14px;padding:14px 16px;border-bottom:0}
+.phead.hc h3,:root[data-theme="dark"] .phead.hc h3{color:var(--hf)!important}.phead.hc p{color:var(--hf);opacity:.85}
 .pbtn{border:0;background:var(--ma);color:var(--iv);border-radius:12px;padding:10px 16px;font-weight:600;cursor:pointer}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
 .k{border-radius:18px;padding:18px;min-height:140px;display:flex;flex-direction:column;justify-content:space-between;background:var(--bg-c);color:var(--tx-c)}
@@ -919,13 +921,16 @@ function regPage(){
       var bs=v("basis")||(v("n")===""&&k=="mg"?"total":"");
       return '<tr><td>Kategori '+(i+1)+'</td>'+inp("min","Dari (Rp)",fmtRp(v("min")),"numeric")+inp("max","Sampai (Rp)",fmtRp(v("max")),"numeric")+inp("prov","%",v("prov"))+inp("asr","%",v("asr"))+(pw?inp("wajib","%",v("wajib")):"")+
       nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+dis+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
-    return '<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
+    return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt(k)+'"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
     '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi plafon, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori plafon.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Plafon dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Tenor (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari plafon saat realisasi.</p>':"")+'</div>'}).join("")+
     tkPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau plafonnya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
   flash="";return h;
 }
+/* Warna kepala panel di halaman Regulasi: hijau, merah, biru, kuning, lalu berulang dari hijau. Huruf putih. */
+var HCOL=["#00A65A","#DD4B39","#00C0EF","#F39C12"],HCK={mg:0,dm:1,bl:2,pg:3,tk:4,gaji:5};
+function hcSt(k){return "--hb:"+HCOL[(HCK[k]||0)%4]+";--hf:#FFFFFF"}
 function tkPanel(dis){var v=function(n){var x=tkPct(n);return x==null?"":pctTx(x)},inp=function(n,ph){return '<label for="r_tk'+n+'" style="margin:10px 0 6px">'+KOL[n][0]+' '+KOL[n][1]+': saldo top up maksimal (% dari plafon)</label><div class="field" style="max-width:220px"><input id="r_tk'+n+'" type="text" inputmode="decimal" placeholder="contoh '+ph+'" value="'+v(n)+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">%</span></div>'};
-  return '<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Syarat top up per kolektibilitas</h3><p>Berlaku untuk semua model pinjaman, dicek saat realisasi top up</p></div></div>'+inp(1,30)+inp(2,10)+
+  return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt("tk")+'"><div><h3>Syarat top up per kolektibilitas</h3><p>Berlaku untuk semua model pinjaman, dicek saat realisasi top up</p></div></div>'+inp(1,30)+inp(2,10)+
   '<label for="r_tkb" style="margin:14px 0 6px">Tolak pengajuan baru bila anggota pernah</label><div class="field" style="max-width:260px"><select id="r_tkb"'+dis+'>'+[[3,"Kol 3 ke atas"],[4,"Kol 4 ke atas"],[5,"Kol 5 (macet)"],["","Tidak ditolak"]].map(function(o){return '<option value="'+o[0]+'"'+(String(tkBlk()==null?"":tkBlk())==String(o[0])?" selected":"")+'>'+o[1]+'</option>'}).join("")+'</select></div><p class="mutp">Dicek dari semua pinjaman anggota, termasuk yang sudah lunas, jadi karyawan baru tidak perlu tahu riwayatnya. Anggota itu juga diberi tanda Riwayat buruk di Data anggota.</p>'+'<p class="mutp" style="margin:12px 0 0"><b>Kol 3, Kol 4, dan Kol 5: top up dikunci.</b> Tunggakan harus dibereskan dulu sampai kembali Kol 1 atau Kol 2.</p><p class="mutp">Saldo top up = pokok + bunga + denda − setoran masuk. Contoh Kol 1 dengan 30%: plafon lalu Rp10.000.000, top up baru bisa kalau saldo top up Rp3.000.000 atau kurang. Kosongkan isian bila tanpa batas.</p></div>'}
 function bindReg(){
   var f=$("#rform");if(!f)return;
@@ -1436,7 +1441,7 @@ function bindGaji(){var gb=$("#gbl");if(gb)gb.onchange=function(){gajiBln=this.v
 /* Regulasi penghasilan (di halaman Regulasi bunga) */
 function gajiRegHTML(){var R=gajiR(),own=ROLE=="Ketua (owner)",dis=own?"":" disabled",J=JAB;
   var inp=function(id,v,ph,mode){return '<div class="field"><input id="'+id+'" type="text" inputmode="'+(mode||"numeric")+'" placeholder="'+ph+'" value="'+v+'"'+dis+(mode=="decimal"?"":' data-rpf')+'></div>'};
-  return '<div class="panel" style="margin:14px 0"><div class="phead"><div><h3>Regulasi penghasilan karyawan</h3><p>Rumus yang dipakai panel Laporan &gt; Penghasilan karyawan</p></div></div>'+
+  return '<div class="panel" style="margin:14px 0"><div class="phead hc" style="'+hcSt("gaji")+'"><div><h3>Regulasi penghasilan karyawan</h3><p>Rumus yang dipakai panel Laporan &gt; Penghasilan karyawan</p></div></div>'+
   '<div class="lsec">a. Gaji pokok (UMR BNA) per jabatan</div><div class="fg">'+J.map(function(j,i){return '<div><label for="rg_gp'+i+'">'+ex(j)+' (Rp/bulan)</label>'+inp("rg_gp"+i,R.gp[j]?fmtRp(R.gp[j]):"","Contoh: 2.200.000")+'</div>'}).join("")+'</div>'+
   '<div class="lsec">b. Tunjangan masa kerja</div><div class="fg"><div><label for="rg_mk">Rp per tahun masa kerja</label>'+inp("rg_mk",R.mk?fmtRp(R.mk):"","Contoh: 50.000")+'</div></div><p class="mutp">Rumus: tahun masa kerja penuh × nominal ini.</p>'+
   '<div class="lsec">c. Tunjangan anak &amp; istri</div><div class="fg"><div><label for="rg_ist">Tunjangan istri (Rp, jika status Kawin)</label>'+inp("rg_ist",R.ist?fmtRp(R.ist):"","Contoh: 100.000")+'</div><div><label for="rg_an">Tunjangan per anak (Rp)</label>'+inp("rg_an",R.anak?fmtRp(R.anak):"","Contoh: 50.000")+'</div><div><label for="rg_am">Maksimal anak ditanggung</label>'+inp("rg_am",R.anakMax||"","Contoh: 2","decimal")+'</div></div><p class="mutp">Rumus: tunjangan istri (bila Kawin) + jumlah anak (maksimal) × tunjangan per anak.</p>'+
