@@ -1663,7 +1663,9 @@ function kartuData(l){
 function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
   var dend=dendaB(l,today()),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
-  var W=720,RH=40,info=[["Nama",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Pinjaman ke-",pinUrut(l)+" dari "+LOAN.filter(function(q){return q.no==l.no}).length],["Status",pinStatus(l)],["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Plafon",rp(+l.pokok||0)],["Tenor",l.tenor+" kali"],["Angsuran per "+per,rp(+l.ang||0)],["Total pengembalian",rp(tagih(l))]];
+  var W=720,RH=40,kq=sisaP(l)>0?kolOf(l):null,
+    info=[["Nama anggota",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Kualitas pinjaman",kq?kq.kode+" · "+kq.nama:pinStatus(l)],
+      ["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Realisasi pinjaman",rp(+l.pokok||0)],["Jangka waktu",l.tenor+(m.hari==7?" minggu":m.hari==14?" × 2 minggu":" bulan")],["Jumlah angsuran",rp(+l.ang||0)+" / "+per],["Jumlah pengembalian",rp(tagih(l))]];
   var H=212+84+42+info.length*40+92+30+78+Math.ceil(I.length/2)*RH+30+7*44+3*30+150+(lunas?0:50);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
@@ -1678,7 +1680,7 @@ function kartuGambar(l){
   // Data anggota (2 baris pertama) dipisah garis dari data pinjaman.
   var judul=function(t){x.textAlign="left";x.fillStyle=U;x.font="bold 16px sans-serif";if("letterSpacing" in x)x.letterSpacing="1.5px";x.fillText(t,50,y);if("letterSpacing" in x)x.letterSpacing="0px";y+=36};
   judul("DATA ANGGOTA");
-  info.forEach(function(r,i){if(i==2){y+=2;x.fillStyle="#E3D3D7";x.fillRect(40,y-22,W-80,2);y+=26;judul("DATA PINJAMAN")}
+  info.forEach(function(r,i){if(i==4){y+=2;x.fillStyle="#E3D3D7";x.fillRect(40,y-22,W-80,2);y+=26;judul("DATA PINJAMAN")}
     x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);y+=40});
   // Tabel angsuran dua lajur berjejar (kiri: ke-1 s/d separuh, kanan: sisanya).
   y+=10;var hN=Math.ceil(I.length/2),GW=(W-70)/2,b5=[0,24,93,166,240,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
