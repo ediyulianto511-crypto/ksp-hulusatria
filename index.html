@@ -200,6 +200,7 @@ main{margin-left:248px;min-height:100vh}
 .tga{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
 .tga .pbtn,.tga a{display:flex;align-items:center;justify-content:center;text-align:center;min-height:42px;border-radius:12px;font-weight:600;text-decoration:none}
 .tga a{border:1px solid var(--line);color:var(--ink);background:var(--panel)}
+.tga .kbtn{display:flex;align-items:center;justify-content:center;min-height:42px;border-radius:12px;font-weight:600;border:1px solid var(--line);color:var(--ink);background:var(--panel);font-size:inherit;cursor:pointer}
 .tgf{margin-top:12px;border-top:1px dashed var(--line);padding-top:10px}
 .tgf .pact2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .tgf .pact2 .btn{margin:0}
@@ -759,7 +760,7 @@ function tagPage(){
     var h='<div class="tgc '+st+'"><div class="tgh"><div><b>'+ex(l.nama)+'</b><p>'+l.id+' · '+m.n+' · '+l.no+'</p><span class="st jn">'+m.n+'</span> <span class="st '+st+'">'+stTxt+'</span> '+kolBadge(kq0)+'</div><div class="tr"><small>'+bigL+'</small><strong>'+big+'</strong></div></div>'+
       '<div class="tgm"><span>Marketing</span><div class="field">'+mktSel("mk_"+l.id,l.mkt,false)+'</div></div><div class="tgd"><div><small>Angsuran</small><b>'+rp(l.ang)+'</b></div><div><small>Sudah bayar</small><b>'+paidN+' / '+l.tenor+'×</b></div><div><small>'+(done?"Denda":"Denda berjalan")+'</small><b>'+rp(r.denda)+'</b></div></div>'+(kq0?'<div class="kdet">Kualitas <b>'+kq0.kode+' · '+kq0.nama+'</b>'+(kq0.n>1?' · telat '+kq0.telat+' hari · kurang '+kq0.kali+' angsuran ('+rp(kq0.kurang)+')'+' · dinilai dari '+kq0.dari:' · tidak ada tunggakan')+'</div>':'');
     if(!done){var hp=String(a.hp||"").replace(/[^0-9]/g,"").replace(/^0/,"62"),msg="Yth. "+l.nama+", tagihan angsuran "+l.id+" KSP Hulusatria Madani "+(r.due.length?"sebesar "+rp(tot)+(r.denda?" (termasuk denda "+rp(r.denda)+")":"")+" sudah jatuh tempo.":"sebesar "+rp(x.sisa)+" jatuh tempo "+tgl(x.tg)+".")+" Terima kasih.";
-      h+='<div class="tga"><button class="pbtn" type="button" data-pay="'+l.id+'">'+(tagOpen==l.id?"Tutup":"Bayar angsuran")+'</button>'+(hp?'<a href="https://wa.me/'+hp+'?text='+encodeURIComponent(msg)+'" target="_blank" rel="noopener">Ingatkan via WA</a>':'<a aria-disabled="true" style="opacity:.5">Nomor HP kosong</a>')+'</div>';
+      h+='<div class="tga"><button class="pbtn" type="button" data-pay="'+l.id+'">'+(tagOpen==l.id?"Tutup":"Bayar angsuran")+'</button>'+'<button type="button" class="kbtn" data-kartu="'+l.id+'">Kartu angsuran</button></div>';
       if(tagOpen==l.id){var def=r.due.length?tot:x.sisa+0;
         h+='<form class="tgf" data-pf="'+l.id+'" novalidate><div class="fg"><div><label for="tb_'+l.id+'">Jumlah bayar (Rp)</label><div class="field"><input id="tb_'+l.id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(def)+'" autocomplete="off"></div></div><div><label for="tt_'+l.id+'">Tanggal bayar</label><div class="field"><input id="tt_'+l.id+'" type="date" value="'+today()+'"></div></div></div>'+
         '<p class="mutp">Pembayaran dipakai untuk denda dulu, sisanya untuk angsuran tertua. Sisa pinjaman sekarang '+rp(sisaP(l))+'.</p><div id="tm_'+l.id+'" class="err" role="alert"></div><div class="pact2"><button class="btn" type="button" data-full="'+l.id+'" style="background:var(--c2);color:var(--t2)">Lunasi semua ('+rp(sisaP(l)+dendaB(l,today()))+')</button><button class="btn" type="submit">Simpan pembayaran</button></div></form>'}}
@@ -1608,6 +1609,48 @@ document.getElementById("strukBagi").onclick=function(){if(!STRUK_LIHAT)return;v
   strukBlob().then(function(b){var f=new File([b],n,{type:"image/png"});
     if(navigator.canShare&&navigator.canShare({files:[f]}))navigator.share({files:[f]}).catch(function(){});
     else{strukUnduh(b,n);alert("Gambar struk sudah disimpan. Kirim lewat WhatsApp dari galeri/unduhan.")}})};
+
+// ===== Kartu angsuran (gambar rincian angsuran satu pinjaman) =====
+function kartuData(l){
+  var I=inst(l),P=PAY.filter(function(x){return x.id==l.id}).slice().sort(function(a,b){return a.tg<b.tg?-1:a.tg>b.tg?1:0}),cum=0,run=0,j=0;
+  I.forEach(function(x){cum+=x.amt;while(j<P.length&&run<cum){run+=P[j].jml||0;x.tb=P[j].tg;j++}if(run<cum)x.tb=x.by>0?x.tb:"";});
+  return I}
+function kartuGambar(l){
+  var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
+  var dend=I.reduce(function(s,x){return s+(x.sisa>0?x.denda:0)},0),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
+  var W=720,RH=40,info=[["Nama",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Plafon",rp(+l.pokok||0)],["Tenor",l.tenor+" kali"],["Angsuran per "+per,rp(+l.ang||0)],["Total pengembalian",rp(tagih(l))]];
+  var H=212+84+42+info.length*40+30+44+I.length*RH+30+4*44+150+(lunas?0:50);
+  var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W;c.height=H;x.fillStyle="#fff";x.fillRect(0,0,W,H);
+  var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
+  x.fillStyle=U;x.fillRect(0,0,W,212);
+  if(ada){x.save();x.beginPath();x.arc(90,75,54,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,36,21,108,108);x.restore()}
+  x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px sans-serif";x.fillText("HULUSATRIA MADANI",ada?168:40,74);
+  x.fillStyle="#F3D9DE";x.font="20px sans-serif";x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
+  x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold 28px sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText("KARTU ANGSURAN",W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
+  var y=212;if(STRUK_REK){x.fillStyle=B;x.fillRect(0,y,W,84);x.fillStyle=U;x.textAlign="left";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,y+28);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,y+64);y+=84}
+  y+=20;var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
+  x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";x.fillText("Per "+tgl(today())+" pukul "+z(d.getHours())+":"+z(d.getMinutes()),W/2,y+14);y+=62;
+  info.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);y+=40});
+  y+=10;var cx=[40,100,290,450,W-40];
+  x.fillStyle=U;x.fillRect(30,y,W-60,44);x.fillStyle="#fff";x.font="bold 19px sans-serif";x.textAlign="left";x.fillText("Ke",cx[0]+8,y+29);x.fillText("Jatuh bayar",cx[1],y+29);x.fillText("Tgl bayar",cx[3],y+29);x.textAlign="right";x.fillText("Angsuran",cx[2]+130,y+29);x.fillText("Status",cx[4],y+29);y+=44;
+  I.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(30,y,W-60,RH)}
+    x.font="19px sans-serif";x.fillStyle="#222";x.textAlign="left";x.fillText(String(r.ke),cx[0]+8,y+27);x.fillText(tgl(r.tg),cx[1],y+27);x.fillText(r.tb?tgl(r.tb):"-",cx[3],y+27);
+    x.textAlign="right";x.fillText(rp(r.amt).replace("Rp ",""),cx[2]+130,y+27);
+    var st,col;if(r.sisa<=0){st="✓ Lunas";col="#2E8B57"}else if(r.by>0){st=r.telat>0?"Kurang":"Sebagian";col=r.telat>0?"#C0392B":"#B8860B"}else if(r.telat>0){st="Telat "+r.telat+" hr";col="#C0392B"}else if(r.telat==0){st="Hari ini";col="#C0392B"}else{st="Belum";col="#999"}
+    x.fillStyle=col;x.font="bold 18px sans-serif";x.fillText(st,cx[4],y+27);y+=RH});
+  x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(30,y-I.length*RH-44,W-60,I.length*RH+44);y+=40;
+  var sum=[["Total sudah dibayar",rp(dibayar(l)),false],["Sisa pinjaman",rp(sisa),true],["Denda berjalan",rp(dend),false],["Angsuran lunas",I.filter(function(r){return r.sisa<=0}).length+" dari "+I.length,false]];
+  sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);y+=44});
+  x.textAlign="center";
+  if(!lunas){x.fillStyle=U;x.font="italic 19px sans-serif";x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-150);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-124)}
+  else{x.fillStyle="#2E8B57";x.font="bold 30px sans-serif";x.fillText("PINJAMAN LUNAS",W/2,H-120)}
+  x.fillStyle=U;x.font="bold 22px sans-serif";x.fillText("Konfirmasi: 0822-3484-1989 (WA/telepon)",W/2,H-75);
+  x.fillStyle="#999";x.font="18px sans-serif";x.fillText("Kartu ini dibuat otomatis oleh aplikasi KSP Hulusatria",W/2,H-38);
+  return c}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-kartu]");if(!b)return;
+  var l=LOAN.filter(function(q){return q.id==b.dataset.kartu})[0];if(!l)return;
+  try{var c=kartuGambar(l);strukLihat({no:"Kartu-"+l.id,nama:l.nama,total:sisaP(l)},c.toDataURL("image/png"),"Kartu angsuran "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
+    document.getElementById("strukJ").textContent="Kartu angsuran · "+l.nama}catch(err){console.error(err)}});
 function strukWA(l,p){
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
