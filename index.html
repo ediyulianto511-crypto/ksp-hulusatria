@@ -1650,7 +1650,7 @@ function kartuGambar(l){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
   var dend=dendaB(l,today()),sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var W=720,RH=40,info=[["Nama",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Pinjaman ke-",pinUrut(l)+" dari "+LOAN.filter(function(q){return q.no==l.no}).length],["Status",pinStatus(l)],["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Plafon",rp(+l.pokok||0)],["Tenor",l.tenor+" kali"],["Angsuran per "+per,rp(+l.ang||0)],["Total pengembalian",rp(tagih(l))]];
-  var H=212+84+42+info.length*40+30+44+I.length*RH+30+7*44+30+150+(lunas?0:50);
+  var H=212+84+42+info.length*40+30+78+Math.ceil(I.length/2)*RH+30+7*44+30+150+(lunas?0:50);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
@@ -1662,15 +1662,26 @@ function kartuGambar(l){
   y+=20;var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
   x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";var PL=PAY.filter(function(q){return q.id==l.id}).sort(function(a,b){return (a.tg+(a.jam||""))<(b.tg+(b.jam||""))?-1:1}).pop();x.fillText(PL?"Angsuran terakhir diinput: "+tgl(PL.tg)+(PL.jam?" pukul "+PL.jam:""):"Belum ada angsuran masuk",W/2,y+14);y+=62;
   info.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);y+=40});
-  y+=10;var cx=[40,100,290,450,W-40];
-  x.fillStyle=U;x.fillRect(30,y,W-60,44);x.fillStyle="#fff";x.font="bold 19px sans-serif";x.textAlign="left";x.fillText("Ke",cx[0]+8,y+29);x.fillText("Jatuh bayar",cx[1],y+29);x.fillText("Tgl bayar",cx[3],y+29);x.textAlign="right";x.fillText("Jumlah bayar",cx[2]+130,y+29);x.fillText("Metode",cx[4],y+29);y+=44;
-  I.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(30,y,W-60,RH)}
-    x.font="19px sans-serif";x.fillStyle="#222";x.textAlign="left";x.fillText(String(r.ke),cx[0]+8,y+27);
-    if(r.pd>0){x.fillText(tgl(r.tg),cx[1],y+27);x.fillText(tgl(r.tb),cx[3],y+27);
-      x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),cx[2]+130,y+27);
-      x.fillStyle="#222";x.font="bold 18px sans-serif";x.fillText(r.mt.length?r.mt.join(" + "):"-",cx[4],y+27)}
-    y+=RH});
-  x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(30,y-I.length*RH-44,W-60,I.length*RH+44);y+=40;
+  // Tabel angsuran dua lajur berjejar (kiri: ke-1 s/d separuh, kanan: sisanya).
+  y+=10;var hN=Math.ceil(I.length/2),GW=(W-70)/2,b5=[0,24,93,166,240,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
+  [0,1].forEach(function(g){var X=30+g*(GW+10),yy=y;if(g&&I.length<2)return;
+    // Kepala tabel 78 px: "Tanggal" di atas, dipecah jadi Jatuh bayar | Pembayaran.
+    var cm=function(k){return X+(b5[k]+b5[k+1])/2};
+    x.fillStyle=U;x.fillRect(X,yy,GW,78);x.fillStyle="#fff";x.textAlign="center";x.font="bold 13px sans-serif";
+    x.fillText("Ke",cm(0),yy+44);x.fillText("Tanggal",X+(b5[1]+b5[3])/2,yy+26);
+    x.fillStyle="rgba(255,255,255,.5)";x.fillRect(X+b5[1]+6,yy+38,b5[3]-b5[1]-12,1);x.fillStyle="#fff";
+    x.font="bold 11px sans-serif";x.fillText("Jatuh bayar",cm(1),yy+60);x.fillText("Pembayaran",cm(2),yy+60);
+    x.font="bold 13px sans-serif";x.fillText("Setoran",cm(3),yy+28);x.fillText("pinjaman",cm(3),yy+46);x.font="12px sans-serif";x.fillText("(Rp)",cm(3),yy+64);
+    x.font="bold 13px sans-serif";x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+54);yy+=78;
+    var L=I.slice(g*hN,g*hN+hN);
+    L.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(X,yy,GW,RH)}
+      x.font="14px sans-serif";x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),X+12,yy+26);
+      if(r.pd>0){x.fillText(tgP(r.tg),X+(b5[1]+b5[2])/2,yy+26);x.fillText(tgP(r.tb),X+(b5[2]+b5[3])/2,yy+26);
+        x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-8,yy+26);
+        x.textAlign="center";x.fillStyle="#222";x.font="bold 13px sans-serif";x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
+      yy+=RH});
+    x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(X,y,GW,78+hN*RH)});
+  y+=78+hN*RH+40;
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
     rumus=hk?hk+" hari × "+pct+"% × "+(TL.some(function(r){return r.by>0})?"sisa angsuran yang belum dibayar":rp(+l.ang||0)):"";
