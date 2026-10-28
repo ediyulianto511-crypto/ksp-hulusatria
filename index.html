@@ -1678,7 +1678,7 @@ function kartuGambar(l){
   y+=20;var d=new Date(),z=function(n){return String(n).padStart(2,"0")};
   x.textAlign="center";x.fillStyle="#555";x.font="20px sans-serif";var PL=PAY.filter(function(q){return q.id==l.id}).sort(function(a,b){return (a.tg+(a.jam||""))<(b.tg+(b.jam||""))?-1:1}).pop();x.fillText(PL?"Angsuran terakhir diinput: "+tgl(PL.tg)+(PL.jam?" pukul "+PL.jam:""):"Belum ada angsuran masuk",W/2,y+14);y+=62;
   // Data anggota (2 baris pertama) dipisah garis dari data pinjaman.
-  var judul=function(t){x.textAlign="left";x.fillStyle=U;x.font="bold 16px sans-serif";if("letterSpacing" in x)x.letterSpacing="1.5px";x.fillText(t,50,y);if("letterSpacing" in x)x.letterSpacing="0px";y+=36};
+  var judul=function(t){x.textAlign="center";x.fillStyle="#111";x.font="bold 21px sans-serif";if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(t,W/2,y);if("letterSpacing" in x)x.letterSpacing="0px";y+=36};
   judul("DATA ANGGOTA");
   info.forEach(function(r,i){if(i==4){y+=2;x.fillStyle="#E3D3D7";x.fillRect(40,y-22,W-80,2);y+=26;judul("DATA PINJAMAN")}
     x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px sans-serif";x.fillText(String(r[1]),W-50,y);
