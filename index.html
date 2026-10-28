@@ -1709,7 +1709,7 @@ function kartuGambar(l){
   var setor=PAY.filter(function(q){return q.id==l.id&&!/^Pelunasan top up/.test(q.ket||"")}).reduce(function(s,q){return s+(+q.jml||0)+(+q.denda||0)},0),
     sim=(function(){try{return Math.max(0,+saldoSim(l.no)||0)}catch(e){return 0}})(),tup=sisa+dend,cls=Math.max(0,tup-sim);
   var sum=[["Denda berjalan",rp(dbyr+dend),false,rumus],["Denda terbayar",rp(dbyr),false],["Sisa denda",rp(dend),false],["Jumlah setoran masuk",rp(setor),false],
-    ["Saldo top up",rp(tup),false,"pokok + bunga + denda − setoran masuk"],["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo top up − simpanan anggota"]];
+    ["Saldo top up",rp(tup),false,"pokok + bunga + denda − setoran masuk"],["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"pokok + bunga + denda − setoran masuk − simpanan anggota"]];
   sum.forEach(function(r){x.textAlign="left";x.fillStyle="#666";x.font="22px sans-serif";x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font=(r[2]?"bold 26px":"23px")+" sans-serif";x.fillText(r[1],W-50,y);
     if(r[3]){x.fillStyle="#999";x.font="italic 17px sans-serif";x.fillText("("+r[3]+")",W-50,y+28);y+=30}y+=44});
   x.textAlign="center";
