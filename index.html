@@ -1572,13 +1572,13 @@ function strukGambar(d){
     if(ada){x.save();x.beginPath();x.arc(90,75,54,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,36,21,108,108);x.restore()}else tx=40;
     x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px sans-serif";x.fillText("HULUSATRIA MADANI",ada?168:40,74);
     x.fillStyle="#F3D9DE";x.font="20px sans-serif";x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
-    x.fillStyle=K.b;x.fillRect(0,150,W,62);x.fillStyle=K.u;x.fillRect(0,210,W,2);x.textAlign="center";x.font="bold "+(d.jenis.length>24?"22px":"28px")+" sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText(d.jenis,W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
+    x.fillStyle=K.u;x.fillRect(0,150,W,62);x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold "+(d.jenis.length>24?"22px":"28px")+" sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText(d.jenis,W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
   }else{
   x.fillStyle="#2E2A2B";x.fillRect(0,0,W,164);x.fillStyle="#F28C28";x.fillRect(0,164,W,6);
   if(ada){x.save();x.beginPath();x.arc(95,82,58,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,37,24,116,116);x.restore()}
   x.fillStyle="#fff";x.textAlign="left";x.font="bold 34px sans-serif";x.fillText("KSP HULUSATRIA MADANI",tx,76);
   x.fillStyle="#F28C28";x.font="bold "+(d.jenis.length>24?"20px":"24px")+" sans-serif";if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(d.jenis,tx+2,120);if("letterSpacing" in x)x.letterSpacing="0px";}
-  var o=hh;if(STRUK_REK){x.fillStyle=K.b;x.fillRect(0,170+hh,W,84);x.fillStyle=K.u;x.textAlign="center";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",W/2,198+hh);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-40&&fs>12);x.fillText(STRUK_REK,W/2,234+hh);o=84+hh}
+  var o=hh;if(STRUK_REK){x.fillStyle=K.b;x.fillRect(0,170+hh,W,84);x.fillStyle=K.u;x.textAlign="left";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,198+hh);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,234+hh);x.textAlign="center";o=84+hh}
   x.fillStyle="#555";x.font="22px sans-serif";x.fillText("No. "+d.no,W/2,205+o);x.fillStyle="#222";x.font="bold 24px sans-serif";x.fillText(tgl(d.tg)+(d.jam?"  ·  pukul "+d.jam:""),W/2,240+o);
   var y=275+o;function garis(){x.strokeStyle="#ccc";x.setLineDash([8,6]);x.beginPath();x.moveTo(40,y);x.lineTo(W-40,y);x.stroke();x.setLineDash([]);y+=45}
   function baris(k,v,b){x.textAlign="left";x.fillStyle="#666";x.font="24px sans-serif";x.fillText(k,50,y);
