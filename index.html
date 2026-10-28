@@ -584,16 +584,13 @@ function dendaB(l,asOf){var sp=sisaP(l),pct=dendaPct(l);if(sp<=0||pct<=0||!asOf)
   return Math.max(0,Math.round(acc))}
 function lunasOf(l,asOf){return sisaP(l)+dendaB(l,asOf)}
 function saldoLalu(no,asOf){return aktifPin(no).reduce(function(a,l){return a+lunasOf(l,asOf)},0)}
-function tupPct(){var v=REG.m&&REG.m.mg&&REG.m.mg.tup;return (v===""||v==null)?null:+v}
 function pctTx(x){return String(x).replace(".",",")}
-function tupBatas(l){var p=tupPct();return p==null?null:Math.round(l.pokok*p/100)}
 /* Syarat top up per kolektibilitas: Kol 1 dan Kol 2 punya batas saldo top up (% dari plafon), Kol 3 ke atas dikunci. */
 var TKDEF={k1:30,k2:10};
 function tkPct(n){var T=REG.tk||TKDEF,v=T["k"+n];return (v===""||v==null)?null:+v}
 function tupBlok(no,asOf){var R=[];aktifPin(no).forEach(function(l){var ko=kolOf(l,asOf),n=ko?ko.n:1,s=lunasOf(l,asOf);
     if(n>=3){R.push({l:l,n:n,kunci:true,s:s});return}
     var B=[],pk=tkPct(n);if(pk!=null)B.push({b:Math.round(l.pokok*pk/100),t:KOL[n][0]+" maksimal "+pctTx(pk)+"% dari plafon"});
-    if((l.model||"bl")=="mg"&&tupPct()!=null)B.push({b:tupBatas(l),t:"Mingguan maksimal "+pctTx(tupPct())+"% dari plafon"});
     if(!B.length)return;var m=B.reduce(function(a,x){return x.b<a.b?x:a});if(s>m.b)R.push({l:l,n:n,s:s,b:m.b,t:m.t})});
   return R}
 function tupMsg(L,asOf){return "Belum bisa top up. "+L.map(function(x){var l=x.l;return x.kunci?l.id+" berstatus "+KOL[x.n][0]+" ("+KOL[x.n][1]+"): top up dikunci untuk Kol 3 ke atas, tunggakan harus dibereskan dulu":l.id+" ("+KOL[x.n][0]+", plafon "+rp(l.pokok)+"): saldo top up "+rp(x.s)+", batas "+rp(x.b)+" ("+x.t+"), kurang setor "+rp(x.s-x.b)}).join("; ")+"."}
@@ -909,7 +906,7 @@ function regPage(){
       return '<tr><td>Kategori '+(i+1)+'</td>'+inp("min","Dari (Rp)",fmtRp(v("min")),"numeric")+inp("max","Sampai (Rp)",fmtRp(v("max")),"numeric")+inp("prov","%",v("prov"))+inp("asr","%",v("asr"))+(pw?inp("wajib","%",v("wajib")):"")+
       nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+dis+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
     return '<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
-    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi plafon, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori plafon.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Plafon dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Tenor (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="mg"?'<div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px"><label for="r_mg_tup" style="margin:0 0 6px">Batas top up: saldo lalu maksimal (% dari plafon)</label><div class="field" style="max-width:220px"><input id="r_mg_tup" type="text" inputmode="decimal" placeholder="contoh 25" value="'+((REG.m&&REG.m.mg&&REG.m.mg.tup!=null)?REG.m.mg.tup:"")+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">%</span></div><p class="mutp">Contoh: plafon Rp1.000.000 dengan batas 25% berarti saldo lalu harus Rp250.000 atau kurang baru bisa top up. Di atas itu, angsuran harus masuk dulu. Kosongkan bila tanpa batas.</p></div>':"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari plafon saat realisasi.</p>':"")+'</div>'}).join("")+
+    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi plafon, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori plafon.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Plafon dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Tenor (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari plafon saat realisasi.</p>':"")+'</div>'}).join("")+
     tkPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau plafonnya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
   flash="";return h;
 }
@@ -934,7 +931,6 @@ function bindReg(){
         if(dd<0||dd>=100){er=K+"denda harian tidak valid.";return}
         rg.forEach(function(q){if(n1<=q[1]&&n2>=q[0])er=K+"rentang plafon tumpang tindih dengan kategori lain."});if(er)return;
         rg.push([n1,n2]);r.tier.push({min:n1,max:n2,prov:a?pa:"",asr:b?pb:"",wajib:c?pc:"",ns:nn,n:nn[0],bunga:bb,basis:bs||"total",denda:dn?dd:""})}
-      if(k=="mg"&&!er){var te=$("#r_mg_tup"),tp=te?te.value.trim():"";if(tp){var tv=num(tp);if(!(tv>0&&tv<=100)){er="Batas top up Mingguan harus lebih dari 0 dan paling besar 100%.";return}r.tup=tv}else r.tup=""}
       M[k]=r});
     var TK={};if(!er)[1,2].forEach(function(n){if(er)return;var e=$("#r_tk"+n),v=e?e.value.trim():"";if(!v){TK["k"+n]="";return}var x=num(v);if(!(x>0&&x<=100)){er="Syarat top up Kol "+n+" harus lebih dari 0 dan paling besar 100%.";return}TK["k"+n]=x});
     if(er){o.className="err";o.textContent=er;return}
