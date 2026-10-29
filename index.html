@@ -1699,6 +1699,8 @@ mulaiSB();
 var STRUK_REK="BRI · No. Rek 0004-01-002422-30-7 · a.n. KSP Hulusatria Madani";
 // Model kepala struk: 9 = abu gelap + oranye, 4 = merah marun + pita judul.
 var STRUK_MODEL=4;
+// Kirim struk otomatis ke WA lewat Fonnte. Ubah ke true setelah Fonnte & nomor WA kantor siap.
+var STRUK_AUTO=false;
 // Skala gambar: 1,75 x 720 = 1260 piksel, cukup tajam dicetak selebar 15-17 cm.
 var STRUK_S=1.75;
 // Lebar cetak Buku angsuran dipatenkan 15 cm (tinggi mengikuti isi).
@@ -1850,13 +1852,14 @@ function strukWA(l,p){
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
     var cv=strukGambar(d),url=cv.toDataURL("image/png"),img=url.split(",")[1];
-    if(hp.length<9){strukLihat(d,url,"Belum terkirim otomatis: nomor HP "+d.nama+" belum diisi di data anggota.");return}
+    if(!STRUK_AUTO){strukLihat(d,url,"Silakan bagikan struk ini ke WA anggota secara manual, atau simpan gambarnya.");return}
+    if(hp.length<9){strukLihat(d,url,"Nomor HP "+d.nama+" belum diisi di data anggota. Silakan bagikan struk secara manual.");return}
     var cap=(d.top?"Pinjaman lalu "+d.pinjaman+" sudah LUNAS melalui top up. ":d.lunas?"Pinjaman "+d.pinjaman+" sudah LUNAS. ":"Pembayaran "+d.ket.toLowerCase()+" "+d.pinjaman+" sudah kami terima. ")+(d.jam?"Waktu: "+tgl(d.tg)+" pukul "+d.jam+". ":"")+"Terima kasih, "+d.nama+". – KSP Hulusatria Madani";
     var go=function(tok){return fetch("/api/kirim-struk",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},
       body:JSON.stringify({target:hp,caption:cap,nama:"Struk-"+d.no+".png",image:img})}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok)throw new Error(j.error||("HTTP "+r.status));return j})})};
     var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
     sesi.then(go).then(function(){strukInfo("Struk terkirim ke WA "+d.nama+" ("+d.hp+").")})
-      .catch(function(e){strukLihat(d,url,/Fonnte belum dipasang/.test(e.message)?"Pengiriman otomatis ke WA belum aktif (Fonnte belum dipasang).":"Gagal terkirim otomatis ke WA: "+e.message)});
+      .catch(function(e){console.warn("Kirim struk:",e.message);strukLihat(d,url,"Struk belum terkirim otomatis ke WA. Silakan bagikan secara manual.")});
   }catch(e){console.error(e)}
 }
 </script>
