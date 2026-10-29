@@ -934,7 +934,8 @@ function bindPin(){
       if(m){o.className="err";o.textContent=m;return}
       var id="PJ-"+String(LOAN.reduce(function(a,x){var m=/^PJ-(\d+)$/.exec(x.id||"");return m?Math.max(a,+m[1]):a},0)+1).padStart(4,"0");
       LOAN.push({nik:a.nik||"",mkt:$("#pmk").value,kat:r.t.i,model:pinModel,jam:jam,id:id,no:no,nama:a.nama,tg:tg,pokok:v,tenor:r.n,bunga:r.r.bunga,basis:r.r.basis,prov:r.prov,asr:r.asr,wj:r.wj,bm:r.bm,bt:r.bt,tot:r.tot,bersih:r.bersih,lalu:lalu,laluDenda:ld,lunasi:LA.map(function(l){return l.id}),ang:r.ang,denda:r.r.denda});
-      LA.forEach(function(l){var pb=potB(l,tg),pT=strukMeta({id:l.id,tg:tg,jml:sisaP(l)-pb,pb:pb,denda:dendaB(l,tg),ket:"Pelunasan top up dari "+id});PAY.push(pT);setTimeout(function(){strukWA(l,pT)},0)});
+      LA.forEach(function(l){var pb=potB(l,tg),pT=strukMeta({id:l.id,tg:tg,jml:sisaP(l)-pb,pb:pb,denda:dendaB(l,tg),ket:"Pelunasan top up dari "+id});PAY.push(pT)});
+      if(LA.length){var nL=LOAN[LOAN.length-1],pC=strukMeta({cair:1,tg:tg});nL.sns=pC.ns;setTimeout(function(){strukWA(nL,pC)},0)}
       var dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});LOAN[LOAN.length-1].docs=dk;PDOC={};lastPJ=id;
       if(r.wj>0)TX.push({no:no,nama:a.nama,jenis:"Simpanan wajib",tipe:"masuk",jml:r.wj,tg:tg,ket:"Potongan otomatis dari pinjaman "+id});
       flash="Pinjaman "+id+" ("+MODEL[pinModel].n+") untuk "+a.nama+" berhasil direalisasi."+(lalu?" Saldo lalu "+rp(lalu)+" ("+LA.map(function(l){return l.id}).join(", ")+") dilunasi.":"")+" Terima bersih "+rp(r.bersih-lalu)+", angsuran "+rp(r.ang)+" per kali.";
@@ -1718,14 +1719,19 @@ function strukMeta(p){var d=new Date(),z=function(n){return String(n).padStart(2
   p.ns="ST-"+String(d.getFullYear()).slice(2)+z(d.getMonth()+1)+z(d.getDate())+"-"+z(d.getHours())+z(d.getMinutes())+z(d.getSeconds())+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
   p.ptg=(typeof PROF!="undefined"&&PROF)?((PROF.nama||PROF.hp||"")+(PROF.jabatan?" · "+PROF.jabatan:"")):"";return p}
 function strukNo(p){if(p.ns)return p.ns;var i=PAY.indexOf(p);return "ST-"+String(p.tg||"").replace(/-/g,"")+"-"+String(i+1).padStart(4,"0")}
-function strukData(l,p){
+/* Bukti pencairan top up: rincian pinjaman baru, potongan, pelunasan pinjaman lalu, dan terima bersih. */
+function strukCair(l,p){var a=MEM.filter(function(d){return d.no==l.no})[0]||{},m=mdl(l);
+  return {cair:1,no:p.ns||l.sns||("CR-"+l.id),jenis:"BUKTI PENCAIRAN TOP UP",nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,tg:p.tg||l.tg,jam:p.jam||l.jam||"",ptg:p.ptg||"",
+    pola:m.n,per:m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan",plafon:+l.pokok||0,tenor:+l.tenor||0,ang:+l.ang||0,
+    pot:(l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0),lalu:+l.lalu||0,lunasi:(l.lunasi||[]).join(", "),terima:terimaOf(l),total:terimaOf(l),hp:String(a.hp||"")}}
+function strukData(l,p){if(p.cair)return strukCair(l,p);
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var top=/^Pelunasan top up/.test(p.ket||""),mT=top&&/dari (\S+)/.exec(p.ket||"");
   return {no:strukNo(p),jenis:top?"TOP UP · PELUNASAN PINJAMAN LALU":(lunas||/^Pelunasan/.test(p.ket||""))?"PELUNASAN PINJAMAN":"PEMBAYARAN ANGSURAN",top:top,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,
     tg:p.tg,jam:p.jam||"",ptg:p.ptg||"",ket:top?"Pelunasan pinjaman lalu":lunas?"Pelunasan pinjaman":(p.ket||"Angsuran").replace(/ke-(\d+)$/,"ke-$1 dari "+l.tenor),plafon:+l.pokok||0,tenor:+l.tenor||0,pola:(function(){try{return mdl(l).n}catch(e){return ""}})(),per:(function(){try{var m=mdl(l);return m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan"}catch(e){return "bulan"}})(),ang:+l.ang||0,baru:mT?mT[1]:"",jml:p.jml||0,denda:p.denda||0,total:(p.jml||0)+(p.denda||0),sisa:sisa,lunas:lunas,hp:String(a.hp||"")};
 }
 function strukGambar(d){
-  var W=720,c=document.createElement("canvas"),x=c.getContext("2d"),H=(d.lunas?1020:910)+(d.ptg?52:0)+(d.baru?52:0)+(d.plafon?52:0)+(d.pola?52:0)+(STRUK_REK?84:0)+(d.lunas?0:60)+(d.tenor?52:0)+(d.ang?52:0)+(d.denda?52:0);c.width=W;c.height=H;
+  var W=720,c=document.createElement("canvas"),x=c.getContext("2d"),H=d.cair?690+52*6+(d.ptg?52:0)+(d.pot?52:0)+(STRUK_REK?84:0):(d.lunas?1020:910)+(d.ptg?52:0)+(d.baru?52:0)+(d.plafon?52:0)+(d.pola?52:0)+(STRUK_REK?84:0)+(d.lunas?0:60)+(d.tenor?52:0)+(d.ang?52:0)+(d.denda?52:0);c.width=W;c.height=H;
   x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var K=STRUK_MODEL==4?{u:"#7A3E4B",b:"#F3E6E9"}:{u:"#2E2A2B",b:"#F6F2EF"},hh=STRUK_MODEL==4?42:0;H+=hh;c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0,tx=ada?180:40;
@@ -1745,6 +1751,10 @@ function strukGambar(d){
   function baris(k,v,b){x.textAlign="left";x.fillStyle="#666";x.font="24px "+SERIF;x.fillText(k,50,y);
     x.textAlign="right";x.fillStyle="#222";x.font=(b?"bold 28px":"26px")+" "+SERIF;
     var s=String(v);while(x.measureText(s).width>440&&s.length>3)s=s.slice(0,-2);x.fillText(s,W-50,y);y+=52}
+  if(d.cair){garis();baris("Nama",d.nama);baris("No. anggota",d.nomor);baris("No. pinjaman baru",d.pinjaman);baris("Tipe pinjaman","Pinjaman "+d.pola);baris("Jangka waktu",d.tenor+" kali");baris("Angsuran per "+(d.per||"bulan"),rp(d.ang));if(d.lunasi)baris("Pinjaman lalu dilunasi",d.lunasi);if(d.ptg)baris("Petugas",d.ptg);
+    garis();baris("Realisasi pinjaman",rp(d.plafon));if(d.pot)baris("Potongan (provisi, dll.)","− "+rp(d.pot));baris("Pelunasan saldo lalu","− "+rp(d.lalu));baris("Terima bersih",rp(d.terima),true);
+    garis();x.textAlign="center";x.fillStyle=K.u;x.font="bold 26px "+SERIF;x.fillText("Bukti pencairan sah · Terima kasih",W/2,H-70);
+    x.fillStyle="#999";x.font="20px "+SERIF;x.fillText("Simpan bukti ini. No. tercatat di sistem KSP Hulusatria",W/2,H-35);return c}
   garis();baris("Nama",d.nama);baris("No. anggota",d.nomor);baris("No. pinjaman",d.pinjaman);if(d.pola)baris("Tipe pinjaman","Pinjaman "+d.pola);if(d.plafon)baris("Realisasi pinjaman",rp(d.plafon));if(d.tenor)baris("Jangka waktu",d.tenor+" kali");if(d.ang)baris("Angsuran per "+(d.per||"bulan"),rp(d.ang));baris("Keterangan",d.ket);if(d.baru)baris("Lewat top up",d.baru);if(d.ptg)baris("Petugas",d.ptg);
   garis();baris("Pokok + bunga",rp(d.jml));if(d.denda)baris("Denda",rp(d.denda));baris("Total dibayar",rp(d.total),true);
   if(!d.lunas)baris("Sisa pinjaman",rp(d.sisa));
@@ -1856,7 +1866,7 @@ function strukWA0(l,p){
     var cv=strukGambar(d),url=cv.toDataURL("image/png"),img=url.split(",")[1];
     if(!STRUK_AUTO){strukLihat(d,url,"Silakan bagikan struk ini ke WA anggota secara manual, atau simpan gambarnya.");return}
     if(hp.length<9){strukLihat(d,url,"Nomor HP "+d.nama+" belum diisi di data anggota. Silakan bagikan struk secara manual.");return}
-    var cap=(d.top?"Pinjaman lalu "+d.pinjaman+" sudah LUNAS melalui top up. ":d.lunas?"Pinjaman "+d.pinjaman+" sudah LUNAS. ":"Pembayaran "+d.ket.toLowerCase()+" "+d.pinjaman+" sudah kami terima. ")+(d.jam?"Waktu: "+tgl(d.tg)+" pukul "+d.jam+". ":"")+"Terima kasih, "+d.nama+". – KSP Hulusatria Madani";
+    var cap=(d.cair?"Pinjaman top up "+d.pinjaman+" sudah dicairkan. Terima bersih "+rp(d.terima)+" setelah dipotong pelunasan pinjaman lalu"+(d.lunasi?" ("+d.lunasi+", sekarang LUNAS)":"")+". ":d.top?"Pinjaman lalu "+d.pinjaman+" sudah LUNAS melalui top up. ":d.lunas?"Pinjaman "+d.pinjaman+" sudah LUNAS. ":"Pembayaran "+d.ket.toLowerCase()+" "+d.pinjaman+" sudah kami terima. ")+(d.jam?"Waktu: "+tgl(d.tg)+" pukul "+d.jam+". ":"")+"Terima kasih, "+d.nama+". – KSP Hulusatria Madani";
     var go=function(tok){return fetch("/api/kirim-struk",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},
       body:JSON.stringify({target:hp,caption:cap,nama:"Struk-"+d.no+".png",image:img})}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok)throw new Error(j.error||("HTTP "+r.status));return j})})};
     var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
