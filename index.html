@@ -1731,29 +1731,29 @@ function strukGambar(d){
   var ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0,tx=ada?180:40;
   if(STRUK_MODEL==4){x.fillStyle=K.u;x.fillRect(0,0,W,150);
     if(ada){x.save();x.beginPath();x.arc(90,75,54,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,36,21,108,108);x.restore()}else tx=40;
-    x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px sans-serif";x.fillText("HULUSATRIA MADANI",ada?168:40,74);
-    x.fillStyle="#F3D9DE";x.font="20px sans-serif";x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
-    x.fillStyle=K.u;x.fillRect(0,150,W,62);x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold "+(d.jenis.length>24?"22px":"28px")+" sans-serif";if("letterSpacing" in x)x.letterSpacing="3px";x.fillText(d.jenis,W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
+    x.fillStyle="#fff";x.textAlign="left";x.font="bold 38px "+SERIF;x.fillText("HULUSATRIA MADANI",ada?168:40,74);
+    x.fillStyle="#F3D9DE";x.font="20px "+SERIF;x.fillText("Koperasi Simpan Pinjam (KSP)",ada?170:42,108);
+    x.fillStyle=K.u;x.fillRect(0,150,W,62);x.fillStyle="rgba(255,255,255,.55)";x.fillRect(40,150,W-80,1.5);x.fillStyle="#fff";x.textAlign="center";x.font="bold "+(d.jenis.length>24?"22px":"28px")+" "+SERIF;if("letterSpacing" in x)x.letterSpacing="3px";x.fillText(d.jenis,W/2,192);if("letterSpacing" in x)x.letterSpacing="0px";
   }else{
   x.fillStyle="#2E2A2B";x.fillRect(0,0,W,164);x.fillStyle="#F28C28";x.fillRect(0,164,W,6);
   if(ada){x.save();x.beginPath();x.arc(95,82,58,0,Math.PI*2);x.fillStyle="#fff";x.fill();x.clip();x.drawImage(STRUK_LOGO,37,24,116,116);x.restore()}
-  x.fillStyle="#fff";x.textAlign="left";x.font="bold 34px sans-serif";x.fillText("KSP HULUSATRIA MADANI",tx,76);
-  x.fillStyle="#F28C28";x.font="bold "+(d.jenis.length>24?"20px":"24px")+" sans-serif";if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(d.jenis,tx+2,120);if("letterSpacing" in x)x.letterSpacing="0px";}
-  var o=hh;if(STRUK_REK){x.fillStyle=K.b;x.fillRect(0,170+hh,W,84);x.fillStyle=K.u;x.textAlign="left";x.font="18px sans-serif";x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,198+hh);var fs=24;do{x.font="bold "+fs+"px sans-serif";fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,234+hh);x.textAlign="center";o=84+hh}
-  x.fillStyle="#555";x.font="22px sans-serif";x.fillText("No. "+d.no,W/2,205+o);x.fillStyle="#222";x.font="bold 24px sans-serif";x.fillText(tgl(d.tg)+(d.jam?"  ·  pukul "+d.jam:""),W/2,240+o);
+  x.fillStyle="#fff";x.textAlign="left";x.font="bold 34px "+SERIF;x.fillText("KSP HULUSATRIA MADANI",tx,76);
+  x.fillStyle="#F28C28";x.font="bold "+(d.jenis.length>24?"20px":"24px")+" "+SERIF;if("letterSpacing" in x)x.letterSpacing="2px";x.fillText(d.jenis,tx+2,120);if("letterSpacing" in x)x.letterSpacing="0px";}
+  var o=hh;if(STRUK_REK){x.fillStyle=K.b;x.fillRect(0,170+hh,W,84);x.fillStyle=K.u;x.textAlign="left";x.font="18px "+SERIF;x.fillText("Pembayaran hanya ke rekening resmi KSP:",40,198+hh);var fs=24;do{x.font="bold "+fs+"px "+SERIF;fs--}while(x.measureText(STRUK_REK).width>W-80&&fs>12);x.fillText(STRUK_REK,40,234+hh);x.textAlign="center";o=84+hh}
+  x.fillStyle="#555";x.font="22px "+SERIF;x.fillText("No. "+d.no,W/2,205+o);x.fillStyle="#222";x.font="bold 24px "+SERIF;x.fillText(tgl(d.tg)+(d.jam?"  ·  pukul "+d.jam:""),W/2,240+o);
   var y=275+o;function garis(){x.strokeStyle="#ccc";x.setLineDash([8,6]);x.beginPath();x.moveTo(40,y);x.lineTo(W-40,y);x.stroke();x.setLineDash([]);y+=45}
-  function baris(k,v,b){x.textAlign="left";x.fillStyle="#666";x.font="24px sans-serif";x.fillText(k,50,y);
-    x.textAlign="right";x.fillStyle="#222";x.font=(b?"bold 28px":"26px")+" sans-serif";
+  function baris(k,v,b){x.textAlign="left";x.fillStyle="#666";x.font="24px "+SERIF;x.fillText(k,50,y);
+    x.textAlign="right";x.fillStyle="#222";x.font=(b?"bold 28px":"26px")+" "+SERIF;
     var s=String(v);while(x.measureText(s).width>440&&s.length>3)s=s.slice(0,-2);x.fillText(s,W-50,y);y+=52}
   garis();baris("Nama",d.nama);baris("No. anggota",d.nomor);baris("No. pinjaman",d.pinjaman);if(d.pola)baris("Tipe pinjaman","Pinjaman "+d.pola);if(d.plafon)baris("Plafon",rp(d.plafon));if(d.tenor)baris("Tenor",d.tenor+" kali");if(d.ang)baris("Angsuran per "+(d.per||"bulan"),rp(d.ang));baris("Keterangan",d.ket);if(d.baru)baris("Lewat top up",d.baru);if(d.ptg)baris("Petugas",d.ptg);
   garis();baris("Pokok + bunga",rp(d.jml));if(d.denda)baris("Denda",rp(d.denda));baris("Total dibayar",rp(d.total),true);
   if(!d.lunas)baris("Sisa pinjaman",rp(d.sisa));
   garis();
   if(d.lunas){x.save();x.translate(W/2,y+45);x.rotate(-0.08);x.strokeStyle="#2E8B57";x.lineWidth=6;x.strokeRect(-150,-50,300,100);
-    x.fillStyle="#2E8B57";x.textAlign="center";x.font="bold 64px sans-serif";x.fillText("LUNAS",0,22);x.restore()}
-  x.textAlign="center";x.fillStyle=K.u;x.font="bold 26px sans-serif";if(!d.lunas){x.fillStyle="#7A3E4B";x.font="italic 19px sans-serif";x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-140);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-114);x.fillStyle=K.u;x.font="bold 26px sans-serif"}
+    x.fillStyle="#2E8B57";x.textAlign="center";x.font="bold 64px "+SERIF;x.fillText("LUNAS",0,22);x.restore()}
+  x.textAlign="center";x.fillStyle=K.u;x.font="bold 26px "+SERIF;if(!d.lunas){x.fillStyle="#7A3E4B";x.font="italic 19px "+SERIF;x.fillText("* Sisa pinjaman dapat berubah apabila ada",W/2,H-140);x.fillText("keterlambatan pembayaran angsuran.",W/2,H-114);x.fillStyle=K.u;x.font="bold 26px "+SERIF}
   x.fillText("Bukti pembayaran sah · Terima kasih",W/2,H-70);
-  x.fillStyle="#999";x.font="20px sans-serif";x.fillText("Simpan struk ini. No. struk tercatat di sistem KSP Hulusatria",W/2,H-35);
+  x.fillStyle="#999";x.font="20px "+SERIF;x.fillText("Simpan struk ini. No. struk tercatat di sistem KSP Hulusatria",W/2,H-35);
   return c;
 }
 var STRUK_LIHAT=null;
@@ -1848,7 +1848,9 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
   var l=LOAN.filter(function(q){return q.id==b.dataset.kartu})[0];if(!l)return;
   fontSiap().then(function(){try{var c=kartuGambar(l);strukLihat({no:"Buku-Angsuran-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku angsuran "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
     document.getElementById("strukJ").textContent="Buku angsuran · "+l.nama}catch(err){console.error(err)}})});
-function strukWA(l,p){
+// Tunggu huruf Noto Serif siap dulu supaya struk tidak tergambar dengan huruf cadangan.
+function strukWA(l,p){(typeof fontSiap=="function"?fontSiap():Promise.resolve()).then(function(){strukWA0(l,p)})}
+function strukWA0(l,p){
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
     var cv=strukGambar(d),url=cv.toDataURL("image/png"),img=url.split(",")[1];
