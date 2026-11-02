@@ -428,7 +428,7 @@ var HAKDEF={"Akuntan":["sim3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","
 "Analis Kredit":["ang2","pin1","pin2","tag1","tag2","set3"],
 "Marketing Lapangan":["ang1","ang2","pin1","tag1","tag2","set3"]},HAK={},hakJab="Akuntan";
 function hakOf(j){return HAK[j]?HAK[j]:(HAKDEF[j]||["set3"])}
-function boleh(id){if(id=="lap6"&&myCab())return false;if(id=="dash"||id=="apv"||ROLE=="Ketua (owner)")return true;if(id=="pin1"&&ROLE=="Marketing Lapangan")return true;if(id=="pin3"&&(ROLE=="Administrasi"||LVL[ROLE]))return true;if(id=="sim0"||id=="kar2"||id=="set2"||id=="set4")return false;return hakOf(ROLE).indexOf(id)>=0}
+function boleh(id){if((id=="lap6"||id=="kar3")&&myCab())return false;if(id=="dash"||id=="apv"||ROLE=="Ketua (owner)")return true;if(id=="pin1"&&ROLE=="Marketing Lapangan")return true;if(id=="pin3"&&(ROLE=="Administrasi"||LVL[ROLE]))return true;if(id=="sim0"||id=="kar2"||id=="set2"||id=="set4")return false;return hakOf(ROLE).indexOf(id)>=0}
 var OWNONLY={sim0:"khusus Ketua",kar2:"khusus Ketua",set2:"khusus Ketua",set4:"khusus Ketua"};
 function hakPage(){
   var own=ROLE=="Ketua (owner)",J=JAB.filter(function(j){return j!="Ketua (owner)"});if(J.indexOf(hakJab)<0)hakJab=J[0];
@@ -1170,7 +1170,7 @@ function apvPage(){var T=AJU.filter(function(x){return x.st=="tunggu"&&cabOk(x)}
   return '<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">'+(T.length?T.length+" ajuan menunggu"+(n?", "+n+" bisa Anda setujui":", tidak ada yang sesuai wewenang Anda")+".":"Tidak ada ajuan yang menunggu.")+' Persetujuan pinjaman berjenjang: Analis Kredit → Manager Operasional → Manager Utama → Ketua. Sampai '+rp(L.a)+' cukup Analis Kredit; sampai '+rp(L.b)+' sampai Manager Operasional; sampai '+rp(L.c)+' sampai Manager Utama; di atasnya sampai Ketua. Marketing Lapangan tanpa ajuan sampai '+rp(L.m)+' (kecuali kenaikan pinjaman). Simpanan keluar dan pengeluaran BU: Ketua, Manager Utama, atau Manager Operasional cabang. Batas bisa diubah Ketua di bagian bawah halaman ini.</p></div>'+
   T.map(ajuCard).join("")+'<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Riwayat persetujuan</h3><p>30 ajuan terakhir yang sudah diputuskan</p></div></div>'+ajuTabel(H,"Belum ada riwayat persetujuan")+'</div>'+regApvPanel(ROLE=="Ketua (owner)"?"":" disabled")}
 function simTxOf(x){return {no:x.d.no,nama:x.d.nama,jenis:x.d.jenis,tipe:"keluar",jml:x.d.jml,tg:today(),ket:x.d.ket||"",cab:x.cab,aju:x.id}}
-function buRowOf(x){return {id:BU.reduce(function(a,y){return Math.max(a,y.id)},0)+1,tg:today(),jenis:x.d.jenis,jml:x.d.jml,ket:x.d.ket||"",aju:x.id}}
+function buRowOf(x){return {id:BU.reduce(function(a,y){return Math.max(a,y.id)},0)+1,tg:today(),jenis:x.d.jenis,jml:x.d.jml,ket:x.d.ket||"",aju:x.id,cab:cabNorm(x.cab)}}
 function ajuSetuju(id){var x=ajuOf(id),m=$("#am_"+id);if(!x||x.st!="tunggu")return;var msg="",ket=($("#ar_"+id)||{}).value||"";
   if(!bisaSetuju(x)){m.textContent="Ajuan ini di luar wewenang "+ROLE+".";return}
   if(x.t=="pin"){var v=dig($("#av_"+id).value);if(v<=0)msg="Isi jumlah yang disetujui.";else if(v>x.d.v)msg="Jumlah disetujui tidak boleh lebih besar dari yang diajukan ("+rp(x.d.v)+").";else msg=cekPin({no:x.d.no,model:x.d.model,v:v,n:x.d.n,jam:x.d.jam},today());
@@ -1678,7 +1678,8 @@ function karForm(){
 var karQ="";
 function masaKerja(iso){if(!iso)return "0 Bulan";var a=new Date(iso+"T00:00:00"),n=new Date(),m=(n.getFullYear()-a.getFullYear())*12+n.getMonth()-a.getMonth()-(n.getDate()<a.getDate()?1:0);if(m<0)m=0;var y=Math.floor(m/12),b=m%12;return (y?y+" Tahun ":"")+(b||!y?b+" Bulan":"")}
 function karRows(){var q=karQ.trim().toLowerCase(),out="",vc=viewCab();KAR.forEach(function(k,i){if(q&&String(k.nama).toLowerCase().indexOf(q)<0)return;if(vc&&cabOf(k)!=vc)return;out+="<tr><td>"+(i+1)+"</td><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+ex(cabOf(k))+"</td><td>"+ex(k.hp||"-")+"</td><td>"+ex(k.nik||"-")+"</td><td>"+(k.tm?tgl(k.tm):"-")+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+"</td><td>"+(k.aktif?"Aktif":"Nonaktif")+"</td><td>"+(k.foto?'<button class="pbtn" onclick="lihatKtp(\''+k.no+'\')">Lihat</button>':"-")+'</td><td>'+(profilHp(k.hp||k.user)?"Ada":'<span style="color:#A12B3C">Belum ada</span>')+'</td><td><button class="pbtn" onclick="aturAkun('+i+')">'+(profilHp(k.hp||k.user)?"Ganti sandi":"Buat akun")+'</button> <button class="pbtn" onclick="karTog('+i+')">'+(k.aktif?"Nonaktifkan":"Aktifkan")+'</button> <button class="pbtn" onclick="karDel('+i+')">Hapus</button></td></tr>'});return out||'<tr><td colspan="12">Tidak ada karyawan yang cocok.</td></tr>'}
-function karHTML(){
+function karV(){var c=viewCab();return c?KAR.filter(function(k){return cabOf(k)==c}):KAR}
+function karHTML(){var KAR=karV();
   var jr=JAB.map(function(j){var n=KAR.filter(function(k){return k.jab==j&&k.aktif}).length;return "<tr><td>"+j+'</td><td class="num">'+n+"</td></tr>"}).join("");
   return karForm()+
   '<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Rincian karyawan</h3><p>'+KAR.length+' karyawan terdaftar</p></div><button class="pbtn" onclick="window.print()">Cetak daftar</button></div>'+
@@ -1760,12 +1761,15 @@ function kasHS(){var sim=TX.filter(function(t){return !/^Potongan otomatis/.test
   var inn=PAY.filter(kasPay).reduce(function(a,p){return a+p.jml+(p.denda||0)},0);
   return modTotal()+sim-out+inn-buTotal(BU)}
 function buCards(){
-  var B=BU.filter(buBulan),tot=buTotal(B),big=B.slice().sort(function(a,b){return b.jml-a.jml})[0],saldo=kasHS();
+  var B=buV().filter(buBulan),tot=buTotal(B),big=B.slice().sort(function(a,b){return b.jml-a.jml})[0],saldo=kasHS();
   var K=[["Total pengeluaran bulan ini",rp(tot),"Akumulasi biaya umum"],["Jumlah transaksi",String(B.length),"Transaksi bulan berjalan"],["Pengeluaran terbesar",big?rp(big.jml):"—",big?ex(big.jenis):"Belum ada rincian biaya"],["Saldo kas setelah biaya",rp(saldo),"Terhubung ke Laporan"]];
   return '<div class="panel"><div class="phead"><div><h3>Pengeluaran (Biaya Umum)</h3><p>Ringkasan biaya operasional dan rincian yang akan menjadi pengurang saldo kas pada laporan.</p></div></div><div class="grid">'+K.map(function(k,i){var n=i+1;return '<div class="k" style="--bg-c:var(--c'+n+');--tx-c:var(--t'+n+')"><div><h4>'+k[0]+'</h4></div><strong>'+k[1]+'</strong><p>'+k[2]+'</p></div>'}).join("")+'</div></div>';
 }
 function buRows(L,del){return L.map(function(x){return "<tr><td>"+tgl(x.tg)+"</td><td>"+ex(x.jenis)+"</td><td>"+ex(x.ket||"-")+'</td><td class="num">'+rp(x.jml)+"</td>"+(del?'<td class="noprint"><button class="pbtn" onclick="buDel('+x.id+')">Hapus</button></td>':"")+"</tr>"}).join("")}
-function buSorted(){return BU.slice().sort(function(a,b){return b.tg>a.tg?1:b.tg<a.tg?-1:b.id-a.id})}
+/* Cabang pengeluaran: disimpan saat dicatat; data lama dibaca dari ajuannya, kalau tidak ada dianggap cabang pusat. */
+function buCab(x){if(x.cab)return cabNorm(x.cab);var a=x.aju&&AJU.filter(function(y){return y.id==x.aju})[0];return cabNorm(a&&a.cab)}
+function buV(){var c=viewCab();return c?BU.filter(function(x){return buCab(x)==c}):BU}
+function buSorted(){return buV().slice().sort(function(a,b){return b.tg>a.tg?1:b.tg<a.tg?-1:b.id-a.id})}
 function buForm(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   return '<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Tambah biaya umum</h3><p>Pilih jenis biaya, masukkan jumlah, lalu simpan transaksi. Tanggal otomatis mengikuti waktu saat disimpan.</p></div></div><form id="buform" novalidate><div class="fg">'+
@@ -1790,8 +1794,8 @@ function bindBu(){
   f.onsubmit=function(e){e.preventDefault();var v=dig($("#bj").value),o=$("#bmsg");
     if(v<=0){o.className="err";o.textContent="Isi jumlah pengeluaran.";return}
     var id=BU.reduce(function(a,x){return Math.max(a,x.id)},0)+1,j=$("#bjn").value;
-    var x=ajuBuat("bu",myCab()||CAB[0],{jenis:j,jml:v,ket:$("#bk").value.trim()});
-    if(x.ap){x.st="selesai";BU.push({id:id,tg:today(),jenis:j,jml:v,ket:x.d.ket,aju:x.id});flash=j+" "+rp(v)+" tersimpan. Saldo kas ikut berkurang.";berhasil("Pengeluaran berhasil disimpan",flash)}
+    var x=ajuBuat("bu",viewCab()||CAB[0],{jenis:j,jml:v,ket:$("#bk").value.trim()});
+    if(x.ap){x.st="selesai";BU.push({id:id,tg:today(),jenis:j,jml:v,ket:x.d.ket,aju:x.id,cab:cabNorm(x.cab)});flash=j+" "+rp(v)+" tersimpan. Saldo kas ikut berkurang.";berhasil("Pengeluaran berhasil disimpan",flash)}
     else{flash=j+" "+rp(v)+" diajukan ("+x.id+") dan menunggu persetujuan. Kas belum berkurang.";berhasil("Pengeluaran diajukan",flash)}nav();page()};
 }
 function page(){
@@ -1804,7 +1808,7 @@ function page(){
     var bl=today().slice(0,7),RB=LOAN.filter(function(l){return !l.imp&&String(l.tg).slice(0,7)==bl&&cOk(l)}),SB=PAY.filter(function(p){return kasPay(p)&&String(p.tg).slice(0,7)==bl&&cOk(LC[p.id])}),
       AK=LOAN.filter(function(l){return sisaP(l)>0&&cOk(l)}),OS=AK.reduce(function(a,l){return a+sisaP(l)},0),NP=AK.filter(function(l){var q=kolOf(l);return q&&q.n>=3}),NPS=NP.reduce(function(a,l){return a+sisaP(l)},0),
       uq=function(L){var o={};L.forEach(function(x){o[x.no||x.id]=1});return Object.keys(o).length},sbA=uq(SB.map(function(p){var l=LOAN.filter(function(x){return x.id==p.id})[0];return {no:l?l.no:p.id}}));
-    var K=[["Saldo kas HS",(dashCab?"Semua cabang · ":"")+"Modal + angsuran masuk − realisasi − pengeluaran",rp(kasHS())],["Realisasi pinjaman",uq(RB)+" anggota bulan ini",rp(RB.reduce(function(a,l){return a+l.pokok},0))],["Setoran angsuran",sbA+" anggota setor bulan ini",rp(SB.reduce(function(a,p){return a+p.jml+(p.denda||0)},0))],["Pengeluaran",(dashCab?"Semua cabang · ":"")+BU.filter(buBulan).length+" item bulan ini",rp(buTotal(BU.filter(buBulan)))],["NPL (kemacetan)",NP.length+" pinjaman Kol 3–5 (aturan OJK)",(OS?(NPS/OS*100):0).toFixed(2).replace(".",",")+"%"],["Aset kredit · Outstanding",AK.length+" pinjaman berjalan",rp(OS)]];
+    var K=[["Saldo kas HS",(dashCab?"Semua cabang · ":"")+"Modal + angsuran masuk − realisasi − pengeluaran",rp(kasHS())],["Realisasi pinjaman",uq(RB)+" anggota bulan ini",rp(RB.reduce(function(a,l){return a+l.pokok},0))],["Setoran angsuran",sbA+" anggota setor bulan ini",rp(SB.reduce(function(a,p){return a+p.jml+(p.denda||0)},0))],["Pengeluaran",buV().filter(buBulan).length+" item bulan ini",rp(buTotal(buV().filter(buBulan)))],["NPL (kemacetan)",NP.length+" pinjaman Kol 3–5 (aturan OJK)",(OS?(NPS/OS*100):0).toFixed(2).replace(".",",")+"%"],["Aset kredit · Outstanding",AK.length+" pinjaman berjalan",rp(OS)]];
     $("#view").innerHTML="<h2>Selamat "+sapa()+", "+ex(ROLE)+".</h2><p class=\"sub\">Pantau kesehatan koperasi secara menyeluruh.</p>"+imporHTML()+apvNote()+
     '<div class="panel"><div class="phead"><div><h3>Dashboard HS GROUP</h3><p>Laporan bulan berjalan · '+bulan()+' · '+(dashCab?ex(dashCab):"Semua cabang")+'</p></div><div class="acts" style="margin:0"><button class="pbtn" onclick="window.print()">Cetak laporan dashboard</button>'+(ROLE=="Ketua (owner)"?'<button class="pbtn noprint" type="button" onclick="eksporXlsx(this)">Ekspor cadangan (Excel)</button>':'')+'<button class="pbtn noprint" type="button" id="ckbtn" aria-pressed="'+ckOpen+'" style="background:#3F9C55;color:#fff">Simulasi pinjaman</button></div></div><div id="exmsg" class="mutp noprint" role="status"></div>'+(ckOpen?cekHTML():"")+'<div class="grid k6">'+
     K.map(function(k,i){var c=KWR[i%KWR.length],d=KDT[i];return '<div class="kw" style="--kc:'+c[0]+';--kd:'+c[1]+'"><div class="kb"><strong>'+k[2]+'</strong><h4>'+k[0]+'</h4><p>'+k[1]+'</p><svg class="ki" viewBox="0 0 24 24" aria-hidden="true"><path d="'+d[1]+'"/></svg></div><button class="kl noprint" type="button" onclick="go(\''+d[0]+'\')">Lihat Detail &rarr;</button></div>'}).join("")+"</div></div>";
@@ -1939,7 +1943,7 @@ function gajiData(k,bln){var s=k.gaji&&k.gaji[bln];if(s)return {P:s.P,Q:s.Q,simp
   return {P:h.P.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""]]),Q:h.Q.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""],["",0,""]]),simpan:false}}
 function gajiTot(d){var a=d.P.reduce(function(s,x){return s+(+x[1]||0)},0),b=d.Q.reduce(function(s,x){return s+(+x[1]||0)},0);return {kotor:a,pot:b,bersih:a-b}}
 function gajiNmBln(b){return new Date(b+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"})}
-function gajiPage(){var bln=gajiBln||today().slice(0,7),K=KAR.filter(function(k){return k.aktif!==false}),T={kotor:0,pot:0,bersih:0},ed=gajiBoleh();
+function gajiPage(){var bln=gajiBln||today().slice(0,7),K=karV().filter(function(k){return k.aktif!==false}),T={kotor:0,pot:0,bersih:0},ed=gajiBoleh();
   var rows=K.map(function(k){var d=gajiData(k,bln),t=gajiTot(d);T.kotor+=t.kotor;T.pot+=t.pot;T.bersih+=t.bersih;
     return "<tr><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+'</td><td class="num">'+rp(t.kotor)+'</td><td class="num">'+rp(t.pot)+'</td><td class="num"><b>'+rp(t.bersih)+"</b></td><td>"+(d.simpan?"Tersimpan":"Hitungan otomatis")+'</td><td class="noprint" style="white-space:nowrap"><button class="pbtn" type="button" data-gk="'+ex(k.no)+'">'+(gajiNo==k.no?"Tutup":(ed?"Rincian / ubah":"Rincian"))+'</button> <button class="pbtn" type="button" data-gc="'+ex(k.no)+'">Cetak slip</button></td></tr>'}).join("");
   var h='<div class="panel"><div class="phead"><div><h3>Penghasilan karyawan · '+gajiNmBln(bln)+'</h3><p>'+K.length+' karyawan aktif · terima bersih '+rp(T.bersih)+'</p></div><button class="pbtn" onclick="window.print()">Cetak rekap gaji</button></div>'+
@@ -2001,7 +2005,7 @@ var hkBln="";
 /* Marketing pemegang anggota = marketing pinjaman terakhir anggota tersebut */
 function hkMktAng(no){var L=LOAN.filter(function(l){return l.no==no});if(!L.length)return null;L.sort(function(a,b){return a.tg<b.tg?-1:a.tg>b.tg?1:0});return L[L.length-1].mkt||""}
 function hkLunasTg(l){var t="";PAY.forEach(function(p){if(p.id==l.id&&p.tg>t)t=p.tg});return t}
-function hkData(bln){var ML=mktList(),asOf=gajiAsOf(bln),R={},key=function(m){return ML.some(function(x){return x.no==m})?m:"-"};
+function hkData(bln){var ML=mktListV(),LOAN=loanV(),MEM=memV(),asOf=gajiAsOf(bln),R={},key=function(m){return ML.some(function(x){return x.no==m})?m:"-"};
   var row=function(k){return R[k]||(R[k]={baru:{},keluar:{},tup:{},aktif:{},real:0,setor:0,kol:[0,0,0,0,0,0],os:0,npl:0})};
   ML.forEach(function(m){row(m.no)});
   LOAN.forEach(function(l){var r=row(key(l.mkt||""));
