@@ -685,7 +685,7 @@ function dibayar(l){return PAY.filter(function(x){return x.id==l.id}).reduce(fun
 /* Bunga diakui (khusus Bulanan, bunga per bulan): saat dilunasi/top up sebelum tenor habis, bunga ditagih minimal 6 kali;
    bunga = bulan berjalan + 6 bulan maju, paling banyak sebanyak tenor. Sisa bunganya dipotong (pb). */
 function bdCfg(){var r=REG.m&&REG.m.bl&&REG.m.bl.bd;if(r===false)return null;r=r||{};if(!r.v)r={};return {min:r.min==null?6:+r.min,maju:r.maju==null?6:+r.maju}}
-function bdInfo(l,tg){var c=bdCfg();if(!c||l.pt||(l.model||"bl")!="bl"||l.basis=="total"||!l.tenor)return null;
+function bdInfo(l,tg){var c=BD_AKTIF&&bdCfg();if(!c||l.pt||(l.model||"bl")!="bl"||l.basis=="total"||!l.tenor)return null;
   var bpb=(tagih(l)-l.pokok)/l.tenor;if(!(bpb>0))return null;
   var ke=jadL(l).filter(function(d){return d<=tg}).length,off=l.imp?impKe(l):0;ke+=off;
   var n=Math.min(l.tenor,Math.max(c.min,ke+c.maju)),pb=Math.max(0,Math.min(sisaP(l),Math.round((l.tenor-n)*bpb)));
@@ -699,6 +699,7 @@ function sisaPokok(l){return Math.max(0,l.pokok-pkKum(l,PAY.filter(function(x){r
 function saldoPokok(l,tg){var T=tagih(l),n=l.tenor||1,bpb=(T-l.pokok)/n,paid=PAY.filter(function(x){return x.id==l.id}).reduce(function(a,x){return a+(+x.jml||0)},0),
   pk=pkKum(l,paid),ke=Math.min(n,jadL(l).filter(function(d){return d<=tg}).length+(l.imp?impKe(l):0)),tung=Math.max(0,Math.round(ke*bpb-(paid-pk)));
   return Math.max(0,l.pokok-pk)+tung}
+var BD_AKTIF=false; // bunga diakui dimatikan (user 2-11-2026): semua pinjaman bunga flat penuh = angsuran × jangka waktu
 function potB(l,tg){var b=bdInfo(l,tg);return b?b.pb:0}
 function lunasNet(l,tg){return sisaP(l)-potB(l,tg)+dendaB(l,tg)}
 function sisaP(l){if(l.pt)return Math.max(0,(+l.pt.s||0)-ptBayar(l));return tagih(l)-dibayar(l)}
@@ -1262,7 +1263,7 @@ function regPage(){
       return '<tr><td>Kategori '+(i+1)+'</td>'+inp("min","Dari (Rp)",fmtRp(v("min")),"numeric")+inp("max","Sampai (Rp)",fmtRp(v("max")),"numeric")+inp("prov","%",v("prov"))+inp("asr","%",v("asr"))+(pw?inp("wajib","%",v("wajib")):"")+
       nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+(k=="bl"?" disabled":dis)+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
     return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt(k)+'"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
-    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi realisasi pinjaman, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori realisasi pinjaman.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Realisasi pinjaman dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Jangka waktu (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="bl"?bdPanel(dis):"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari realisasi pinjaman saat realisasi.</p>':"")+'</div>'}).join("")+
+    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi realisasi pinjaman, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori realisasi pinjaman.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Realisasi pinjaman dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Jangka waktu (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="bl"&&BD_AKTIF?bdPanel(dis):"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari realisasi pinjaman saat realisasi.</p>':"")+'</div>'}).join("")+
     regApvPanel(dis)+tkPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau realisasi pinjamannya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
   flash="";return h;
 }
@@ -2277,7 +2278,7 @@ function kartuGambar(l){
   var W=720,RH=40,kq=sisaP(l)>0?kolOf(l):null,
     info=[["Nama anggota",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Kualitas pinjaman",kq?kq.kode+" · "+kq.nama:pinStatus(l)],
       ["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Realisasi pinjaman",rp(+l.pokok||0)],["Jangka waktu",l.tenor+(m.hari==7?" minggu":m.hari==14?" × 2 minggu":" bulan")],["Jumlah angsuran",rp(+l.ang||0)+" / "+per],["Jumlah pengembalian",rp(tagih(l)-pbK),pbK?"pokok + bunga diakui "+bd.n+" kali, bertambah tiap bulan sampai "+rp(tagih(l)):"bila tidak pernah melewati jatuh bayar, tanpa denda"]];
-  var H=212+84+42+info.length*40+92+30+30+78+Math.ceil(I.length/2)*RH+30+8*44+4*30+150+(lunas?0:50)+((pbK||(l.model||"bl")=="bl"&&sisaP(l)>0)?2*44+60:0);
+  var H=212+84+42+info.length*40+92+30+30+78+Math.ceil(I.length/2)*RH+30+8*44+4*30+150+(lunas?0:50)+(pbK?2*44+60:0);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
@@ -2325,7 +2326,7 @@ function kartuGambar(l){
     sim=(function(){try{return Math.max(0,+saldoSim(l.no)||0)}catch(e){return 0}})(),tup=sisa+dend,cls=Math.max(0,tup-sim);
   var sum=[["Denda berjalan",rp(dbyr+dend),false,rumus],["Denda terbayar",rp(dbyr),false],["Sisa denda",rp(dend),false],["Jumlah setoran masuk",rp(setor),false],
     ["Saldo pinjaman",rp(sisa),false,pbK?"pokok + bunga diakui "+bd.n+" kali − (setoran masuk − denda terbayar)":"pokok + bunga − (setoran masuk − denda terbayar)"],
-    (pbK||(l.model||"bl")=="bl"&&sisaP(l)>0?(function(){var sp=Math.min(sisa,saldoPokok(l,today())),bk=Math.max(0,sisa-sp);return [["Saldo pokok",rp(sp),false,"termasuk bunga yang belum/kurang terbayar"],["Bunga diakui ke depan",rp(bk),false,Math.round(bk/Math.max(1,bd?bd.bpb:(tagih(l)-l.pokok)/(l.tenor||1)))+" × "+rp(bd?bd.bpb:Math.round((tagih(l)-l.pokok)/(l.tenor||1)))]]})():[]),["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo pinjaman + sisa denda − simpanan anggota"]];
+    (pbK?(function(){var sp=Math.min(sisa,saldoPokok(l,today())),bk=Math.max(0,sisa-sp);return [["Saldo pokok",rp(sp),false,"termasuk bunga yang belum/kurang terbayar"],["Bunga diakui ke depan",rp(bk),false,Math.round(bk/Math.max(1,bd?bd.bpb:(tagih(l)-l.pokok)/(l.tenor||1)))+" × "+rp(bd?bd.bpb:Math.round((tagih(l)-l.pokok)/(l.tenor||1)))]]})():[]),["Simpanan anggota",rp(sim),false],["Saldo pelunasan (close)",rp(cls),true,"saldo pinjaman + sisa denda − simpanan anggota"]];
   sum=[].concat.apply([],sum.map(function(r){return !r.length?[]:Array.isArray(r[0])?r:[r]}));
   // Urutan rincian versi 2 Nov 2026: Saldo pelunasan (untuk top up, simpanan tetap utuh) dan Saldo pelunasan (close, anggota keluar).
   (function(){var sb=sum.filter(function(r){return r[0]=="Saldo pinjaman"})[0]||["",rp(sisa),false,""],ex=sum.filter(function(r){return r[0]=="Saldo pokok"||r[0]=="Bunga diakui ke depan"});
