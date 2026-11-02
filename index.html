@@ -472,7 +472,7 @@ function isiKtp(r){
 }
 function formHTML(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
-  return '<div class="panel"><div class="phead"><div><h3>Input anggota baru</h3><p>Masukkan data utama sesuai identitas KTP.</p></div></div><form id="mform" novalidate>'+
+  return '<div class="panel"><div class="phead"><div><h3 id="fttl">Input anggota baru</h3><p id="fsub">Masukkan data utama sesuai identitas KTP.</p></div></div><form id="mform" novalidate>'+
   '<label class="drop" for="ktp">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>'+'<b>Unggah foto KTP</b><span>Format JPG atau PNG · Wilayah dibaca dari KTP</span></label><input class="sr" id="ktp" type="file" accept="image/*" aria-label="Unggah foto KTP"><label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
@@ -496,7 +496,7 @@ function formHTML(){
   F("frb","Bank",'<input id="frb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
   F("frn","No. rekening",'<input id="frn" type="text" inputmode="numeric" placeholder="Contoh: 0004-01-000000-30-7" autocomplete="off">')+
   F("fra","Atas nama rekening",'<input id="fra" type="text" placeholder="Nama pemilik rekening" autocomplete="off">')+
-  '</div><div id="fmsg" class="ok" role="status"></div><button class="btn" type="submit" style="max-width:260px">Simpan anggota</button><p class="mutp">Periksa data sesuai KTP sebelum menyimpan. Foto KTP ikut disimpan.</p></form></div>';
+  '</div><div id="fmsg" class="ok" role="status"></div><div class="acts" style="margin:0"><button class="btn" id="fsv" type="submit" style="max-width:260px">Simpan anggota</button><button class="lnk" id="fbatal" type="button" hidden onclick="angEditSelesai()">Batal edit</button></div><p class="mutp">Periksa data sesuai KTP sebelum menyimpan. Foto KTP ikut disimpan.</p></form></div>';
 }
 var TX=[],fSim="",simArah="masuk",simJns="Simpanan pokok",simPer="1b";
 var JNS=["Simpanan pokok","Simpanan wajib","Simpanan sukarela"];
@@ -1135,7 +1135,7 @@ var ANGH=["Nama","No HP","Saldo simpanan","Saldo pinjaman","Alamat","Kelurahan/D
 function angRows(){var q=angQ.trim().toLowerCase(),out="",ts=0,tp=0,n=0,C=ANGH.length;
   MEM.forEach(function(d){if(q&&String(d.nama).toLowerCase().indexOf(q)<0&&String(d.no).toLowerCase().indexOf(q)<0)return;n++;var a=saldoSim(d.no),b=saldoPin(d.no);ts+=a;tp+=b;
     var rb=riwBuruk(d.no),rbm=rb.reduce(function(a,x){return Math.max(a,x.n)},0),k=LOAN.filter(function(l){return l.no==d.no}).length,rtw=(d.rt||d.rw)?"RT "+(d.rt||"-")+" / RW "+(d.rw||"-"):"";
-    out+="<tr><td>"+ex(d.nama)+'<br><small class="mutp" style="margin:0">'+ex(d.no)+"</small>"+(rb.length?'<br><small style="color:#A12B3C;font-weight:700">Riwayat buruk: pernah '+KOL[rbm][0]+'</small>':"")+"</td><td>"+ex(d.hp||"-")+'</td><td class="num">'+rp(a)+'</td><td class="num">'+rp(b)+"</td><td>"+ex([d.al,rtw].filter(Boolean).join(", ")||"-")+"</td><td>"+ex(d.kl||"-")+"</td><td>"+ex(d.kc||"-")+"</td><td>"+ex(d.kb||"-")+"</td><td>"+(rekOk(d.rk)?ex(d.rk.b+" "+d.rk.n)+'<br><small class="mutp" style="margin:0">a.n. '+ex(d.rk.a)+"</small>":'<span style="color:#A12B3C">Belum ada</span>')+(boleh("ang1")?' <button class="lnk noprint" type="button" data-rk="'+ex(d.no)+'">'+(angRk[d.no]?"Tutup":rekOk(d.rk)?"Ubah":"Isi")+"</button>":"")+"</td><td>"+ex(d.jk||"-")+"</td><td>"+lama(d.dt)+'</td><td class="noprint">'+(d.foto?'<button class="pbtn" onclick="lihatKtp(\''+d.no+'\')">Lihat</button>':"-")+'</td><td class="noprint">'+(k?'<button class="lnk" type="button" data-rp="'+ex(d.no)+'">'+(angRp[d.no]?"Tutup":k+" pinjaman")+'</button>':"-")+"</td></tr>";
+    out+="<tr><td>"+(boleh("ang1")?'<button class="lnk" type="button" data-ed="'+ex(d.no)+'" title="Klik untuk edit data anggota" style="text-align:left;padding:0">'+ex(d.nama)+"</button>":ex(d.nama))+'<br><small class="mutp" style="margin:0">'+ex(d.no)+"</small>"+(rb.length?'<br><small style="color:#A12B3C;font-weight:700">Riwayat buruk: pernah '+KOL[rbm][0]+'</small>':"")+"</td><td>"+ex(d.hp||"-")+'</td><td class="num">'+rp(a)+'</td><td class="num">'+rp(b)+"</td><td>"+ex([d.al,rtw].filter(Boolean).join(", ")||"-")+"</td><td>"+ex(d.kl||"-")+"</td><td>"+ex(d.kc||"-")+"</td><td>"+ex(d.kb||"-")+"</td><td>"+(rekOk(d.rk)?ex(d.rk.b+" "+d.rk.n)+'<br><small class="mutp" style="margin:0">a.n. '+ex(d.rk.a)+"</small>":'<span style="color:#A12B3C">Belum ada</span>')+(boleh("ang1")?' <button class="lnk noprint" type="button" data-rk="'+ex(d.no)+'">'+(angRk[d.no]?"Tutup":rekOk(d.rk)?"Ubah":"Isi")+"</button>":"")+"</td><td>"+ex(d.jk||"-")+"</td><td>"+lama(d.dt)+'</td><td class="noprint">'+(d.foto?'<button class="pbtn" onclick="lihatKtp(\''+d.no+'\')">Lihat</button>':"-")+'</td><td class="noprint">'+(k?'<button class="lnk" type="button" data-rp="'+ex(d.no)+'">'+(angRp[d.no]?"Tutup":k+" pinjaman")+'</button>':"-")+"</td></tr>";
     if(angRk[d.no])out+='<tr class="alrow noprint"><td colspan="'+C+'" style="background:var(--bg);white-space:normal"><div class="angrp"><b style="font-size:14px">Rekening pencairan '+ex(d.nama)+'</b><div class="fg" style="margin-top:8px">'+[["b","Bank","Contoh: BRI",""],["n","No. rekening","Contoh: 0004-01-000000-30-7",' inputmode="numeric"'],["a","Atas nama rekening","Nama pemilik rekening",""]].map(function(x){return '<div><label>'+x[1]+'</label><div class="field"><input type="text" data-rkf="'+x[0]+'"'+x[3]+' placeholder="'+x[2]+'" value="'+ex((d.rk&&d.rk[x[0]])||(x[0]=="a"?d.nama:""))+'" autocomplete="off"></div></div>'}).join("")+'</div><div class="acts" style="margin-top:10px"><button class="pbtn" type="button" data-rks="'+ex(d.no)+'">Simpan rekening</button><span class="err" data-rkm></span></div></div></td></tr>';
     if(angRp[d.no])out+='<tr class="alrow"><td colspan="'+C+'" style="background:var(--bg);white-space:normal"><div class="angrp">'+riwayatPin(d.no)+"</div></td></tr>"});
   return n?out+'<tr style="font-weight:700"><td>Total</td><td></td><td class="num">'+rp(ts)+'</td><td class="num">'+rp(tp)+'</td><td colspan="'+(C-4)+'"></td></tr>':'<tr><td colspan="'+C+'">Tidak ada anggota yang cocok.</td></tr>'}
@@ -1152,13 +1152,25 @@ function listHTML(){
   (MEM.length?'<p class="mutp noprint" style="margin:0 0 10px">Geser tabel ke kanan (penggeser ada di atas tabel) untuk melihat alamat lengkap dan kolom lainnya. Kolom Nama tetap terlihat. Saldo terisi otomatis dari modul Simpanan dan Pinjaman.</p><div class="angsl noprint"><span aria-hidden="true">◀</span><input id="angsl" type="range" min="0" max="1000" value="0" aria-label="Geser tabel ke kanan"><span aria-hidden="true">▶</span></div><div class="tblw angw" id="angw"><table class="tbl angt"><thead><tr>'+H.map(function(x,i){return "<th"+(i==2||i==3?' class="num"':i>=10?' class="noprint"':"")+">"+x+"</th>"}).join("")+'</tr></thead><tbody id="angbody">'+angRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada anggota</b>Isi formulir Input anggota baru di atas.</div>')+"</div>";
 }
 // Panel Anggota satu halaman: kolom cari di atas, lalu Input anggota baru, lalu Rincian anggota.
-function angPage(){var f=boleh("ang1"),l=boleh("ang2");
+function angPage(){angEdit="";var f=boleh("ang1"),l=boleh("ang2");
   return '<h2>Anggota</h2><p class="sub">'+MEM.length+' anggota terdaftar</p>'+
   (l?'<div class="field noprint" style="margin-bottom:14px"><input id="aq" type="search" placeholder="Cari nama atau nomor anggota..." autocomplete="off" aria-label="Cari anggota"></div>':"")+
   (f?'<div class="noprint">'+formHTML()+"</div>":"")+(l?'<div id="anglist"'+(f?' style="margin-top:14px"':"")+'>'+listHTML()+'</div>':"")}
 function angSegar(){var w=$("#anglist");if(w){w.innerHTML=listHTML();bindAng2()}var s=document.querySelector("#view .sub");if(s&&(cur=="ang1"||cur=="ang2"))s.textContent=MEM.length+" anggota terdaftar"}
 function angRpLebar(){var w=$("#angw");if(!w)return;document.querySelectorAll("#angw .angrp").forEach(function(e){e.style.width=Math.max(240,w.clientWidth-28)+"px"})}
 // Rekening pencairan: isi otomatis dari data anggota (hijau = terisi otomatis, masih bisa diubah).
+// Edit anggota: klik nama di Rincian anggota, datanya dimuat ke formulir di atas.
+var angEdit="";
+function angEditMulai(no){var d=MEM.filter(function(x){return x.no==no})[0];if(!d||!$("#mform"))return;angEdit=no;
+  var v=function(id,x){var e=$("#"+id);if(e)e.value=x==null?"":x};
+  v("fn",d.nama);v("fno",d.no);v("fh",d.hp);v("fk",d.nik);v("ft",d.tl);v("fg",d.tg);setCI("fj",d.jk);v("fa",d.al);v("frt",d.rt);v("frw",d.rw);
+  if(d.kb&&d.kc&&d.kl){WIL[d.kb]=WIL[d.kb]||{};WIL[d.kb][d.kc]=WIL[d.kb][d.kc]||[];if(WIL[d.kb][d.kc].indexOf(d.kl)<0)WIL[d.kb][d.kc].push(d.kl);
+    fill("fkb",Object.keys(WIL),"Pilih kabupaten");$("#fkb").value=d.kb;fill("fkc",Object.keys(WIL[d.kb]),"Pilih kecamatan");$("#fkc").value=d.kc;fill("fkl",WIL[d.kb][d.kc],"Pilih kelurahan / desa");$("#fkl").value=d.kl}
+  setCI("fag",d.ag);setCI("fst",d.st);v("fpk",d.pk);setCI("fwn",d.wn||"WNI");var rk=d.rk||{};v("frb",rk.b);v("frn",rk.n);v("fra",rk.a);
+  $("#fttl").textContent="Edit anggota · "+d.no;$("#fsub").textContent="Ubah data "+d.nama+", lalu tekan Simpan perubahan. Foto KTP tidak perlu diunggah ulang kecuali mau diganti.";
+  $("#fsv").textContent="Simpan perubahan";$("#fbatal").hidden=false;var o=$("#fmsg");o.className="ok";o.textContent="";$("#mform").closest(".panel").scrollIntoView({behavior:"smooth"})}
+function angEditSelesai(){angEdit="";var f=$("#mform");if(!f)return;f.reset();initWil();var ki=$("#ktpinfo");if(ki)ki.textContent="";$("#fno").value=nomor();
+  $("#fttl").textContent="Input anggota baru";$("#fsub").textContent="Masukkan data utama sesuai identitas KTP.";$("#fsv").textContent="Simpan anggota";$("#fbatal").hidden=true}
 function rekOk(rk){return !!(rk&&rk.b&&rk.n&&rk.a)}
 function rekIsi(){var cm=$("#pcm");if(!cm||!$("#prb"))return;var a=MEM.filter(function(d){return d.no==noOf($("#pa").value)})[0],rk=a&&a.rk||{},ok=rekOk(rk);
   [["prb","b"],["prn","n"],["pra","a"]].forEach(function(x){var e=$("#"+x[0]);e.value=rk[x[1]]||"";e.parentNode.classList.toggle("auto",ok)});
@@ -1168,6 +1180,7 @@ function bindAngSl(){var w=$("#angw"),r=$("#angsl");if(!w||!r)return;var mx=func
 function bindAng2(){
   var q=$("#aq"),re=function(){var b=$("#angbody");if(b)b.innerHTML=angRows();angRpLebar()};if(q){q.value=angQ;q.oninput=function(){angQ=this.value;re();if(this.value.trim()){var w=$("#anglist");if(w&&w.getBoundingClientRect().top>innerHeight)w.scrollIntoView({behavior:"smooth"})}}}if(!$("#angbody"))return;
   $("#angbody").onclick=function(e){var r=e.target.closest("[data-rp]");if(r){angRp[r.dataset.rp]=!angRp[r.dataset.rp];re();return}
+    var ed=e.target.closest("[data-ed]");if(ed){angEditMulai(ed.dataset.ed);return}
     var k=e.target.closest("[data-rk]");if(k){angRk[k.dataset.rk]=!angRk[k.dataset.rk];re();return}
     var sv=e.target.closest("[data-rks]");if(sv){var box=sv.closest(".angrp"),v={};box.querySelectorAll("[data-rkf]").forEach(function(i){v[i.dataset.rkf]=i.value.trim()});
       if(!rekOk(v)){box.querySelector("[data-rkm]").textContent="Isi bank, nomor rekening, dan atas nama.";return}
@@ -1237,8 +1250,10 @@ function bindForm(kar){
     else if(!d.ag)m="Pilih agama.";
     else if(!d.st)m="Pilih status perkawinan.";
     else if(!d.pk)m="Isi pekerjaan sesuai KTP.";
-    else if(MEM.some(function(x){return x.nik==d.nik}))m=(function(){var x=MEM.filter(function(y){return y.nik==d.nik})[0],R=riwBuruk(x.no);return "NIK ini sudah terdaftar atas nama "+x.nama+" ("+x.no+")."+(R.length?" Perhatian: anggota ini punya riwayat pinjaman buruk, pengajuan pinjaman akan otomatis ditolak.":"")})();
+    else if(MEM.some(function(x){return x.nik==d.nik&&x.no!=angEdit}))m=(function(){var x=MEM.filter(function(y){return y.nik==d.nik&&y.no!=angEdit})[0],R=riwBuruk(x.no);return "NIK ini sudah terdaftar atas nama "+x.nama+" ("+x.no+")."+(R.length?" Perhatian: anggota ini punya riwayat pinjaman buruk, pengajuan pinjaman akan otomatis ditolak.":"")})();
     if(m){o.className="err";o.textContent=m;return}
+    if(angEdit){var a=MEM.filter(function(x){return x.no==angEdit})[0];if(a){if(!d.rk)delete a.rk;for(var k in d)a[k]=d[k];if(ktpFile){a.foto=1;simpanFoto(a.no,ktpFile);ktpFile=null;showOcr()}saveSoon();angEditSelesai();
+      o.className="ok";o.textContent="Perubahan data "+a.no+" · "+a.nama+" tersimpan.";berhasil("Data anggota diperbarui",a.no+" · "+a.nama);angSegar()}return}
     d.no=nomor();d.dt=Date.now();if(ktpFile){d.foto=1;simpanFoto(d.no,ktpFile);ktpFile=null;showOcr()}MEM.push(d);saveSoon();f.reset();initWil();$("#ktpinfo").textContent="";if($("#fno"))$("#fno").value=nomor();
     o.className="ok";o.textContent="Anggota "+d.no+" tersimpan. Data tersimpan dan tidak hilang saat halaman ditutup.";berhasil("Anggota berhasil disimpan",d.no+" · "+d.nama);angSegar()};
 }
