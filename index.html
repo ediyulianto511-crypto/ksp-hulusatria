@@ -356,7 +356,7 @@ window.KSP_CONFIG = {
     </form>
     <div class="lbody" id="fform" hidden>
       <h1>Lupa kata sandi?</h1>
-      <p>Hubungi Ketua (owner). Ketua bisa membuat kata sandi baru untuk Anda di menu Data karyawan &gt; Daftar karyawan, tombol "Akun login".</p>
+      <p>Hubungi Ketua (owner). Ketua bisa membuat kata sandi baru untuk Anda di menu Data karyawan &gt; Input karyawan baru, tombol "Akun login".</p>
       <div class="row" style="justify-content:center"><button type="button" class="lnk" data-back>Kembali ke halaman masuk</button></div>
     </div>
     <div class="shield">Akses terenkripsi (HTTPS) · Hanya untuk pengguna terdaftar</div>
@@ -389,7 +389,7 @@ var M=[["MENU UTAMA"],["dash","Dashboard"],["apv","Persetujuan"],
 ["kel","Pengeluaran (BU)",0,[["kel1","Tambah transaksi"],["kel2","Cek & cetak pengeluaran (BU)"]]],
 ["lap","Laporan",0,[["lap1","Laporan kas HS"],["lap2","Laporan neraca"],["lap3","Jurnal umum"],["lap4","Laporan hasil kerja"],["lap5","Penghasilan karyawan (gaji)"],["lap6","Perbandingan cabang"]]],
 ["PENGATURAN"],
-["kar","Data karyawan",0,[["kar1","Daftar karyawan"],["kar3","Mutasi karyawan"],["kar2","Hak akses"]]],
+["kar","Data karyawan",0,[["kar1","Input karyawan baru"],["kar3","Mutasi karyawan"],["kar2","Hak akses"]]],
 ["set","Pengaturan",0,[["set2","Regulasi Pendapatan & Bunga"],["set4","Kantor cabang"],["set3","Tema (pilihan warna tampilan)"]]]];
 var KAR=[],BU=[],MUT=[],CAB0=["Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
 /* Kantor cabang: data lama tanpa cabang (atau "Kantor Pusat") dihitung sebagai Cabang 1. */
@@ -1551,7 +1551,7 @@ function nomorKar(){var m=0;KAR.forEach(function(k){var n=parseInt(String(k.no||
 function karForm(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   var cloud='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>';
-  return '<div class="panel"><div class="phead"><div><h3>Tambah karyawan</h3><p>Urutan data mengikuti KTP, jabatan menentukan hak akses.</p></div></div><form id="mform" novalidate>'+
+  return '<div class="panel"><div class="phead"><div><h3>Input karyawan baru</h3><p>Urutan data mengikuti KTP, jabatan menentukan hak akses.</p></div></div><form id="mform" novalidate>'+
   '<div style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 18px 16px;margin-bottom:18px;box-shadow:0 1px 6px rgba(0,0,0,.05)">'+
   '<p style="margin:0 0 4px;font-size:12.5px;letter-spacing:.12em;font-weight:700;color:var(--ma)">AKSES &amp; DOKUMEN KARYAWAN</p><p class="mutp" style="margin:0 0 14px">Lengkapi akses login dan upload KTP sebelum data karyawan disimpan.</p>'+
   '<div class="fg">'+F("fuser","Username login",'<input id="fuser" type="text" placeholder="Dari nomor HP" readonly style="border-style:dashed">')+F("fpass","Password login",'<input id="fpass" type="text" placeholder="Minimal 8 karakter, dibuat Ketua" autocomplete="off">')+
@@ -1616,7 +1616,7 @@ function mutHTML(){
   var A=KAR.filter(function(k){return k.aktif});
   var bln=today().slice(0,7),nb=MUT.filter(function(x){return String(x.tg).slice(0,7)==bln}).length;
   var per=CAB.map(function(c){return "<tr><td>"+ex(c)+'</td><td class="num">'+KAR.filter(function(k){return k.aktif&&cabOf(k)==c}).length+"</td></tr>"}).join("");
-  var form=!A.length?'<div class="empty"><b>Belum ada karyawan aktif</b>Tambah karyawan dulu di menu Daftar karyawan.</div>':
+  var form=!A.length?'<div class="empty"><b>Belum ada karyawan aktif</b>Tambah karyawan dulu di menu Input karyawan baru.</div>':
   '<form id="mutf" novalidate><div class="fg">'+
   F("mk","Karyawan",SEL("mk",A.map(function(k){return ex(k.no)+" · "+ex(k.nama)+" · "+ex(k.jab)}),"Pilih karyawan"))+
   F("mdari","Cabang asal",'<input id="mdari" type="text" readonly placeholder="Otomatis dari data karyawan">')+
