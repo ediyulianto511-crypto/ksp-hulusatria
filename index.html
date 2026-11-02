@@ -287,7 +287,7 @@ main{margin-left:248px;min-height:100vh}
 .glg{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:2px 0 8px}.glg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
 .gr{background:#E08D1D}.gs{background:#2A7FB8}.dng{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.dnt{border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
 .dnh b{display:block;font-size:14px}.dnh small{display:block;color:var(--mut);font-size:12px}.dnb{display:flex;gap:14px;align-items:center;margin-top:8px}.dnb svg{width:150px;height:150px;flex:none}
-.dnb circle[tabindex]:focus{outline:none;stroke-width:19}.dnt1{font-size:8px;fill:var(--mut)}.dnt2{font-size:11px;font-weight:700;fill:var(--ink)}
+.dnb circle[tabindex]:focus{outline:none;stroke-width:26}.dnt1{font-size:7px;fill:var(--mut)}.dnt2{font-size:10px;font-weight:700;fill:var(--ink)}
 .dnl{list-style:none;margin:0;padding:0;flex:1;min-width:0}.dnl li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;column-gap:7px;align-items:center;font-size:12.5px;padding:3px 0;border-bottom:1px solid var(--line)}
 .dnl li i{width:12px;height:12px;border-radius:3px;grid-row:span 2}.dnl li b{text-align:right;white-space:nowrap}.dnl li small{grid-column:2/4;color:var(--mut);font-size:11px}
 @media (max-width:900px){.dng{grid-template-columns:1fr}}@media (max-width:400px){.dnb svg{width:120px;height:120px}}
@@ -1872,10 +1872,10 @@ function grafik6(cOk){var B=[],d=new Date(today()+"T00:00:00");d.setDate(1);
   var LC={};LOAN.forEach(function(l){LC[l.id]=l});
   var D=B.map(function(m){return {m:m,r:LOAN.filter(function(l){return !l.imp&&String(l.tg).slice(0,7)==m&&cOk(l)}).reduce(function(a,l){return a+(+l.pokok||0)},0),
     s:PAY.filter(function(p){return kasPay(p)&&String(p.tg).slice(0,7)==m&&cOk(LC[p.id])}).reduce(function(a,p){return a+(+p.jml||0)+(+p.denda||0)},0)}});
-  var donat=function(k,jd,sub,W){var tot=D.reduce(function(a,o){return a+o[k]},0),R=40,C=2*Math.PI*R,off=0,sl="";
+  var donat=function(k,jd,sub,W){var tot=D.reduce(function(a,o){return a+o[k]},0),R=37,C=2*Math.PI*R,off=0,sl="";
     D.forEach(function(o,i){var v=o[k];if(!v||!tot)return;var L=v/tot*C,g=D.filter(function(q){return q[k]>0}).length>1?Math.min(2,L/2):0;
-      sl+='<circle r="'+R+'" cx="50" cy="50" fill="none" stroke="'+W[i]+'" stroke-width="16" stroke-dasharray="'+Math.max(0,L-g)+' '+(C-L+g)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 50 50)" tabindex="0"><title>'+blnNama(o.m)+': '+rp(v)+'</title></circle>';off+=L});
-    return '<div class="dnt"><div class="dnh"><b>'+jd+'</b><small>'+sub+'</small></div><div class="dnb"><svg viewBox="0 0 100 100" role="img" aria-label="'+jd+' 6 bulan, total '+rp(tot)+'"><circle r="'+R+'" cx="50" cy="50" fill="none" stroke="var(--line)" stroke-width="16"/>'+sl+
+      sl+='<circle r="'+R+'" cx="50" cy="50" fill="none" stroke="'+W[i]+'" stroke-width="24" stroke-dasharray="'+Math.max(0,L-g)+' '+(C-L+g)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 50 50)" tabindex="0"><title>'+blnNama(o.m)+': '+rp(v)+'</title></circle>';off+=L});
+    return '<div class="dnt"><div class="dnh"><b>'+jd+'</b><small>'+sub+'</small></div><div class="dnb"><svg viewBox="0 0 100 100" role="img" aria-label="'+jd+' 6 bulan, total '+rp(tot)+'"><circle r="'+R+'" cx="50" cy="50" fill="none" stroke="var(--line)" stroke-width="24"/>'+sl+
       '<text x="50" y="47" text-anchor="middle" class="dnt1">Total</text><text x="50" y="59" text-anchor="middle" class="dnt2">'+rpS(tot)+'</text></svg>'+
       '<ul class="dnl">'+D.slice().reverse().map(function(o,ri){var i=D.length-1-ri,v=o[k];return '<li><i style="background:'+W[i]+'"></i><span>'+new Date(o.m+"-01T00:00:00").toLocaleDateString("id-ID",{month:"short",year:"numeric"})+'</span><b>'+rp(v)+'</b><small>'+(tot?Math.round(v/tot*100):0)+'%</small></li>'}).join("")+'</ul></div></div>'};
   return '<div class="panel g6p"><div class="phead"><div><h3>Grafik 6 bulan terakhir</h3><p>Bagian tiap bulan dari total 6 bulan · warna makin tua makin baru</p></div></div>'+
