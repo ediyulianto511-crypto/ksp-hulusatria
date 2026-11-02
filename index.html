@@ -285,7 +285,12 @@ main{margin-left:248px;min-height:100vh}
 .thbar{height:10px;border-radius:6px;background:var(--line);overflow:hidden}.thbar i{display:block;height:100%;background:#3F9C55;border-radius:6px}.thk{margin:6px 0 10px;font-size:13px;color:var(--mut)}
 .tht td,.tht th,.g6t td,.g6t th{padding:8px 8px;font-size:13px}.tht tfoot td{font-weight:700}.tht td small{display:block;font-weight:400;color:var(--mut);font-size:11.5px}.tht td b{font-weight:600}
 .glg{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--mut);margin:2px 0 8px}.glg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
-.gr{background:#E08D1D}.gs{background:#2A7FB8}
+.gr{background:#E08D1D}.gs{background:#2A7FB8}.dng{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.dnt{border:1px solid var(--line);border-radius:12px;padding:12px;min-width:0}
+.dnh b{display:block;font-size:14px}.dnh small{display:block;color:var(--mut);font-size:12px}.dnb{display:flex;gap:14px;align-items:center;margin-top:8px}.dnb svg{width:150px;height:150px;flex:none}
+.dnb circle[tabindex]:focus{outline:none;stroke-width:19}.dnt1{font-size:8px;fill:var(--mut)}.dnt2{font-size:11px;font-weight:700;fill:var(--ink)}
+.dnl{list-style:none;margin:0;padding:0;flex:1;min-width:0}.dnl li{display:grid;grid-template-columns:12px minmax(0,1fr) auto;column-gap:7px;align-items:center;font-size:12.5px;padding:3px 0;border-bottom:1px solid var(--line)}
+.dnl li i{width:12px;height:12px;border-radius:3px;grid-row:span 2}.dnl li b{text-align:right;white-space:nowrap}.dnl li small{grid-column:2/4;color:var(--mut);font-size:11px}
+@media (max-width:900px){.dng{grid-template-columns:1fr}}@media (max-width:400px){.dnb svg{width:120px;height:120px}}
 .gch{display:flex;gap:6px;height:190px;margin-bottom:12px}.gax{display:flex;flex-direction:column;justify-content:space-between;font-size:11px;color:var(--mut);text-align:right;padding-bottom:22px;min-width:38px}
 .gpl{flex:1;display:grid;grid-template-columns:repeat(6,1fr);gap:6px;border-left:1px solid var(--line);background:linear-gradient(var(--line),var(--line)) 0 0/100% 1px no-repeat,linear-gradient(var(--line),var(--line)) 0 calc(50% - 11px)/100% 1px no-repeat}
 .gcol{display:flex;flex-direction:column;min-width:0}.gbs{flex:1;display:flex;align-items:flex-end;justify-content:center;gap:2px;border-bottom:1px solid var(--mut)}.gb{display:block;width:40%;max-width:22px;border-radius:4px 4px 0 0}.gb:focus{outline:2px solid var(--ink)}
@@ -1861,12 +1866,15 @@ function grafik6(cOk){var B=[],d=new Date(today()+"T00:00:00");d.setDate(1);
   var LC={};LOAN.forEach(function(l){LC[l.id]=l});
   var D=B.map(function(m){return {m:m,r:LOAN.filter(function(l){return !l.imp&&String(l.tg).slice(0,7)==m&&cOk(l)}).reduce(function(a,l){return a+(+l.pokok||0)},0),
     s:PAY.filter(function(p){return kasPay(p)&&String(p.tg).slice(0,7)==m&&cOk(LC[p.id])}).reduce(function(a,p){return a+(+p.jml||0)+(+p.denda||0)},0)}});
-  var mx=Math.max.apply(null,D.map(function(o){return Math.max(o.r,o.s)}))||1,nb=function(m){return new Date(m+"-01T00:00:00").toLocaleDateString("id-ID",{month:"short"})};
-  var bar=function(v,c,lb,m){return '<i class="gb '+c+'" style="height:'+(v?Math.max(2,v/mx*100):0)+'%" title="'+lb+' '+blnNama(m)+': '+rp(v)+'" tabindex="0"></i>'};
-  return '<div class="panel g6p"><div class="phead"><div><h3>Grafik 6 bulan terakhir</h3><p>Realisasi pinjaman dan setoran angsuran per bulan</p></div></div>'+
-    '<div class="glg"><span><i class="gr"></i>Realisasi pinjaman</span><span><i class="gs"></i>Setoran angsuran</span></div>'+
-    '<div class="gch"><div class="gax"><span>'+rpS(mx)+'</span><span>'+rpS(mx/2)+'</span><span>0</span></div><div class="gpl">'+D.map(function(o){return '<div class="gcol"><div class="gbs">'+bar(o.r,"gr","Realisasi",o.m)+bar(o.s,"gs","Setoran",o.m)+'</div><span class="gm">'+nb(o.m)+'</span></div>'}).join("")+'</div></div>'+
-    '<div class="tblw"><table class="tbl g6t"><thead><tr><th>Bulan</th><th class="num">Realisasi</th><th class="num">Setoran</th></tr></thead><tbody>'+D.slice().reverse().map(function(o){return '<tr><td>'+blnNama(o.m)+'</td><td class="num">'+rp(o.r)+'</td><td class="num">'+rp(o.s)+'</td></tr>'}).join("")+'</tbody></table></div></div>'}
+  var donat=function(k,jd,sub,W){var tot=D.reduce(function(a,o){return a+o[k]},0),R=40,C=2*Math.PI*R,off=0,sl="";
+    D.forEach(function(o,i){var v=o[k];if(!v||!tot)return;var L=v/tot*C,g=D.filter(function(q){return q[k]>0}).length>1?Math.min(2,L/2):0;
+      sl+='<circle r="'+R+'" cx="50" cy="50" fill="none" stroke="'+W[i]+'" stroke-width="16" stroke-dasharray="'+Math.max(0,L-g)+' '+(C-L+g)+'" stroke-dashoffset="'+(-off)+'" transform="rotate(-90 50 50)" tabindex="0"><title>'+blnNama(o.m)+': '+rp(v)+'</title></circle>';off+=L});
+    return '<div class="dnt"><div class="dnh"><b>'+jd+'</b><small>'+sub+'</small></div><div class="dnb"><svg viewBox="0 0 100 100" role="img" aria-label="'+jd+' 6 bulan, total '+rp(tot)+'"><circle r="'+R+'" cx="50" cy="50" fill="none" stroke="var(--line)" stroke-width="16"/>'+sl+
+      '<text x="50" y="47" text-anchor="middle" class="dnt1">Total</text><text x="50" y="59" text-anchor="middle" class="dnt2">'+rpS(tot)+'</text></svg>'+
+      '<ul class="dnl">'+D.slice().reverse().map(function(o,ri){var i=D.length-1-ri,v=o[k];return '<li><i style="background:'+W[i]+'"></i><span>'+new Date(o.m+"-01T00:00:00").toLocaleDateString("id-ID",{month:"short",year:"numeric"})+'</span><b>'+rp(v)+'</b><small>'+(tot?Math.round(v/tot*100):0)+'%</small></li>'}).join("")+'</ul></div></div>'};
+  return '<div class="panel g6p"><div class="phead"><div><h3>Grafik 6 bulan terakhir</h3><p>Bagian tiap bulan dari total 6 bulan · warna makin tua makin baru</p></div></div>'+
+    '<div class="dng">'+donat("r","Realisasi pinjaman","Total realisasi per bulan",["#F6D3A3","#F0B866","#E89D3A","#E08D1D","#B86F10","#8A520A"])+
+    donat("s","Setoran angsuran","Angsuran + denda per bulan",["#BFD9EC","#93BFDF","#64A2CF","#2A7FB8","#1F6595","#164B70"])+'</div></div>'}
 /* Peringkat marketing: disembunyikan dari Dashboard atas permintaan Ketua (2026-11-02), disimpan untuk revisi nanti. */
 function rankMkt(cOk,cab){var bl=today().slice(0,7),M={},LC={};LOAN.forEach(function(l){LC[l.id]=l});
   var g=function(k){return M[k]=M[k]||{s:0,sn:{},r:0,rn:0}};mktList().forEach(function(k){if(!cab||cabOf(k)==cab)g(k.no)});
