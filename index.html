@@ -176,6 +176,7 @@ main{margin-left:248px;min-height:100vh}
 .pdoc .drop small{display:block;font-size:12px;opacity:.8}
 .ptolak{text-align:center;border:2px solid #C0392B;background:#FDECEA;color:#B3261E;border-radius:18px;padding:18px 16px;margin:16px 0 0}.ptolak b{display:block;font-size:26px;letter-spacing:.06em}.ptolak span{display:block;font-size:18px;font-weight:800;margin-top:6px}.ptolak small{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.5}
 .tpop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}.tpop .tpb{background:var(--panel,#fff);border-radius:22px;padding:16px;max-width:460px;width:100%;text-align:center}.tpop .ptolak{margin:0}
+.field.auto select:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1;font-weight:700}
 .apvn{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}.apvn .pbtn{background:#C0392B;color:#fff}
 .pdone{border:1px solid #B9DEC7;background:#E7F4EC;color:#1F5E3A;border-radius:20px;padding:18px;margin-bottom:18px}
 .pdone b{display:block;font-size:17px}.pdone p{margin:4px 0 0;font-size:14px}
@@ -401,7 +402,9 @@ function loanCab(l){var m=MEM.filter(function(x){return x.no==l.no})[0];return m
 var JAB=["Ketua (owner)","Akuntan","Manager Utama","Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
 /* Jabatan ini hanya melihat data cabangnya sendiri. Ketua, Akuntan, Manager Utama melihat semua cabang (tetap dibatasi Hak akses menu). */
 var JAB_CAB=["Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
-function myCab(){if(JAB_CAB.indexOf(ROLE)<0)return "";var p=typeof PROF!="undefined"&&PROF||{},k=KAR.filter(function(x){return (p.kar_no&&x.no==p.kar_no)||(p.hp&&hpNorm(x.hp||x.user)==hpNorm(p.hp))})[0];return cabOf(k||{})}
+/* Data karyawan milik akun yang sedang login (dicocokkan dari nomor karyawan atau HP). */
+function myKar(){var p=typeof PROF!="undefined"&&PROF||{};return KAR.filter(function(x){return (p.kar_no&&x.no==p.kar_no)||(p.hp&&hpNorm(x.hp||x.user)==hpNorm(p.hp))})[0]}
+function myCab(){if(JAB_CAB.indexOf(ROLE)<0)return "";return cabOf(myKar()||{})}
 /* Filter cabang global (atas aplikasi) untuk Ketua, Akuntan, Manager Utama. Diingat antar halaman. */
 var gCab="";try{gCab=localStorage.getItem("ksp_cab")||""}catch(e){}
 function viewCab(){var c=myCab();if(c)return c;if(gCab&&CAB.indexOf(gCab)<0)gCab="";return gCab}
@@ -1033,7 +1036,7 @@ function bindPin(){
       $("#pterima").textContent=rp(Math.max(br-la,0));var TL=no?tolakPin(no,tgl0):null,PT=no&&!TL?pinTunda(no):null;$("#ptolak").innerHTML=TL?tolakHTML(TL):PT?'<p class="err" style="margin:12px 0 0">Anggota ini sudah punya proposal '+PT.id+' yang sedang diproses ('+(PT.st=="tunggu"?"menunggu persetujuan":"menunggu realisasi")+').</p>':"";$("#psub").disabled=!!(TL||PT);if(TL&&no!=tolakNo){tolakNo=no;tolakPop(TL)}if(!TL)tolakNo="";
       $("#prc").innerHTML=!p?"":(t&&!+sel.value)?"Pilih jangka waktu untuk melihat rincian angsuran.":rinci(pinModel,p,$("#pt").value,+sel.value,la)};
     DOCN.forEach(function(t,i){var inp=$("#pd"+i);if(inp)inp.onchange=function(){var f=this.files[0];if(!f)return;if(!/^image\//.test(f.type)){$("#pmsg").className="err";$("#pmsg").textContent="Dokumen harus berupa foto (JPG/PNG).";return}PDOC[i]=f;var L=$("#pdl"+i);L.className="drop done";L.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>'+t+"<small>"+ex(f.name)+"</small></b>";$("#pdc").textContent=Object.keys(PDOC).length+"/4 siap · KTP otomatis dari Data Anggota"}});fotoBind();
-    ["pp","pt"].forEach(function(id){$("#"+id).oninput=upd});$("#pt").onchange=upd;$("#pns").onchange=upd}else fillPl();if(ROLE=="Marketing Lapangan"&&PROF&&PROF.kar_no){var msx=$("#pmk");if(msx&&[].some.call(msx.options,function(o){return o.value==PROF.kar_no}))msx.value=PROF.kar_no}
+    ["pp","pt"].forEach(function(id){$("#"+id).oninput=upd});$("#pt").onchange=upd;$("#pns").onchange=upd}else fillPl();var mk=myKar(),msx=$("#pmk");if(ROLE=="Marketing Lapangan"&&mk&&msx){if(![].some.call(msx.options,function(o){return o.value==mk.no})){var op=document.createElement("option");op.value=mk.no;op.text=mk.nama;msx.add(op)}msx.value=mk.no;msx.disabled=true;msx.parentNode.classList.add("auto")}
   f.onsubmit=function(e){e.preventDefault();
     var no=noOf($("#pa").value),a=MEM.filter(function(d){return d.no==no})[0],tg=$("#pt").value,o=$("#pmsg"),m="",v=dig($("#pp").value),n=+$("#pns").value,jam=null;
     if(!a)m="Pilih anggota.";else if(!tg)m="Isi tanggal pengajuan.";else if(v<=0)m="Isi realisasi pinjaman.";else if(!n)m="Pilih jangka waktu.";
