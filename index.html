@@ -344,7 +344,7 @@ window.KSP_CONFIG = {
 <script>
 var I={kar:"M4 5h16v14H4zM9 11a2 2 0 100-4 2 2 0 000 4zM6 16c0-2 1.5-3 3-3s3 1 3 3M14 9h4M14 13h4",dash:"M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",ang:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-4 4-6 8-6s8 2 8 6",sim:"M4 7h16v12H4zM4 11h16",pin:"M6 4h12v16H6zM9 9h6M9 13h6",tag:"M3 6h18v12H3zM3 10h18",kel:"M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M9 12h6",lap:"M5 20V10M12 20V4M19 20v-7",set:"M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4"};
 var M=[["MENU UTAMA"],["dash","Dashboard"],
-["ang","Anggota",0,[["ang1","Tambah anggota baru"],["ang2","Cek & cetak daftar anggota"]]],
+["ang","Anggota",0,[["ang1","Input anggota baru"],["ang2","Rincian anggota (cek & cetak)"]]],
 ["sim","Simpanan",0,[["sim0","Modal (modal awal + tambah modal)"],["sim1","Tambah simpanan masuk"],["sim2","Tambah simpanan keluar"],["sim3","Cek & cetak daftar simpanan"]]],
 ["pin","Pinjaman",0,[["pin1","Tambah transaksi"],["pin2","Cek & cetak daftar pinjaman"]]],
 ["tag","Tagihan",0,[["tag1","Daftar tagihan"],["tag2","Cek & cetak daftar tagihan"]]],
@@ -395,6 +395,7 @@ function nav(){
     if(m[3]){m=m.slice();m[3]=m[3].filter(function(c){return boleh(c[0])});if(!m[3].length)return ""}
     if(m.length==1)return "<small>"+m[0]+"</small>";
     var bv=m[0]=="tag"?tagCount():m[2],sub=m[3],bd=bv?'<span class="badge">'+bv+"</span>":"";
+    if(m[0]=="ang")return '<button class="nav'+(cur=="ang1"||cur=="ang2"?" on":"")+'" data-id="'+sub[0][0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     if(!sub)return '<button class="nav'+(m[0]==cur?" on":"")+'" data-id="'+m[0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     var o=!!open[m[0]],aktif=!o&&sub.some(function(c){return c[0]==cur});
     return '<button class="nav'+(aktif?" on":"")+'" data-grp="'+m[0]+'" aria-expanded="'+o+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+'<span class="chev'+(o?" r":"")+'" aria-hidden="true">›</span></button>'+(o?'<div class="sub">'+sub.map(function(c){return '<button class="nav'+(c[0]==cur?" on":"")+'" data-id="'+c[0]+'">'+navLbl(c[1])+"</button>"}).join("")+"</div>":"");
@@ -442,7 +443,7 @@ function isiKtp(r){
 }
 function formHTML(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
-  return '<div class="panel"><p class="mutp" style="margin:0 0 14px">Masukkan data utama sesuai identitas KTP.</p><form id="mform" novalidate>'+
+  return '<div class="panel"><div class="phead"><div><h3>Input anggota baru</h3><p>Masukkan data utama sesuai identitas KTP.</p></div></div><form id="mform" novalidate>'+
   '<label class="drop" for="ktp">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>'+'<b>Unggah foto KTP</b><span>Format JPG atau PNG · Wilayah dibaca dari KTP</span></label><input class="sr" id="ktp" type="file" accept="image/*" aria-label="Unggah foto KTP"><label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
@@ -1066,7 +1067,7 @@ function bindReg(){
 function lama(t){var h=Math.floor((Date.now()-t)/864e5);if(h<30)return h+" hari";var b=Math.floor(h/30);if(b<12)return b+" bulan";var y=Math.floor(b/12),m=b%12;return y+" tahun"+(m?" "+m+" bulan":"")}
 var angQ="",angOpen={},angAll=false;
 function angRows(){var q=angQ.trim().toLowerCase(),out="",ts=0,tp=0,n=0;
-  MEM.forEach(function(d){if(q&&String(d.nama).toLowerCase().indexOf(q)<0)return;n++;var a=saldoSim(d.no),b=saldoPin(d.no);ts+=a;tp+=b;var o=angAll||!!angOpen[d.no];
+  MEM.forEach(function(d){if(q&&String(d.nama).toLowerCase().indexOf(q)<0&&String(d.no).toLowerCase().indexOf(q)<0)return;n++;var a=saldoSim(d.no),b=saldoPin(d.no);ts+=a;tp+=b;var o=angAll||!!angOpen[d.no];
     var rb=riwBuruk(d.no),rbm=rb.reduce(function(a,x){return Math.max(a,x.n)},0);out+="<tr><td>"+ex(d.nama)+(rb.length?'<br><small style="color:#A12B3C;font-weight:700">Riwayat buruk: pernah '+KOL[rbm][0]+'</small>':"")+"</td><td>"+ex(d.hp||"-")+"</td><td>"+ex(d.jk||"-")+"</td><td>"+ex(d.al||"-")+'</td><td class="num">'+rp(a)+'</td><td class="num">'+rp(b)+"</td><td>"+lama(d.dt)+'</td><td class="noprint"><button class="lnk" type="button" data-al="'+ex(d.no)+'" aria-expanded="'+o+'">'+(o?"Tutup":"Lihat")+'</button></td><td class="noprint">'+(d.foto?'<button class="pbtn" onclick="lihatKtp(\''+d.no+'\')">Lihat</button>':"-")+'</td><td class="noprint">'+(function(){var k=LOAN.filter(function(l){return l.no==d.no}).length;return k?'<button class="lnk" type="button" data-rp="'+ex(d.no)+'">'+(angRp[d.no]?"Tutup":k+" pinjaman")+'</button>':"-"})()+"</td></tr>";
     if(angRp[d.no])out+='<tr class="alrow"><td colspan="10" style="background:var(--bg);white-space:normal">'+riwayatPin(d.no)+"</td></tr>";
     if(o)out+='<tr class="alrow"><td colspan="10" style="background:var(--bg);font-size:13.5px;white-space:normal">RT '+ex(d.rt||"-")+" / RW "+ex(d.rw||"-")+" · "+ex(d.kl||"-")+" · Kec. "+ex(d.kc||"-")+" · "+ex(d.kb||"-")+"</td></tr>"});
@@ -1081,10 +1082,16 @@ function riwayatPin(no){var L=LOAN.filter(function(x){return x.no==no}).slice().
 function listHTML(){
   var H=["Nama","No HP","Jenis kelamin","Alamat","Saldo simpanan","Saldo pinjaman","Masa keanggotaan","Wilayah","Foto KTP","Riwayat pinjaman"];
   return '<div class="panel"><div class="phead"><div><h3>Rincian anggota</h3><p>'+MEM.length+' anggota terdaftar</p></div><div class="acts noprint" style="margin:0"><button class="pbtn" type="button" id="alall" style="background:var(--c2);color:var(--t2)">'+(angAll?"Sembunyikan semua wilayah":"Tampilkan semua wilayah")+'</button><button class="pbtn" onclick="window.print()">Cetak daftar anggota</button></div></div>'+
-  (MEM.length?'<div class="field noprint" style="margin-bottom:12px"><input id="aq" type="search" placeholder="Cari nama anggota..." autocomplete="off" aria-label="Cari nama anggota"></div><p class="mutp noprint" style="margin:0 0 10px">Klik Lihat di kolom Wilayah untuk membuka RT, RW, kelurahan/desa, kecamatan, dan kabupaten. Saldo terisi otomatis dari modul Simpanan dan Pinjaman.</p><div class="tblw"><table class="tbl"><thead><tr>'+H.map(function(x,i){return "<th"+(i==4||i==5?' class="num"':i>=7?' class="noprint"':"")+">"+x+"</th>"}).join("")+'</tr></thead><tbody id="angbody">'+angRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada anggota</b>Tambah anggota lewat menu Tambah anggota baru.</div>')+"</div>";
+  (MEM.length?'<p class="mutp noprint" style="margin:0 0 10px">Klik Lihat di kolom Wilayah untuk membuka RT, RW, kelurahan/desa, kecamatan, dan kabupaten. Saldo terisi otomatis dari modul Simpanan dan Pinjaman.</p><div class="tblw"><table class="tbl"><thead><tr>'+H.map(function(x,i){return "<th"+(i==4||i==5?' class="num"':i>=7?' class="noprint"':"")+">"+x+"</th>"}).join("")+'</tr></thead><tbody id="angbody">'+angRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada anggota</b>Isi formulir Input anggota baru di atas.</div>')+"</div>";
 }
+// Panel Anggota satu halaman: kolom cari di atas, lalu Input anggota baru, lalu Rincian anggota.
+function angPage(){var f=boleh("ang1"),l=boleh("ang2");
+  return '<h2>Anggota</h2><p class="sub">'+MEM.length+' anggota terdaftar</p>'+
+  (l?'<div class="field noprint" style="margin-bottom:14px"><input id="aq" type="search" placeholder="Cari nama atau nomor anggota..." autocomplete="off" aria-label="Cari anggota"></div>':"")+
+  (f?'<div class="noprint">'+formHTML()+"</div>":"")+(l?'<div id="anglist"'+(f?' style="margin-top:14px"':"")+'>'+listHTML()+'</div>':"")}
+function angSegar(){var w=$("#anglist");if(w){w.innerHTML=listHTML();bindAng2()}var s=document.querySelector("#view .sub");if(s&&(cur=="ang1"||cur=="ang2"))s.textContent=MEM.length+" anggota terdaftar"}
 function bindAng2(){var al=$("#alall");if(al)al.onclick=function(){angAll=!angAll;angOpen={};page()};
-  var q=$("#aq");if(!q)return;q.value=angQ;var re=function(){var b=$("#angbody");if(b)b.innerHTML=angRows()};q.oninput=function(){angQ=this.value;re()};
+  var q=$("#aq"),re=function(){var b=$("#angbody");if(b)b.innerHTML=angRows()};if(q){q.value=angQ;q.oninput=function(){angQ=this.value;re();if(this.value.trim()){var w=$("#anglist");if(w&&w.getBoundingClientRect().top>innerHeight)w.scrollIntoView({behavior:"smooth"})}}}if(!$("#angbody"))return;
   $("#angbody").onclick=function(e){var r=e.target.closest("[data-rp]");if(r){angRp[r.dataset.rp]=!angRp[r.dataset.rp];re();return}var t=e.target.closest("[data-al]");if(!t)return;var k=t.dataset.al;if(angAll){angAll=false;MEM.forEach(function(d){angOpen[d.no]=true});var al2=$("#alall");if(al2)al2.textContent="Tampilkan semua wilayah"}angOpen[k]=!angOpen[k];re()}}
 function bindForm(kar){
   var f=$("#mform"),fl=$("#ktp"),smp=null,lim=null,ktpFile=null;initWil();if(kar){$("#fh").oninput=function(){$("#fuser").value=this.value.replace(/[\s-]/g,"")};
@@ -1154,7 +1161,7 @@ function bindForm(kar){
     else if(MEM.some(function(x){return x.nik==d.nik}))m=(function(){var x=MEM.filter(function(y){return y.nik==d.nik})[0],R=riwBuruk(x.no);return "NIK ini sudah terdaftar atas nama "+x.nama+" ("+x.no+")."+(R.length?" Perhatian: anggota ini punya riwayat pinjaman buruk, pengajuan pinjaman akan otomatis ditolak.":"")})();
     if(m){o.className="err";o.textContent=m;return}
     d.no=nomor();d.dt=Date.now();if(ktpFile){d.foto=1;simpanFoto(d.no,ktpFile);ktpFile=null;showOcr()}MEM.push(d);saveSoon();f.reset();initWil();$("#ktpinfo").textContent="";if($("#fno"))$("#fno").value=nomor();
-    o.className="ok";o.textContent="Anggota "+d.no+" tersimpan. Data tersimpan dan tidak hilang saat halaman ditutup.";berhasil("Anggota berhasil disimpan",d.no+" · "+d.nama)};
+    o.className="ok";o.textContent="Anggota "+d.no+" tersimpan. Data tersimpan dan tidak hilang saat halaman ditutup.";berhasil("Anggota berhasil disimpan",d.no+" · "+d.nama);angSegar()};
 }
 
 /* ===== Format rupiah otomatis (titik ribuan) ===== */
@@ -1422,7 +1429,7 @@ function bindBu(){
 }
 function page(){
   saveSoon();var f=find(cur),t=f[0];
-  $("#crumb").textContent=f[1]?f[1]+" / "+t:t;
+  $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":f[1]?f[1]+" / "+t:t;
   if(cur=="dash"){
     var bl=today().slice(0,7),RB=LOAN.filter(function(l){return !l.imp&&String(l.tg).slice(0,7)==bl}),SB=PAY.filter(function(p){return kasPay(p)&&String(p.tg).slice(0,7)==bl}),
       AK=LOAN.filter(function(l){return sisaP(l)>0}),OS=AK.reduce(function(a,l){return a+sisaP(l)},0),NP=AK.filter(function(l){var q=kolOf(l);return q&&q.n>=3}),NPS=NP.reduce(function(a,l){return a+sisaP(l)},0),
@@ -1443,10 +1450,8 @@ function page(){
   }else if(cur=="set3"){
     var TM=[["","Soft Maroon Blush","Hangat · Profesional · Modern",[["#7A3E4B","Soft Maroon"],["#B98992","Dusty Rose"],["#C9CDD1","Silver Mist"],["#F7F3EE","Warm Ivory"]]],["biru","Blue Serenity","Tenang · Stabil · Visioner",[["#6F8FA8","Slate Blue"],["#B8CEDD","Powder Blue"],["#D7DEE4","Cool Gray"],["#F8FAFC","Soft White"]]],["teal","Teal Seafoam","Segar · Dinamis · Berkelanjutan",[["#5F9991","Muted Teal"],["#A9D0C8","Seafoam"],["#D5E8E3","Pale Aqua"],["#F7FBFA","Cloud"]]]];
     h+='<div class="panel"><p style="margin:0 0 14px">Pilih warna tampilan aplikasi. Pilihan tersimpan dan dipakai lagi saat aplikasi dibuka.</p>'+TM.map(function(t){return '<button type="button" class="pbtn" aria-pressed="'+(pal===t[0])+'" onclick="setPalette(\''+t[0]+'\')" style="display:block;width:100%;text-align:left;margin:0 0 12px;padding:14px 16px;border-radius:18px;background:var(--panel);color:var(--ink);border:1px solid var(--line)"><span style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px"><b style="font-size:17px">'+t[1]+(pal===t[0]?" ✓":"")+'</b><span style="font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.75">'+t[2]+'</span></span><span style="display:flex;gap:8px;margin-top:10px">'+t[3].map(function(c){return '<span style="flex:1;min-width:0"><span style="display:block;height:44px;border-radius:10px;background:'+c[0]+';border:1px solid rgba(0,0,0,.1)"></span><span style="display:block;font-size:11px;margin-top:5px;font-weight:700">'+c[0]+'</span><span style="display:block;font-size:10.5px;opacity:.75">'+c[1]+'</span></span>'}).join("")+'</span></button>'}).join("")+'</div>';
-  }else if(cur=="ang1"){
-    h+=formHTML();
-  }else if(cur=="ang2"){
-    h+=listHTML();
+  }else if(cur=="ang1"||cur=="ang2"){
+    h=angPage();
   }else if(cur=="sim1"||cur=="sim2"){
     h+=simForm(cur=="sim1");
   }else if(cur=="sim3"){
@@ -1480,7 +1485,7 @@ function page(){
   }else{
     h+='<div class="panel"><div class="empty"><b>Halaman ini dibuat di tahap berikutnya</b>Kirim rincian isi halaman '+esc(t)+" dan kita tambahkan bertahap.</div></div>";
   }
-  $("#view").innerHTML=h;if(cur=="ang1")bindForm();if(cur=="sim1"||cur=="sim2")bindSim(cur=="sim1");if(cur=="sim0")bindModal();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();if(cur=="ang2")bindAng2();
+  $("#view").innerHTML=h;if(cur=="ang1"||cur=="ang2"){if($("#mform"))bindForm();if($("#anglist"))bindAng2()}if(cur=="sim1"||cur=="sim2")bindSim(cur=="sim1");if(cur=="sim0")bindModal();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();
 }
 /* ===== Penghasilan karyawan (gaji) ===== */
 var gajiBln="",gajiNo="",gajiFlash="";
