@@ -137,7 +137,7 @@ main{margin-left:248px;min-height:100vh}
 .kw .ki{position:absolute;right:14px;top:12px;width:64px;height:64px;fill:none;stroke:rgba(0,0,0,.18);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .kw .kl{border:0;background:var(--kd);color:#fff;font:inherit;font-size:14px;padding:7px 8px;cursor:pointer;width:100%;text-transform:none}
 .kw .kl:active{filter:brightness(.92)}
-.cksim h3{color:#33854A}.cksim .pbtn{background:#3F9C55;color:#fff}.cksim .pbtn[aria-pressed="true"]{background:#2D6F3F;outline-color:#9ED3AC}.cksim .tup .tb{background:#3F9C55;color:#fff}
+.cksim h3{color:#33854A}.cksim .tup .tb{background:#3F9C55;color:#fff}
 @media (max-width:640px){.grid.k6{gap:10px}.grid.k6 .k{padding:14px;min-height:130px;border-radius:16px}.grid.k6 .k h4{font-size:14px}.grid.k6 .k p{font-size:12px}.grid.k6 .k strong{font-size:18px;overflow-wrap:anywhere}.kw{aspect-ratio:2.15/1}.kw .kb{padding:6px 10px 2px}.kw strong{font-size:17px;white-space:nowrap}.kw h4{font-size:13px;margin-top:1px;line-height:1.35}.kw p{display:none}.kw .ki{width:34px;height:34px;right:6px;top:6px}.kw .kl{font-size:11.5px;padding:3px}}
 .empty{padding:36px 16px;text-align:center;color:var(--mut)}
 .empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
@@ -198,9 +198,9 @@ main{margin-left:248px;min-height:100vh}
 .mgrid .pbtn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:60px;padding:8px;line-height:1.2}
 .mgrid .pbtn small{display:block;font-size:12.5px;font-weight:500;opacity:.9;margin-top:2px}
 /* Tombol jenis pinjaman: warna dari kotak Dashboard */
-.mgrid .pbtn[data-model]{background:var(--mc);color:#fff;outline-color:var(--md)}
-.mgrid .pbtn[data-model="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"]{--mc:#1F9FD0;--md:#1A89B4}
-.mgrid .pbtn[data-model][aria-pressed="true"]{background:var(--md);outline-width:4px}
+.mgrid .pbtn[data-model],.mgrid .pbtn[data-ck]{background:var(--mc);color:#fff;outline-color:var(--md)}
+.mgrid .pbtn[data-model="mg"],.mgrid .pbtn[data-ck="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"],.mgrid .pbtn[data-ck="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"],.mgrid .pbtn[data-ck="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"],.mgrid .pbtn[data-ck="pg"]{--mc:#1F9FD0;--md:#1A89B4}
+.mgrid .pbtn[data-model][aria-pressed="true"],.mgrid .pbtn[data-ck][aria-pressed="true"]{background:var(--md);outline-width:4px}
 @media (max-width:640px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pact{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-top:22px}
 .pact .btn{margin:0;padding:13px 10px;line-height:1.25}
