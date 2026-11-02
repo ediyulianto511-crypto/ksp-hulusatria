@@ -765,7 +765,11 @@ function cekBind(){var inp=$("#ckp"),sel=$("#ckn"),out=$("#ckout");if(!inp)retur
     ckN=sel.value;var r=p&&t?hitung(ckM,p,+sel.value):null;
     if(!p){out.innerHTML="";return}
     if(!r||r.err){out.innerHTML='<p class="err" style="margin:12px 0 0">Realisasi pinjaman '+rp(p)+' belum masuk kategori '+MODEL[ckM].n+'. Kategori: '+tierTxt(ckM)+'.</p>';return}
-    out.innerHTML='<div class="tup"><div><small>Jenis pinjaman</small><strong>'+MODEL[ckM].n+'</strong></div><div><small>Realisasi pinjaman</small><strong>'+rp(p)+'</strong></div><div><small>Jangka waktu</small><strong>'+tenorTxt(ckM,r.n).split(" · ")[0]+'</strong></div><div class="tb"><small>Angsuran</small><strong>'+rp(r.ang)+'</strong></div><div><small>Jumlah angsuran</small><strong>'+r.n+' kali</strong></div></div>'};
+    out.innerHTML='<div class="tup"><div><small>Jenis pinjaman</small><strong>'+MODEL[ckM].n+'</strong></div><div><small>Realisasi pinjaman</small><strong>'+rp(p)+'</strong></div><div><small>Jangka waktu</small><strong>'+tenorTxt(ckM,r.n).split(" · ")[0]+'</strong></div><div class="tb"><small>Angsuran</small><strong>'+rp(r.ang)+'</strong></div><div><small>Jumlah angsuran</small><strong>'+r.n+' kali</strong></div>'+
+      (function(){var P=[];if(r.prov)P.push(["Provisi "+pctTx(r.t.prov)+"%",r.prov]);if(r.asr)P.push(["Asuransi "+pctTx(r.t.asr)+"%",r.asr]);if(r.wj)P.push(["Simpanan wajib "+pctTx(r.t.wajib)+"%",r.wj]);if(r.bm)P.push(["Bunga di muka",r.bm]);
+        var tp=P.reduce(function(a,x){return a+x[1]},0);
+        return '<div><small>Potongan</small>'+(P.length?P.map(function(x){return '<p style="display:flex;justify-content:space-between;gap:8px;font-size:14px;color:inherit;margin:6px 0 0"><span>'+x[0]+'</span><b>'+rp(x[1])+'</b></p>'}).join(""):'<strong>Tidak ada</strong>')+'</div>'+
+        '<div><small>Jumlah total potongan</small><strong>'+rp(tp)+'</strong></div><div class="tb"><small>Terima</small><strong>'+rp(r.bersih)+'</strong></div>'})()+'</div>'};
   inp.oninput=function(){var d=dig(this.value);this.value=d?d.toLocaleString("id-ID"):"";upd()};sel.onchange=upd;
   document.querySelectorAll("[data-ck]").forEach(function(b){b.onclick=function(){ckM=this.dataset.ck;ckN="";page()}});upd()}
 function isoD(d){var q=function(x){return String(x).padStart(2,"0")};return d.getFullYear()+"-"+q(d.getMonth()+1)+"-"+q(d.getDate())}
