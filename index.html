@@ -189,6 +189,10 @@ main{margin-left:248px;min-height:100vh}
 .mgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0 0 12px}
 .mgrid .pbtn{width:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;height:60px;padding:8px;line-height:1.2}
 .mgrid .pbtn small{display:block;font-size:12.5px;font-weight:500;opacity:.9;margin-top:2px}
+/* Tombol jenis pinjaman: warna dari kotak Dashboard */
+.mgrid .pbtn[data-model]{background:var(--mc);color:#fff;outline-color:var(--md)}
+.mgrid .pbtn[data-model="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"]{--mc:#1F9FD0;--md:#1A89B4}
+.mgrid .pbtn[data-model][aria-pressed="true"]{background:var(--md);outline-width:4px}
 @media (max-width:640px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pact{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-top:22px}
 .pact .btn{margin:0;padding:13px 10px;line-height:1.25}
