@@ -331,7 +331,7 @@ window.KSP_CONFIG = {
     <div class="sbrand2"><span class="mono">HS</span><span class="bt"><b>HULUSATRIA</b><span>GROUP</span></span></div>
     <div class="unit">KSP Hulusatria Madani<small id="who" style="display:block;opacity:.85;font-size:12.5px;margin-top:2px"></small></div>
     <nav class="menu" id="nav" aria-label="Menu utama"></nav>
-    <div class="safe">Data Anda aman, terproteksi SSL<button id="out">Keluar</button></div>
+    <div class="safe">Data Anda aman, terproteksi SSL<button id="gpw">Ganti kata sandi saya</button><button id="out">Keluar</button></div>
   </aside>
   <div id="scrim"></div>
   <main>
@@ -1661,6 +1661,12 @@ $("#oform").onsubmit=function(e){
     return SB.rpc("claim_owner",{p_hp:hp,p_nama:nm}).then(sbCek)}).then(function(){o.textContent="";return masukApp()})
   .catch(function(e){o.textContent=sbErr(e)}).then(function(){b.disabled=false});
 };
+$("#gpw").onclick=function(){if(!SB||!SESI)return;
+  var pw=prompt("Ganti kata sandi akun Anda sendiri.\nKetik kata sandi BARU (minimal 8 karakter):");if(pw==null)return;
+  if(pw.length<8){alert("Kata sandi minimal 8 karakter.");return}
+  var pw2=prompt("Ketik sekali lagi kata sandi baru:");if(pw2==null)return;
+  if(pw2!==pw){alert("Kata sandi kedua tidak sama. Silakan ulangi.");return}
+  SB.auth.updateUser({password:pw}).then(sbCek).then(function(){berhasil("Kata sandi diganti","Mulai sekarang masuk dengan kata sandi baru. Simpan baik-baik.")},function(e){alert("Kata sandi belum berganti: "+sbErr(e))})};
 $("#out").onclick=function(){if(dirty||saving){if(!confirm("Masih ada data yang sedang disimpan. Tetap keluar?"))return}SB.auth.signOut().then(function(){location.reload()},function(){location.reload()})};
 var fails=0,lockUntil=0,timer;
 function lock(){lockUntil=Date.now()+30000;$("#lform").querySelector(".btn").disabled=true;tick();timer=setInterval(tick,500)}
