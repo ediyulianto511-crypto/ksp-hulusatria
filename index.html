@@ -660,25 +660,29 @@ document.querySelectorAll(".logo").forEach(function(i){i.src=LOGO;i.alt="Hulusat
 var MOD={awal:null,tam:[]},flash="",ROLE="Ketua (owner)";
 
 function isOwner(){return ROLE=="Ketua (owner)"}
+/* Tanggal modal awal selalu mengikuti hari pertama transaksi (permintaan Ketua 2026-11-02). Data impor lama tidak dihitung. */
+function trxPertama(){var m="",f=function(t){t=String(t||"").slice(0,10);if(/^\d{4}-\d{2}-\d{2}$/.test(t)&&(!m||t<m))m=t};
+  LOAN.forEach(function(l){if(!l.imp)f(l.tg)});PAY.forEach(function(p){if(!p.imp)f(p.tg)});TX.forEach(function(t){f(t.tg)});BU.forEach(function(b){f(b.tg)});(MOD.tam||[]).forEach(function(x){f(x.tg)});return m}
+function modAwalTg(){return MOD.awal?(trxPertama()||MOD.awal.tg):""}
 function modalPage(tr){
   var aw=MOD.awal?MOD.awal.jml:0,tm=MOD.tam.reduce(function(a,x){return a+x.jml},0);
-  var K=[["Modal awal",MOD.awal?"Dicatat "+tgl(MOD.awal.tg):"Belum dicatat",rp(aw)],["Tambah modal",MOD.tam.length+" kali penambahan",rp(tm)],["Total modal","Modal awal + tambah modal",rp(aw+tm)]];
+  var K=[["Modal awal",MOD.awal?"Tanggal "+tgl(modAwalTg())+" (hari pertama transaksi)":"Belum dicatat",rp(aw)],["Tambah modal",MOD.tam.length+" kali penambahan",rp(tm)],["Total modal","Modal awal + tambah modal",rp(aw+tm)]];
   var cards='<div class="grid" style="margin-bottom:16px">'+K.map(function(k,i){var n=[1,2,4][i];return '<div class="k" style="--bg-c:var(--c'+n+');--tx-c:var(--t'+n+')"><div><h4>'+k[0]+"</h4><p>"+k[1]+"</p></div><strong>"+k[2]+"</strong></div>"}).join("")+"</div>";
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   var form=isOwner()?
     '<div class="panel" style="margin-bottom:16px"><div class="phead"><div><h3>'+(tr=="Tambah modal"?"Tambah modal KSP":"Modal KSP")+'</h3><p>'+(tr=="Tambah modal"?"Catat tambahan modal dari Ketua (owner).":tr?"Modal awal KSP dari Ketua (owner).":"Modal awal dan tambah modal dari Ketua (owner).")+'</p></div></div><form id="mdform" novalidate><div class="fg">'+
     F("mow","Pemilik modal",'<input id="mow" type="text" value="Ketua (owner)" readonly>')+
     (tr?'<input id="mj" type="hidden" value="'+tr+'">':F("mj","Jenis",SEL("mj",["Modal awal","Tambah modal"],"")))+
-    F("mt","Tanggal",'<input id="mt" type="date">')+
+    F("mt","Tanggal",'<input id="mt" type="date"'+(tr=="Modal awal"&&trxPertama()?' readonly':'')+'>')+
     F("mn","Jumlah (Rp)",'<input id="mn" type="text" inputmode="numeric" placeholder="Contoh: 50.000.000" autocomplete="off">')+
     F("mk","Keterangan (opsional)",'<input id="mk" type="text" autocomplete="off">')+
-    '</div><div id="mmsg" class="ok" role="status">'+flash+'</div><button class="btn" type="submit" style="max-width:260px">Simpan modal</button><p class="mutp">'+(tr=="Tambah modal"?"Setiap tambah modal tercatat sebagai catatan baru.":"Modal awal hanya satu. Menyimpan modal awal lagi akan memperbarui nilainya.")+'</p></form></div>':
+    '</div><div id="mmsg" class="ok" role="status">'+flash+'</div><button class="btn" type="submit" style="max-width:260px">Simpan modal</button><p class="mutp">'+(tr=="Tambah modal"?"Setiap tambah modal tercatat sebagai catatan baru.":"Modal awal hanya satu. Menyimpan modal awal lagi akan memperbarui nilainya. Tanggalnya otomatis mengikuti hari pertama transaksi"+(trxPertama()?" ("+tgl(trxPertama())+")":"")+".")+'</p></form></div>':
     '<div class="panel" style="margin-bottom:16px"><div class="empty"><b>Hanya Ketua (owner) yang dapat mencatat modal</b>Anda masuk sebagai '+ex(ROLE)+". Anda tetap bisa melihat ringkasan dan riwayat modal.</div></div>";
   flash="";if(tr)return cards+form;
   return cards+form+modalHist();
 }
 function modalHist(dari,per){
-  var R=[];if(MOD.awal)R.push({tg:MOD.awal.tg,j:"Modal awal",jml:MOD.awal.jml,ket:MOD.awal.ket});
+  var R=[];if(MOD.awal)R.push({tg:modAwalTg(),j:"Modal awal",jml:MOD.awal.jml,ket:MOD.awal.ket});
   MOD.tam.forEach(function(x){R.push({tg:x.tg,j:"Tambah modal",jml:x.jml,ket:x.ket})});
   if(dari)R=R.filter(function(r){return r.tg>=dari});
   R.sort(function(a,b){return b.tg>a.tg?1:b.tg<a.tg?-1:0});
@@ -689,11 +693,13 @@ function modalHist(dari,per){
 }
 function bindModal(){
   var f=$("#mdform");if(!f||!isOwner())return;
-  $("#mt").value=today();
+  $("#mt").value=today();var mj0=$("#mj");if(trxPertama()&&mj0&&mj0.value=="Modal awal")$("#mt").value=trxPertama();
+  if(mj0&&mj0.tagName=="SELECT")mj0.onchange=function(){var r=this.value=="Modal awal"&&trxPertama();$("#mt").readOnly=!!r;$("#mt").value=r?trxPertama():today()};
   f.onsubmit=function(e){e.preventDefault();
     var j=$("#mj").value,tg=$("#mt").value,v=parseInt($("#mn").value.replace(/[^0-9]/g,""),10)||0,k=$("#mk").value.trim(),o=$("#mmsg");
     if(!tg){o.className="err";o.textContent="Isi tanggal.";return}
     if(v<=0){o.className="err";o.textContent="Isi jumlah dengan angka lebih dari 0.";return}
+    if(j=="Modal awal"&&trxPertama())tg=trxPertama();
     if(j=="Modal awal"){flash=MOD.awal?"Modal awal diperbarui menjadi "+rp(v)+".":"Modal awal "+rp(v)+" tersimpan.";MOD.awal={jml:v,tg:tg,ket:k}}
     else{MOD.tam.push({jml:v,tg:tg,ket:k,at:jamNow()});flash="Tambah modal "+rp(v)+" tersimpan."}
     berhasil("Modal berhasil disimpan",flash);page();
@@ -876,7 +882,7 @@ function bebanNm(j){var n=String(j).replace(/^Biaya /i,"");return /^[A-Z][a-z]/.
 function pad3(n){return String(n).padStart(3,"0")}
 function jurnal(){var J=[],add=function(tg,ref,ket,L){if(!tg)return;L=L.filter(function(x){return x[1]||x[2]});if(L.length)J.push({tg:tg,ref:ref,ket:ket,L:L})};
   var IMP=LOAN.filter(function(l){return l.imp&&!l.pt}).reduce(function(a,l){return a+(l.saldoAwal||0)},0);
-  if(MOD.awal)add(MOD.awal.tg,"MD-001","Modal awal"+(MOD.awal.ket?" · "+MOD.awal.ket:""),[["Kas",MOD.awal.jml-IMP,0],["Piutang pinjaman anggota",IMP,0],["Modal disetor",0,MOD.awal.jml]]);
+  if(MOD.awal)add(modAwalTg(),"MD-001","Modal awal"+(MOD.awal.ket?" · "+MOD.awal.ket:""),[["Kas",MOD.awal.jml-IMP,0],["Piutang pinjaman anggota",IMP,0],["Modal disetor",0,MOD.awal.jml]]);
   (MOD.tam||[]).forEach(function(m,i){add(m.tg,"MD-"+pad3(i+2),"Tambah modal"+(m.ket?" · "+m.ket:""),[["Kas",m.jml,0],["Modal disetor",0,m.jml]])});
   TX.forEach(function(t,i){if(/^Potongan otomatis/.test(t.ket||""))return;var r="SP-"+pad3(i+1),k=t.jenis+" "+t.nama;
     if(t.tipe=="masuk")add(t.tg,r,"Setoran "+k.toLowerCase().replace(t.nama.toLowerCase(),t.nama),[["Kas",t.jml,0],[t.jenis,0,t.jml]]);
@@ -1618,7 +1624,7 @@ function eksporData(){var t=today(),mk=function(no){return mktNama(no)};
   "Angsuran":PAY.map(function(p){var l=LOAN.filter(function(x){return x.id==p.id})[0]||{};return {"Tanggal":p.tg,"No pinjaman":p.id,"Nama":l.nama||"","Jumlah":p.jml,"Denda":p.denda||0,"Keterangan":p.ket||""}}),
   "Simpanan":TX.map(function(x){return {"Tanggal":x.tg,"No anggota":x.no,"Nama":x.nama,"Jenis":x.jenis,"Masuk":x.tipe=="masuk"?x.jml:0,"Keluar":x.tipe=="masuk"?0:x.jml,"Keterangan":x.ket||""}}),
   "Pengeluaran BU":BU.map(function(b){return {"Tanggal":b.tg,"Jenis":b.jenis,"Jumlah":b.jml,"Keterangan":b.ket||""}}),
-  "Modal":[MOD.awal?{"Tanggal":MOD.awal.tg,"Jenis":"Modal awal","Jumlah":MOD.awal.jml,"Keterangan":MOD.awal.ket||""}:null].concat((MOD.tam||[]).map(function(m){return {"Tanggal":m.tg,"Jenis":"Tambah modal","Jumlah":m.jml,"Keterangan":m.ket||""}})).filter(Boolean),
+  "Modal":[MOD.awal?{"Tanggal":modAwalTg(),"Jenis":"Modal awal","Jumlah":MOD.awal.jml,"Keterangan":MOD.awal.ket||""}:null].concat((MOD.tam||[]).map(function(m){return {"Tanggal":m.tg,"Jenis":"Tambah modal","Jumlah":m.jml,"Keterangan":m.ket||""}})).filter(Boolean),
   "Karyawan":KAR.map(function(k){return {"No":k.no,"Nama":k.nama,"Jabatan":k.jab,"No HP":k.hp||"","Tanggal masuk":k.tm||"","Aktif":k.aktif===false?"Tidak":"Ya"}})}}
 function eksporXlsx(btn){var m=$("#exmsg");btn.disabled=true;m.className="mutp";m.textContent="Menyiapkan file cadangan...";
   pakaiXlsx().then(function(X){var wb=X.utils.book_new(),D=eksporData();
