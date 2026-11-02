@@ -1456,6 +1456,9 @@ function bindForm(kar){
   $("#ktp2").onchange=fl.onchange;
   var KS=function(){
     var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:"",rw:"",kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,jab:$("#fjab").value,cab:$("#fcab")?$("#fcab").value:CAB[0],tm:today()},m="",o=$("#fmsg"),rr=$("#frr").value.split("/").map(function(x){return x.trim()});d.rt=rr[0]||"";d.rw=rr[1]||"";
+    var rkb=$("#krb").value.trim(),rkn=$("#krn").value.trim(),rka=$("#kra").value.trim();d.rk=rkb||rkn?{b:rkb,n:rkn,a:rka||d.nama}:null;
+    if(d.rk&&!(rkb&&rkn)){o.className="err";o.textContent="Rekening penghasilan: isi bank dan nomor rekening, atau kosongkan keduanya.";return}
+    if(karEd){karSimpanEdit(d,ktpFile);if(ktpFile){ktpFile=null;showOcr()}return}
     if(!d.jab)m="Pilih jabatan.";
     else if(!ktpFile)m="Unggah foto KTP karyawan dulu.";
     else if(!d.nama)m="Isi nama sesuai KTP.";
@@ -1475,7 +1478,7 @@ function bindForm(kar){
     else if(!isOwner())m="Hanya Ketua yang bisa menambah karyawan dan membuat akun login.";
     else if(($("#fpass").value||"").length<8)m="Isi password login minimal 8 karakter.";
     if(m){o.className="err";o.textContent=m;return}
-    d.hp=hpNorm(d.hp);d.no=nomorKar();d.dt=Date.now();d.aktif=true;d.user=d.hp;d.foto=1;var btn=f.querySelector('[type=submit]');btn.disabled=true;o.className="mutp";o.textContent="Membuat akun login...";
+    if(!d.rk)delete d.rk;d.hp=hpNorm(d.hp);d.no=nomorKar();d.dt=Date.now();d.aktif=true;d.user=d.hp;d.foto=1;var btn=f.querySelector('[type=submit]');btn.disabled=true;o.className="mutp";o.textContent="Membuat akun login...";
     buatAkun(d.hp,$("#fpass").value,d.nama,d.jab,d.no).then(function(){btn.disabled=false;simpanFoto(d.no,ktpFile);KAR.push(d);flash="Karyawan "+d.nama+" ("+d.jab+") tersimpan. Username login: "+d.user+". Sampaikan kata sandinya langsung ke yang bersangkutan.";berhasil("Karyawan berhasil disimpan",flash);page();var o2=$("#fmsg");if(o2){o2.className="ok";o2.textContent=flash;flash=""}},function(e){btn.disabled=false;o.className="err";o.textContent="Akun login gagal dibuat: "+sbErr(e)})
   };
   var fmc=$("#fmc");if(!kar&&fmc)fmc.onchange=function(){if(!angEdit&&$("#fno"))$("#fno").value=nomor(this.value)};
@@ -1644,7 +1647,7 @@ function nomorKar(){var m=0;KAR.forEach(function(k){var n=parseInt(String(k.no||
 function karForm(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   var cloud='<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>';
-  return '<div class="panel"><div class="phead"><div><h3>Input karyawan baru</h3><p>Urutan data mengikuti KTP, jabatan menentukan hak akses.</p></div></div><form id="mform" novalidate>'+
+  return '<div class="panel"><div class="phead"><div><h3 id="kttl">Input karyawan baru</h3><p id="ksub">Urutan data mengikuti KTP, jabatan menentukan hak akses.</p></div></div><form id="mform" novalidate>'+
   '<div style="background:#fff;border:1px solid var(--line);border-radius:22px;padding:18px 18px 16px;margin-bottom:18px;box-shadow:0 1px 6px rgba(0,0,0,.05)">'+
   '<p style="margin:0 0 4px;font-size:12.5px;letter-spacing:.12em;font-weight:700;color:var(--ma)">AKSES &amp; DOKUMEN KARYAWAN</p><p class="mutp" style="margin:0 0 14px">Lengkapi akses login dan upload KTP sebelum data karyawan disimpan.</p>'+
   '<div class="fg">'+F("fuser","Username login",'<input id="fuser" type="text" placeholder="Dari nomor HP" readonly style="border-style:dashed">')+F("fpass","Password login",'<input id="fpass" type="text" placeholder="Minimal 8 karakter, dibuat Ketua" autocomplete="off">')+
@@ -1668,16 +1671,40 @@ function karForm(){
   F("fkb","Kabupaten",'<select id="fkb"></select>')+F("fkc","Kecamatan",'<select id="fkc"></select>')+F("fkl","Kelurahan / Desa",'<select id="fkl"></select>')+
   F("fcab","Penempatan cabang",SEL("fcab",CAB.map(ex),""))+
   F("fmk","Masa kerja",'<input id="fmk" type="text" value="0 Bulan" readonly>')+
-  '</div><div id="fmsg" class="ok" role="status"></div><button class="pbtn" type="submit" style="width:100%;margin-top:18px;border-radius:16px;padding:14px;font-weight:700">Simpan</button><p class="mutp">Username login otomatis dari nomor HP. Kata sandi dibuat oleh Ketua dan diberikan langsung ke karyawan.</p></form></div>';
+  '</div><p class="lsec" style="margin:18px 0 4px;font-weight:700">Rekening penerimaan penghasilan</p><p class="mutp" style="margin:0 0 6px">Rekening untuk transfer gaji / penghasilan. Boleh dikosongkan.</p><div class="fg">'+
+  F("krb","Bank",'<input id="krb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
+  F("krn","No. rekening",'<input id="krn" type="text" inputmode="numeric" placeholder="Contoh: 0004-01-000000-30-7" autocomplete="off">')+
+  F("kra","Atas nama rekening",'<input id="kra" type="text" placeholder="Nama pemilik rekening" autocomplete="off">')+
+  '</div><div id="fmsg" class="ok" role="status"></div><button class="pbtn" type="submit" id="ksv" style="width:100%;margin-top:18px;border-radius:16px;padding:14px;font-weight:700">Simpan</button><button class="lnk" type="button" id="kbatal" hidden onclick="karEditSelesai()">Batal edit</button><p class="mutp">Username login otomatis dari nomor HP. Kata sandi dibuat oleh Ketua dan diberikan langsung ke karyawan.</p></form></div>';
 }
 var karQ="";
 function masaKerja(iso){if(!iso)return "0 Bulan";var a=new Date(iso+"T00:00:00"),n=new Date(),m=(n.getFullYear()-a.getFullYear())*12+n.getMonth()-a.getMonth()-(n.getDate()<a.getDate()?1:0);if(m<0)m=0;var y=Math.floor(m/12),b=m%12;return (y?y+" Tahun ":"")+(b||!y?b+" Bulan":"")}
-function karRows(){var q=karQ.trim().toLowerCase(),out="",vc=viewCab();KAR.forEach(function(k,i){if(q&&String(k.nama).toLowerCase().indexOf(q)<0)return;if(vc&&cabOf(k)!=vc)return;out+="<tr><td>"+(i+1)+"</td><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+ex(cabOf(k))+"</td><td>"+ex(k.hp||"-")+"</td><td>"+ex(k.nik||"-")+"</td><td>"+(k.tm?tgl(k.tm):"-")+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+"</td><td>"+(k.aktif?"Aktif":"Nonaktif")+"</td><td>"+(k.foto?'<button class="pbtn" onclick="lihatKtp(\''+k.no+'\')">Lihat</button>':"-")+'</td><td>'+(profilHp(k.hp||k.user)?"Ada":'<span style="color:#A12B3C">Belum ada</span>')+'</td><td><button class="pbtn" onclick="aturAkun('+i+')">'+(profilHp(k.hp||k.user)?"Ganti sandi":"Buat akun")+'</button> <button class="pbtn" onclick="karTog('+i+')">'+(k.aktif?"Nonaktifkan":"Aktifkan")+'</button> <button class="pbtn" onclick="karDel('+i+')">Hapus</button></td></tr>'});return out||'<tr><td colspan="12">Tidak ada karyawan yang cocok.</td></tr>'}
-function karHTML(){
+function karRows(){var q=karQ.trim().toLowerCase(),out="",vc=viewCab();KAR.forEach(function(k,i){if(q&&String(k.nama).toLowerCase().indexOf(q)<0)return;if(vc&&cabOf(k)!=vc)return;out+="<tr><td>"+(i+1)+"</td><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+ex(cabOf(k))+"</td><td>"+ex(k.hp||"-")+"</td><td>"+ex(k.nik||"-")+"</td><td>"+(k.rk&&k.rk.n?ex(k.rk.b+" "+k.rk.n)+"<br><small>a.n. "+ex(k.rk.a||k.nama)+"</small>":"-")+"</td><td>"+(k.tm?tgl(k.tm):"-")+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+"</td><td>"+(k.aktif?"Aktif":"Nonaktif")+"</td><td>"+(k.foto?'<button class="pbtn" onclick="lihatKtp(\''+k.no+'\')">Lihat</button>':"-")+'</td><td>'+(profilHp(k.hp||k.user)?"Ada":'<span style="color:#A12B3C">Belum ada</span>')+'</td><td><button class="pbtn" style="background:#3F9C55;color:#fff" onclick="karEditMulai('+i+')">Edit</button> <button class="pbtn" onclick="aturAkun('+i+')">'+(profilHp(k.hp||k.user)?"Ganti sandi":"Buat akun")+'</button> <button class="pbtn" onclick="karTog('+i+')">'+(k.aktif?"Nonaktifkan":"Aktifkan")+'</button> <button class="pbtn" onclick="karDel('+i+')">Hapus</button></td></tr>'});return out||'<tr><td colspan="13">Tidak ada karyawan yang cocok.</td></tr>'}
+/* Edit karyawan: data dimuat ke formulir atas. Cabang diganti lewat Mutasi karyawan. */
+var karEd="";
+function karEditMulai(i){var k=KAR[i];if(!k)return;if(!isOwner()){berhasil("Khusus Ketua","Hanya Ketua yang bisa mengubah data karyawan.");return}
+  karEd=k.no;var v=function(id,x){var e=$("#"+id);if(e)e.value=x==null?"":x};
+  v("fk",k.nik);v("fn",k.nama);v("fh",k.hp);v("fuser",k.user||k.hp);v("ft",k.tl);v("fg",k.tg);setCI("fj",k.jk);setCI("fag",k.ag);setCI("fst",k.st);v("fpk",k.pk);setCI("fwn",k.wn||"WNI");v("fa",k.al);v("frr",(k.rt||"")+(k.rw?" / "+k.rw:""));
+  if(k.kb&&k.kc&&k.kl){WIL[k.kb]=WIL[k.kb]||{};WIL[k.kb][k.kc]=WIL[k.kb][k.kc]||[];if(WIL[k.kb][k.kc].indexOf(k.kl)<0)WIL[k.kb][k.kc].push(k.kl);
+    fill("fkb",Object.keys(WIL),"Pilih kabupaten");$("#fkb").value=k.kb;fill("fkc",Object.keys(WIL[k.kb]),"Pilih kecamatan");$("#fkc").value=k.kc;fill("fkl",WIL[k.kb][k.kc],"Pilih kelurahan / desa");$("#fkl").value=k.kl}
+  setCI("fjab",k.jab);setCI("fcab",cabOf(k));$("#fcab").disabled=true;v("fmk",k.tm?masaKerja(k.tm):"0 Bulan");var rk=k.rk||{};v("krb",rk.b);v("krn",rk.n);v("kra",rk.a);
+  var pf=profilHp(k.hp||k.user);$("#fh").readOnly=!!pf;$("#fpass").value="";$("#fpass").disabled=true;$("#fpass").placeholder="Ganti sandi lewat tombol di tabel";
+  $("#kttl").textContent="Edit karyawan · "+k.nama;$("#ksub").textContent="Ubah data lalu tekan Simpan perubahan. Foto KTP tidak perlu diunggah ulang. Penempatan cabang diganti lewat Mutasi karyawan."+(pf?" Nomor HP terkunci karena dipakai sebagai username login.":"");
+  $("#ksv").textContent="Simpan perubahan";$("#kbatal").hidden=false;var o=$("#fmsg");o.className="ok";o.textContent="";$("#mform").closest(".panel").scrollIntoView({behavior:"smooth"})}
+function karEditSelesai(){karEd="";page()}
+function karSimpanEdit(d,foto){var k=KAR.filter(function(x){return x.no==karEd})[0],o=$("#fmsg"),m="";if(!k)return;
+  if(!d.jab)m="Pilih jabatan.";else if(!d.nama)m="Isi nama sesuai KTP.";else if(!/^(\+62|0)[0-9]{8,13}$/.test(d.hp))m="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";else if(!/^[0-9]{16}$/.test(d.nik))m="NIK harus 16 angka.";
+  else if(KAR.some(function(x){return x.no!=k.no&&x.nik==d.nik}))m="NIK ini sudah terdaftar sebagai karyawan lain.";else if(KAR.some(function(x){return x.no!=k.no&&hpNorm(x.hp)==hpNorm(d.hp)}))m="Nomor HP ini sudah dipakai karyawan lain.";
+  if(m){o.className="err";o.textContent=m;return}
+  var pf=profilHp(k.hp||k.user),jabLama=k.jab;["nama","hp","nik","tl","tg","jk","al","rt","rw","kb","kc","kl","ag","st","pk","wn","jab"].forEach(function(f){k[f]=d[f]});k.hp=hpNorm(k.hp);if(!pf)k.user=k.hp;
+  if(d.rk)k.rk=d.rk;else delete k.rk;if(foto){k.foto=1;simpanFoto(k.no,foto)}saveSoon();
+  var done=function(){karEd="";flash="";berhasil("Data karyawan diperbarui",k.nama+" · "+k.jab);page()};
+  if(pf&&(jabLama!=k.jab||pf.nama!=k.nama))SB.rpc("set_profile",{p_uid:pf.user_id,p_hp:pf.hp,p_nama:k.nama,p_jab:k.jab,p_kar_no:k.no,p_aktif:!!k.aktif}).then(sbCek).then(muatProfil).then(done,function(e){done();berhasil("Data tersimpan, akun login belum ikut berubah",sbErr(e))});else done()}
+function karHTML(){karEd="";
   var jr=JAB.map(function(j){var n=KAR.filter(function(k){return k.jab==j&&k.aktif}).length;return "<tr><td>"+j+'</td><td class="num">'+n+"</td></tr>"}).join("");
   return karForm()+
   '<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Rincian karyawan</h3><p>'+KAR.length+' karyawan terdaftar</p></div><button class="pbtn" onclick="window.print()">Cetak daftar</button></div>'+
-  (KAR.length?'<div class="field" style="margin-bottom:12px"><input id="kq" type="search" placeholder="Cari nama karyawan..." autocomplete="off" aria-label="Cari nama karyawan"></div><div class="tblw"><table class="tbl wide"><thead><tr><th>No</th><th>Nama</th><th>Jabatan</th><th>Cabang</th><th>Username / HP</th><th>NIK</th><th>Tanggal masuk</th><th>Masa kerja</th><th>Status</th><th>Foto KTP</th><th>Akun login</th><th>Aksi</th></tr></thead><tbody id="karbody">'+karRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada karyawan</b>Isi form di atas untuk menambah karyawan pertama.</div>')+"</div>"+
+  (KAR.length?'<div class="field" style="margin-bottom:12px"><input id="kq" type="search" placeholder="Cari nama karyawan..." autocomplete="off" aria-label="Cari nama karyawan"></div><div class="tblw"><table class="tbl wide"><thead><tr><th>No</th><th>Nama</th><th>Jabatan</th><th>Cabang</th><th>Username / HP</th><th>NIK</th><th>Rekening penghasilan</th><th>Tanggal masuk</th><th>Masa kerja</th><th>Status</th><th>Foto KTP</th><th>Akun login</th><th>Aksi</th></tr></thead><tbody id="karbody">'+karRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada karyawan</b>Isi form di atas untuk menambah karyawan pertama.</div>')+"</div>"+
   '<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Jabatan</h3><p>Jumlah karyawan aktif per jabatan</p></div></div><div class="tblw"><table class="tbl"><thead><tr><th>Jabatan</th><th class="num">Karyawan aktif</th></tr></thead><tbody>'+jr+"</tbody></table></div></div>";
 }
 var mutQ="",mutC="";
