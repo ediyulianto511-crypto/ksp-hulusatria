@@ -468,7 +468,6 @@ function formHTML(){
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
   F("fno","Nomor anggota",'<input id="fno" type="text" value="'+nomor()+'" readonly>')+
-  F("fh","Nomor HP / WhatsApp",'<input id="fh" type="tel" inputmode="tel" placeholder="Contoh: 0812xxxxxxxx" autocomplete="off">')+
   F("fk","NIK",'<input id="fk" type="text" inputmode="numeric" maxlength="16" placeholder="16 digit NIK" autocomplete="off">')+
   F("ft","Tempat lahir",'<input id="ft" type="text" placeholder="Contoh: Jakarta" autocomplete="off">')+
   F("fg","Tanggal lahir",'<input id="fg" type="date">')+
@@ -483,7 +482,8 @@ function formHTML(){
   F("fst","Status perkawinan",SEL("fst",["Belum kawin","Kawin","Cerai hidup","Cerai mati"],"Pilih"))+
   F("fpk","Pekerjaan",'<input id="fpk" type="text" placeholder="Pekerjaan sesuai KTP" autocomplete="off">')+
   F("fwn","Kewarganegaraan",SEL("fwn",["WNI","WNA"],""))+
-  '</div><p class="lsec" style="margin:18px 0 4px;font-weight:700">Rekening pencairan</p><p class="mutp" style="margin:0 0 6px">Boleh dikosongkan. Dipakai otomatis saat pencairan pinjaman lewat transfer.</p><div class="fg">'+
+  '</div><p class="lsec" style="margin:18px 0 4px;font-weight:700">Kontak dan rekening pencairan</p><p class="mutp" style="margin:0 0 6px">Rekening boleh dikosongkan. Dipakai otomatis saat pencairan pinjaman lewat transfer.</p><div class="fg">'+
+  F("fh","Nomor HP / WhatsApp",'<input id="fh" type="tel" inputmode="tel" placeholder="Contoh: 0812xxxxxxxx" autocomplete="off">')+
   F("frb","Bank",'<input id="frb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
   F("frn","No. rekening",'<input id="frn" type="text" inputmode="numeric" placeholder="Contoh: 0004-01-000000-30-7" autocomplete="off">')+
   F("fra","Atas nama rekening",'<input id="fra" type="text" placeholder="Nama pemilik rekening" autocomplete="off">')+
