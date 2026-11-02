@@ -1050,26 +1050,30 @@ function bindPin(){
 }
 /* ===== Persetujuan uang keluar: proposal pinjaman, simpanan keluar, pengeluaran BU =====
    Ajuan disimpan di AJU. Saldo, kas, dan laporan belum berubah sampai ajuan disetujui (dan untuk pinjaman, direalisasi Administrasi). */
-var AJU=[],realSel="",AJT={pin:"Proposal pinjaman",sim:"Simpanan keluar",bu:"Pengeluaran BU"},APVDEF={m:2000000,a:5000000,b:20000000};
-function apvLim(){var v=REG.apv||{};return {m:v.m!=null&&v.m!==""&&+v.m>=0?+v.m:APVDEF.m,a:+v.a>0?+v.a:APVDEF.a,b:+v.b>0?+v.b:APVDEF.b}}
+var AJU=[],realSel="",AJT={pin:"Proposal pinjaman",sim:"Simpanan keluar",bu:"Pengeluaran BU"},APVDEF={m:2000000,a:5000000,b:10000000,c:15000000};
+function apvLim(){var v=REG.apv||{};return {m:v.m!=null&&v.m!==""&&+v.m>=0?+v.m:APVDEF.m,a:+v.a>0?+v.a:APVDEF.a,b:+v.b>0?+v.b:APVDEF.b,c:+v.c>0?+v.c:APVDEF.c}}
 function siapa(){return (PROF&&PROF.nama)||ROLE}
 function ajuBaruId(){return "AJ-"+String(AJU.reduce(function(a,x){var m=/^AJ-(\d+)$/.exec(x.id||"");return m?Math.max(a,+m[1]):a},0)+1).padStart(4,"0")}
 function jamNow(){return new Date().toISOString()}
 function tglJam(s){var d=new Date(s);return isNaN(d)?"-":d.toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
 function ajuOf(id){return AJU.filter(function(x){return x.id==id})[0]}
-/* Wewenang pinjaman per jumlah: 1 Analis Kredit, 2 Manager Operasional, 3 Manager Utama atau Ketua. Pejabat lebih tinggi boleh menyetujui yang lebih kecil. */
-var LVL={"Analis Kredit":1,"Manager Operasional":2,"Manager Utama":3,"Ketua (owner)":3},APV_UANG=["Ketua (owner)","Manager Utama","Manager Operasional"];
-function pinLvl(v){var L=apvLim();return v<=L.a?1:v<=L.b?2:3}
-function lvlTxt(n){return n==1?"Analis Kredit, Manager Operasional, Manager Utama, atau Ketua":n==2?"Manager Operasional, Manager Utama, atau Ketua":"Manager Utama atau Ketua"}
+/* Persetujuan pinjaman berjenjang: Analis Kredit (1) → Manager Operasional (2) → Manager Utama (3) → Ketua (4).
+   Jumlah pinjaman menentukan sampai jenjang mana. Ajuan naik satu per satu; kalau ditolak di satu jenjang, berhenti. Ketua boleh memutuskan di jenjang mana pun. */
+var LVL={"Analis Kredit":1,"Manager Operasional":2,"Manager Utama":3,"Ketua (owner)":4},LVLN=[null,"Analis Kredit","Manager Operasional","Manager Utama","Ketua"],APV_UANG=["Ketua (owner)","Manager Utama","Manager Operasional"];
+function pinLvl(v){var L=apvLim();return v<=L.a?1:v<=L.b?2:v<=L.c?3:4}
+function lvlTxt(n){return LVLN.slice(1,n+1).join(" → ")}
+function ajuLv(x){return x.lv||1}
+function alurHTML(x){var need=pinLvl(ajuJml(x)),cur=ajuLv(x),A=x.aps||[];return LVLN.slice(1,need+1).map(function(n,i){var k=i+1,a=A.filter(function(q){return q.lv==k})[0];
+  return a?'<span style="color:#2E8B57">✓ '+n+' ('+ex(a.oleh)+')</span>':k==cur&&x.st=="tunggu"?'<b style="color:#B7791F">'+n+' (sekarang)</b>':x.st=="tolak"&&k==cur?'<b style="color:#B3261E">✗ '+n+'</b>':'<span style="color:var(--mut)">'+n+'</span>'}).join(" → ")}
 function ajuJml(x){return x.t=="pin"?(x.d.v2||x.d.v):x.d.jml}
 function cabOk(x){var c=myCab();return !c||cabNorm(x.cab)==c}
-function bisaSetuju(x,v){if(!cabOk(x))return false;if(x.t=="pin")return (LVL[ROLE]||0)>=pinLvl(v==null?x.d.v:v);return APV_UANG.indexOf(ROLE)>=0}
+function bisaSetuju(x){if(!cabOk(x))return false;if(x.t=="pin")return ROLE=="Ketua (owner)"||LVL[ROLE]==ajuLv(x);return APV_UANG.indexOf(ROLE)>=0}
 function ajuTunggu(){return AJU.filter(function(x){return x.st=="tunggu"&&bisaSetuju(x)})}
 function ajuSiap(){return AJU.filter(function(x){return x.t=="pin"&&x.st=="setuju"&&cabOk(x)})}
 function apvCount(){return ajuTunggu().length}
 function simTunda(no,j){return AJU.filter(function(x){return x.t=="sim"&&x.st=="tunggu"&&x.d.no==no&&x.d.jenis==j}).reduce(function(a,x){return a+x.d.jml},0)}
 function pinTunda(no){return AJU.filter(function(x){return x.t=="pin"&&(x.st=="tunggu"||x.st=="setuju")&&x.d.no==no})[0]}
-function ajuStat(x){if(x.st=="tunggu")return '<b style="color:#B7791F">Menunggu persetujuan</b>';
+function ajuStat(x){if(x.st=="tunggu")return '<b style="color:#B7791F">Menunggu persetujuan'+(x.t=="pin"?" "+LVLN[ajuLv(x)]:"")+'</b>'+(x.t=="pin"?"<br><small>"+alurHTML(x)+"</small>":"");
   if(x.st=="tolak")return '<b style="color:#B3261E">Ditolak</b>'+(x.tl?"<br><small>"+ex(x.tl.oleh)+" ("+ex(x.tl.jab)+"): "+ex(x.tl.alasan)+"</small>":"");
   if(x.st=="batal")return '<b style="color:var(--mut)">Dibatalkan pengaju</b>';
   var ap=x.ap?"<br><small>Disetujui "+ex(x.ap.oleh)+" ("+ex(x.ap.jab)+")"+(x.ap.ket?": "+ex(x.ap.ket):"")+"</small>":"";
@@ -1138,28 +1142,31 @@ function bindReal(){document.querySelectorAll("[data-rsel]").forEach(function(b)
 function ajuCard(x){var ok=bisaSetuju(x),d=x.d,R=[],id=x.id,tl=null;
   if(x.t=="pin"){var r=hitung(d.model,d.v,d.n),la=saldoLalu(d.no,today());tl=tolakPin(d.no,today());
     R=[["Anggota",ex(d.no)+" · "+ex(d.nama)+" · "+ex(statAng(d.no))],["Jenis pinjaman",MODEL[d.model].n+" · "+ex(d.stat)],["Realisasi pinjaman diajukan",rp(d.v)],["Jangka waktu",tenorTxt(d.model,d.n)],["Angsuran",r.err?"-":rp(r.ang)+" per kali"],["Saldo pinjaman lalu",rp(la)],["Perkiraan terima bersih",r.err?"-":rp(Math.max(r.bersih-la,0))],["Marketing lapangan",ex(mktNama(d.mkt))]];
-    if(d.jam)R.push(["Jaminan",ex(d.jam.jenis)+" · taksiran "+rp(d.jam.nilai)]);if(d.cat)R.push(["Catatan survei",ex(d.cat)]);R.push(["Wewenang",lvlTxt(pinLvl(d.v))])}
+    if(d.jam)R.push(["Jaminan",ex(d.jam.jenis)+" · taksiran "+rp(d.jam.nilai)]);if(d.cat)R.push(["Catatan survei",ex(d.cat)]);R.push(["Alur persetujuan",alurHTML(x)])}
   else if(x.t=="sim")R=[["Anggota",ex(d.no)+" · "+ex(d.nama)],["Jenis simpanan",ex(d.jenis)],["Jumlah keluar",rp(d.jml)],["Saldo saat ini",rp(saldo(d.no,d.jenis))],["Keterangan",ex(d.ket||"-")]];
   else R=[["Jenis biaya",ex(d.jenis)],["Jumlah pengeluaran",rp(d.jml)],["Keterangan",ex(d.ket||"-")]];
   R.push(["Cabang",ex(cabNorm(x.cab))],["Diajukan",ex(x.oleh)+" ("+ex(x.jab)+") · "+tglJam(x.at)]);
   return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:'+(x.t=="pin"?"#00C0EF":x.t=="sim"?"#F39C12":"#DD4B39")+';--hf:#fff"><div><h3>'+AJT[x.t]+' · '+id+'</h3><p>'+rp(d.v||d.jml)+'</p></div></div>'+
   '<div class="tblw"><table class="tbl"><tbody>'+R.map(function(q){return "<tr><td style=\"width:42%\">"+q[0]+"</td><td><b>"+q[1]+"</b></td></tr>"}).join("")+'</tbody></table></div>'+(tl?tolakHTML(tl):"")+
-  (ok?'<div class="fg" style="margin-top:12px">'+(x.t=="pin"?'<div><label for="av_'+id+'">Jumlah disetujui (Rp)</label><div class="field"><input id="av_'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(d.v)+'"></div></div>':"")+'<div><label for="ar_'+id+'">Catatan / alasan (wajib kalau ditolak)</label><div class="field"><input id="ar_'+id+'" type="text" autocomplete="off"></div></div></div><div id="am_'+id+'" class="err" role="alert"></div><div style="display:flex;gap:10px;margin-top:10px"><button class="btn" type="button" data-aok="'+id+'" style="flex:1;margin:0;background:#2E8B57">Setujui</button><button class="btn" type="button" data-ano="'+id+'" style="flex:1;margin:0;background:#C0392B">Tolak</button></div>'+(x.t=="pin"?'<p class="mutp">Jumlah boleh diturunkan dari yang diajukan. Setelah disetujui, proposal masuk ke menu Realisasi pinjaman untuk dibukukan Administrasi.</p>':'<p class="mutp">Setelah disetujui, transaksi langsung tercatat dan saldo berubah.</p>'):
-  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?lvlTxt(pinLvl(d.v)):"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Batalkan ajuan ini</button></div>':""))+'</div>'}
+  (ok?'<div class="fg" style="margin-top:12px">'+(x.t=="pin"?'<div><label for="av_'+id+'">Jumlah disetujui (Rp)</label><div class="field"><input id="av_'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(d.v)+'"></div></div>':"")+'<div><label for="ar_'+id+'">Catatan / alasan (wajib kalau ditolak)</label><div class="field"><input id="ar_'+id+'" type="text" autocomplete="off"></div></div></div><div id="am_'+id+'" class="err" role="alert"></div><div style="display:flex;gap:10px;margin-top:10px"><button class="btn" type="button" data-aok="'+id+'" style="flex:1;margin:0;background:#2E8B57">Setujui</button><button class="btn" type="button" data-ano="'+id+'" style="flex:1;margin:0;background:#C0392B">Tolak</button></div>'+(x.t=="pin"?'<p class="mutp">Jumlah boleh diturunkan dari yang diajukan. Kalau masih ada jenjang di atas, ajuan naik ke jenjang berikutnya. Pinjaman baru bisa direalisasi setelah jenjang terakhir menyetujui. Kalau ditolak, ajuan berhenti.</p>':'<p class="mutp">Setelah disetujui, transaksi langsung tercatat dan saldo berubah.</p>'):
+  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?LVLN[ajuLv(x)]:"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Batalkan ajuan ini</button></div>':""))+'</div>'}
 function apvPage(){var T=AJU.filter(function(x){return x.st=="tunggu"&&cabOk(x)}).sort(function(a,b){return a.at<b.at?-1:1}),n=T.filter(function(x){return bisaSetuju(x)}).length,
   H=AJU.filter(function(x){return x.st!="tunggu"&&cabOk(x)}).sort(function(a,b){return a.at<b.at?1:-1}).slice(0,30),L=apvLim();
-  return '<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">'+(T.length?T.length+" ajuan menunggu"+(n?", "+n+" bisa Anda setujui":", tidak ada yang sesuai wewenang Anda")+".":"Tidak ada ajuan yang menunggu.")+' Wewenang pinjaman: sampai '+rp(L.m)+' Marketing Lapangan (tanpa ajuan, kecuali kenaikan pinjaman); sampai '+rp(L.a)+' Analis Kredit; sampai '+rp(L.b)+' Manager Operasional; di atasnya Manager Utama atau Ketua. Simpanan keluar dan pengeluaran BU: Ketua, Manager Utama, atau Manager Operasional cabang. Batas bisa diubah Ketua di bagian bawah halaman ini.</p></div>'+
+  return '<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">'+(T.length?T.length+" ajuan menunggu"+(n?", "+n+" bisa Anda setujui":", tidak ada yang sesuai wewenang Anda")+".":"Tidak ada ajuan yang menunggu.")+' Persetujuan pinjaman berjenjang: Analis Kredit → Manager Operasional → Manager Utama → Ketua. Sampai '+rp(L.a)+' cukup Analis Kredit; sampai '+rp(L.b)+' sampai Manager Operasional; sampai '+rp(L.c)+' sampai Manager Utama; di atasnya sampai Ketua. Marketing Lapangan tanpa ajuan sampai '+rp(L.m)+' (kecuali kenaikan pinjaman). Simpanan keluar dan pengeluaran BU: Ketua, Manager Utama, atau Manager Operasional cabang. Batas bisa diubah Ketua di bagian bawah halaman ini.</p></div>'+
   T.map(ajuCard).join("")+'<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Riwayat persetujuan</h3><p>30 ajuan terakhir yang sudah diputuskan</p></div></div>'+ajuTabel(H,"Belum ada riwayat persetujuan")+'</div>'+regApvPanel(ROLE=="Ketua (owner)"?"":" disabled")}
 function simTxOf(x){return {no:x.d.no,nama:x.d.nama,jenis:x.d.jenis,tipe:"keluar",jml:x.d.jml,tg:today(),ket:x.d.ket||"",cab:x.cab,aju:x.id}}
 function buRowOf(x){return {id:BU.reduce(function(a,y){return Math.max(a,y.id)},0)+1,tg:today(),jenis:x.d.jenis,jml:x.d.jml,ket:x.d.ket||"",aju:x.id}}
 function ajuSetuju(id){var x=ajuOf(id),m=$("#am_"+id);if(!x||x.st!="tunggu")return;var msg="",ket=($("#ar_"+id)||{}).value||"";
   if(!bisaSetuju(x)){m.textContent="Ajuan ini di luar wewenang "+ROLE+".";return}
   if(x.t=="pin"){var v=dig($("#av_"+id).value);if(v<=0)msg="Isi jumlah yang disetujui.";else if(v>x.d.v)msg="Jumlah disetujui tidak boleh lebih besar dari yang diajukan ("+rp(x.d.v)+").";else msg=cekPin({no:x.d.no,model:x.d.model,v:v,n:x.d.n,jam:x.d.jam},today());
-    if(msg){m.textContent=msg;return}if(v!=x.d.v)x.d.v2=v;else delete x.d.v2;x.st="setuju"}
+    if(msg){m.textContent=msg;return}if(v!=x.d.v)x.d.v2=v;else delete x.d.v2;
+    var lv=ROLE=="Ketua (owner)"?4:ajuLv(x),need=pinLvl(v);(x.aps=x.aps||[]).push({lv:ajuLv(x),oleh:siapa(),jab:ROLE,at:jamNow(),ket:ket.trim(),jml:v});
+    if(lv<need){x.lv=lv+1;saveSoon();berhasil("Ajuan diteruskan",AJT[x.t]+" "+id+" disetujui "+ROLE+", naik ke "+LVLN[x.lv]+".");nav();page();return}
+    x.st="setuju"}
   else if(x.t=="sim"){var s=saldo(x.d.no,x.d.jenis);if(x.d.jml>s){m.textContent="Saldo "+x.d.jenis.toLowerCase()+" tidak cukup. Saldo tersedia "+rp(s)+".";return}TX.push(simTxOf(x));x.st="selesai"}
   else{BU.push(buRowOf(x));x.st="selesai"}
   x.ap={oleh:siapa(),jab:ROLE,at:jamNow(),ket:ket.trim()};saveSoon();
-  berhasil("Ajuan disetujui",AJT[x.t]+" "+id+" "+rp(ajuJml(x))+(x.t=="pin"?" masuk ke menu Realisasi pinjaman.":" sudah tercatat."));nav();page()}
+  berhasil(x.t=="pin"?"Persetujuan akhir":"Ajuan disetujui",AJT[x.t]+" "+id+" "+rp(ajuJml(x))+(x.t=="pin"?" masuk ke menu Realisasi pinjaman.":" sudah tercatat."));nav();page()}
 function ajuTolak(id){var x=ajuOf(id),m=$("#am_"+id),al=(($("#ar_"+id)||{}).value||"").trim();if(!x||x.st!="tunggu"||!bisaSetuju(x))return;
   if(!al){m.textContent="Tulis alasan penolakan di kolom Catatan / alasan.";return}
   x.st="tolak";x.tl={oleh:siapa(),jab:ROLE,at:jamNow(),alasan:al};saveSoon();berhasil("Ajuan ditolak",AJT[x.t]+" "+id+" ditolak.");nav();page()}
@@ -1170,18 +1177,20 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
 /* Kenaikan pinjaman: top up dengan realisasi lebih besar dari realisasi pinjaman yang sedang berjalan. Selalu lewat persetujuan. */
 function naikPin(no,v){var A=aktifPin(no);return A.length>0&&v>A.reduce(function(m,l){return Math.max(m,l.pokok)},0)}
 function ajuBuat(t,cab,d){var x={id:ajuBaruId(),t:t,st:"tunggu",cab:cabNorm(cab),oleh:siapa(),jab:ROLE,at:jamNow(),d:d};
-  if(bisaSetuju(x))x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};
-  else if(t=="pin"&&ROLE=="Marketing Lapangan"&&!d.naik&&d.v<=apvLim().m)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Sesuai wewenang Marketing Lapangan"};AJU.push(x);saveSoon();return x}
+  if(t=="pin"){var L0=LVL[ROLE]||0,need=pinLvl(d.v);if(L0){x.aps=[];for(var k=1;k<=Math.min(L0,need);k++)x.aps.push({lv:k,oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri"});if(L0>=need)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};else x.lv=L0+1}}
+  else if(bisaSetuju(x))x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};
+  if(!x.ap&&t=="pin"&&ROLE=="Marketing Lapangan"&&!d.naik&&d.v<=apvLim().m)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Sesuai wewenang Marketing Lapangan"};AJU.push(x);saveSoon();return x}
 function apvNote(){var n=apvCount(),s=boleh("pin3")?ajuSiap().length:0;if(!n&&!s)return "";
   return '<div class="panel noprint apvn">'+(n?'<button class="pbtn" type="button" onclick="go(\'apv\')">'+n+' ajuan menunggu persetujuan Anda &rarr;</button>':"")+(s?'<button class="pbtn" type="button" onclick="go(\'pin3\')">'+s+' pinjaman siap direalisasi &rarr;</button>':"")+'</div>'}
 function regApvPanel(dis){var L=apvLim(),inp=function(id,lb,v){return '<label for="'+id+'" style="margin:10px 0 6px">'+lb+'</label><div class="field" style="max-width:260px"><input id="'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(v)+'"'+dis+'></div>'};
   return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>Batas wewenang persetujuan</h3><p>Realisasi pinjaman disetujui sesuai jumlahnya, lalu dibukukan Administrasi</p></div></div>'+
-  inp("r_apm","Marketing Lapangan boleh tanpa ajuan sampai (Rp)",L.m)+inp("r_apa","Analis Kredit menyetujui sampai (Rp)",L.a)+inp("r_apb","Manager Operasional menyetujui sampai (Rp)",L.b)+
-  '<p class="mutp">Proposal Marketing Lapangan sampai batasnya (pinjaman baru maupun top up) langsung masuk ke Realisasi tanpa ajuan. Di atas batas itu, dan setiap <b>kenaikan pinjaman</b> (top up yang lebih besar dari realisasi pinjaman sebelumnya), harus lewat persetujuan. Isi 0 kalau semua proposal Marketing harus diajukan. Di atas batas Manager Operasional disetujui Manager Utama atau Ketua. Pejabat yang lebih tinggi juga boleh menyetujui jumlah yang lebih kecil. Simpanan keluar dan pengeluaran BU disetujui Ketua, Manager Utama, atau Manager Operasional cabang. Simpanan keluar otomatis saat pelunasan close tidak perlu persetujuan.</p>'+(dis?'<p class="mutp">Batas wewenang hanya bisa diubah oleh Ketua (owner).</p>':'<div id="apmsg" class="ok" role="status"></div><button class="btn" type="button" id="apsave" style="max-width:260px">Simpan batas wewenang</button>')+'</div>'}
-function bindApv(){bindRpf();var b=$("#apsave");if(!b)return;b.onclick=function(){var o=$("#apmsg"),mm=dig($("#r_apm").value),a=dig($("#r_apa").value),c=dig($("#r_apb").value);if(ROLE!="Ketua (owner)")return;
+  inp("r_apm","Marketing Lapangan boleh tanpa ajuan sampai (Rp)",L.m)+inp("r_apa","Analis Kredit menyetujui sampai (Rp)",L.a)+inp("r_apb","Manager Operasional menyetujui sampai (Rp)",L.b)+inp("r_apc","Manager Utama menyetujui sampai (Rp)",L.c)+
+  '<p class="mutp">Proposal Marketing Lapangan sampai batasnya (pinjaman baru maupun top up) langsung masuk ke Realisasi tanpa ajuan. Di atas batas itu, dan setiap <b>kenaikan pinjaman</b> (top up yang lebih besar dari realisasi pinjaman sebelumnya), harus lewat persetujuan. Isi 0 kalau semua proposal Marketing harus diajukan. Persetujuan berjalan berurutan: Analis Kredit, lalu Manager Operasional, lalu Manager Utama, lalu Ketua, sampai jenjang yang sesuai jumlah pinjaman. Di atas batas Manager Utama harus sampai Ketua. Kalau satu jenjang menolak, ajuan berhenti dan tidak naik. Pinjaman baru bisa direalisasi setelah jenjang terakhir menyetujui. Simpanan keluar dan pengeluaran BU disetujui Ketua, Manager Utama, atau Manager Operasional cabang. Simpanan keluar otomatis saat pelunasan close tidak perlu persetujuan.</p>'+(dis?'<p class="mutp">Batas wewenang hanya bisa diubah oleh Ketua (owner).</p>':'<div id="apmsg" class="ok" role="status"></div><button class="btn" type="button" id="apsave" style="max-width:260px">Simpan batas wewenang</button>')+'</div>'}
+function bindApv(){bindRpf();var b=$("#apsave");if(!b)return;b.onclick=function(){var o=$("#apmsg"),mm=dig($("#r_apm").value),a=dig($("#r_apa").value),c=dig($("#r_apb").value),u=dig($("#r_apc").value);if(ROLE!="Ketua (owner)")return;
+  if(!(u>c)){o.className="err";o.textContent="Batas Manager Utama harus lebih besar dari batas Manager Operasional.";return}
   if(mm>a){o.className="err";o.textContent="Batas Marketing Lapangan tidak boleh lebih besar dari batas Analis Kredit.";return}
   if(!(a>0&&c>a)){o.className="err";o.textContent="Batas Manager Operasional harus lebih besar dari batas Analis Kredit.";return}
-  REG.apv={m:mm,a:a,b:c};saveSoon();berhasil("Batas wewenang tersimpan","Analis Kredit sampai "+rp(a)+", Manager Operasional sampai "+rp(c)+".");page()}}
+  REG.apv={m:mm,a:a,b:c,c:u};saveSoon();berhasil("Batas wewenang tersimpan","Analis Kredit sampai "+rp(a)+", Manager Operasional sampai "+rp(c)+".");page()}}
 
 function bindRpf(){document.querySelectorAll("[data-rpf]").forEach(function(i){i.oninput=function(){this.value=fmtRp(this.value)}})}
 /* Urutan daftar pinjaman: realisasi / top up terbaru di atas. */
