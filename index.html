@@ -127,17 +127,17 @@ main{margin-left:248px;min-height:100vh}
 .k h4{margin:0;font-size:15px}.k p{margin:2px 0 0;font-size:13px;opacity:.85}
 .k strong{font-size:24px;letter-spacing:-.01em}
 .grid.k6{grid-template-columns:repeat(2,minmax(0,1fr))}
-.kw{aspect-ratio:1.85/1;border-radius:6px;overflow:hidden;background:var(--kc);color:#fff;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.12);-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.kw .kb{position:relative;padding:14px 18px 10px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start}
+.kw{border-radius:6px;overflow:hidden;background:var(--kc);color:#fff;display:flex;flex-direction:column;box-shadow:0 1px 3px rgba(0,0,0,.12);-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.kw .kb{position:relative;padding:12px 18px 8px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:flex-start}
 .kw h4,.kw p{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kw strong{display:block;font-size:26px;line-height:1.15;position:relative;z-index:1}
 .kw h4{margin:6px 0 0;font-size:16px;font-weight:500;position:relative;z-index:1}
 .kw p{margin:4px 0 0;font-size:13px;opacity:.9;position:relative;z-index:1}
 .kw .ki{position:absolute;right:14px;top:12px;width:64px;height:64px;fill:none;stroke:rgba(0,0,0,.18);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
-.kw .kl{border:0;background:var(--kd);color:#fff;font:inherit;font-size:14px;padding:9px 8px;cursor:pointer;width:100%;text-transform:none}
+.kw .kl{border:0;background:var(--kd);color:#fff;font:inherit;font-size:14px;padding:7px 8px;cursor:pointer;width:100%;text-transform:none}
 .kw .kl:active{filter:brightness(.92)}
 .cksim h3{color:#33854A}.cksim .pbtn{background:#3F9C55;color:#fff}.cksim .pbtn[aria-pressed="true"]{background:#2D6F3F;outline-color:#9ED3AC}.cksim .tup .tb{background:#3F9C55;color:#fff}
-@media (max-width:640px){.grid.k6{gap:10px}.grid.k6 .k{padding:14px;min-height:130px;border-radius:16px}.grid.k6 .k h4{font-size:14px}.grid.k6 .k p{font-size:12px}.grid.k6 .k strong{font-size:18px;overflow-wrap:anywhere}.kw .kb{padding:6px 10px 4px}.kw strong{font-size:16px;white-space:nowrap}.kw h4{font-size:12.5px;margin-top:2px}.kw p{font-size:10.5px;margin-top:1px}.kw .ki{width:34px;height:34px;right:6px;top:6px}.kw .kl{font-size:12px;padding:4px}}
+@media (max-width:640px){.grid.k6{gap:10px}.grid.k6 .k{padding:14px;min-height:130px;border-radius:16px}.grid.k6 .k h4{font-size:14px}.grid.k6 .k p{font-size:12px}.grid.k6 .k strong{font-size:18px;overflow-wrap:anywhere}.kw{aspect-ratio:2.15/1}.kw .kb{padding:6px 10px 2px}.kw strong{font-size:17px;white-space:nowrap}.kw h4{font-size:13px;margin-top:1px;line-height:1.35}.kw p{display:none}.kw .ki{width:34px;height:34px;right:6px;top:6px}.kw .kl{font-size:11.5px;padding:3px}}
 .empty{padding:36px 16px;text-align:center;color:var(--mut)}
 .empty b{display:block;color:var(--ink);font-size:18px;margin-bottom:6px}
 .foot{padding:8px 28px 28px;font-size:12px;color:var(--mut)}
@@ -679,8 +679,8 @@ function hitung(k,p,nSel){
 }
 /* Cek rincian pinjaman (Dashboard): hitungan saja untuk menjawab calon peminjam di lapangan, tidak menyimpan apa pun. */
 var ckM="mg",ckP="",ckN="",ckOpen=false;
-/* Kotak laporan Dashboard: warna solid hijau, merah, biru, oranye, hijau, merah (contoh dari Ketua, 2 Nov 2026). [warna, warna strip bawah] */
-var KWR=[["#3F9C55","#33854A"],["#D04B3B","#B73F31"],["#1F9FD0","#1A89B4"],["#E08D1D","#C67A17"],["#3F9C55","#33854A"],["#D04B3B","#B73F31"]];
+/* Kotak laporan Dashboard: warna solid hijau, merah, biru, oranye, merah (NPL), hijau (Aset kredit) (Ketua, 2 Nov 2026). [warna, warna strip bawah] */
+var KWR=[["#3F9C55","#33854A"],["#D04B3B","#B73F31"],["#1F9FD0","#1A89B4"],["#E08D1D","#C67A17"],["#D04B3B","#B73F31"],["#3F9C55","#33854A"]];
 /* Tujuan "Lihat Detail" dan ikon tiap kotak: Saldo kas, Realisasi, Setoran, Pengeluaran, NPL, Aset kredit. */
 var KDT=[["lap1","M3 7h15a3 3 0 013 3v7a3 3 0 01-3 3H3zM3 7l12-4v4M16 13.5h2"],["pin2","M2 7h20v11H2zM12 15.5a3 3 0 100-6 3 3 0 000 6zM5 10.5v.5M19 14v.5"],["tag2","M12 3v11M7 9.5l5 5 5-5M4 15v5h16v-5"],["kel2","M6 2h12v20l-3-2-3 2-3-2-3 2zM9 7h6M9 11h6M9 15h4"],["tag1","M12 3L2 21h20zM12 10v5M12 18v.5"],["pin2","M3 20h18M5 16l5-5 4 3 6-7M15 7h5v5"]];
 function cekHTML(){var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
