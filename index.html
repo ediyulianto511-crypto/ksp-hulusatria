@@ -552,16 +552,16 @@ function bindSim(m){
 // Panel Simpanan: Transaksi simpanan (masuk/keluar) dan Riwayat simpanan.
 function simTrans(){
   var B=function(on,k,v,t){return '<button type="button" class="pbtn" '+k+'="'+v+'" aria-pressed="'+on+'">'+t+'</button>'};
-  var J=JNS.concat(isOwner()?["Modal"]:[]);if(J.indexOf(simJns)<0)simJns=J[0];
+  var J=["Simpanan pokok","Simpanan wajib"].concat(isOwner()?["Modal KSP","Tambah modal KSP"]:[]);if(J.indexOf(simJns)<0)simJns=J[0];
   var h='<div class="panel" style="margin-bottom:14px"><div class="kq" id="sarah" style="margin:0">'+B(simArah=="masuk","data-ar","masuk","Simpanan masuk")+B(simArah=="keluar","data-ar","keluar","Simpanan keluar")+'</div>'+
-    (simArah=="masuk"?'<label style="margin-top:12px">Jenis simpanan masuk</label><div class="kq" id="sjns" style="margin:0">'+J.map(function(j){return B(simJns==j,"data-sj",j,j=="Modal"?"Modal KSP":j)}).join("")+'</div>':"")+'</div>';
-  if(simArah=="masuk"&&simJns=="Modal")return h+modalPage(true);
+    (simArah=="masuk"?'<label style="margin-top:12px">Jenis simpanan masuk</label><div class="kq" id="sjns" style="margin:0">'+J.map(function(j){return B(simJns==j,"data-sj",j,j)}).join("")+'</div>':"")+'</div>';
+  if(simArah=="masuk"&&/modal/i.test(simJns))return h+modalPage(simJns=="Modal KSP"?"Modal awal":"Tambah modal");
   return h+simForm(simArah=="masuk",simArah=="masuk"?simJns:"");
 }
 function bindSimTrans(){
   var a=$("#sarah");if(a)a.onclick=function(e){var b=e.target.closest("[data-ar]");if(b){simArah=b.dataset.ar;page()}};
   var j=$("#sjns");if(j)j.onclick=function(e){var b=e.target.closest("[data-sj]");if(b){simJns=b.dataset.sj;page()}};
-  if(simArah=="masuk"&&simJns=="Modal")bindModal();else bindSim(simArah=="masuk");
+  if(simArah=="masuk"&&/modal/i.test(simJns))bindModal();else bindSim(simArah=="masuk");
 }
 function simDari(){var d=new Date();if(simPer=="1b")d.setMonth(d.getMonth()-1);else if(simPer=="1t")d.setFullYear(d.getFullYear()-1);else return "";var p=function(x){return String(x).padStart(2,"0")};return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())}
 function simList(){
@@ -583,13 +583,13 @@ function modalPage(tr){
   var cards='<div class="grid" style="margin-bottom:16px">'+K.map(function(k,i){var n=[1,2,4][i];return '<div class="k" style="--bg-c:var(--c'+n+');--tx-c:var(--t'+n+')"><div><h4>'+k[0]+"</h4><p>"+k[1]+"</p></div><strong>"+k[2]+"</strong></div>"}).join("")+"</div>";
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   var form=isOwner()?
-    '<div class="panel" style="margin-bottom:16px"><div class="phead"><div><h3>Modal KSP</h3><p>Modal awal dan tambah modal dari Ketua (owner).</p></div></div><form id="mdform" novalidate><div class="fg">'+
+    '<div class="panel" style="margin-bottom:16px"><div class="phead"><div><h3>'+(tr=="Tambah modal"?"Tambah modal KSP":"Modal KSP")+'</h3><p>'+(tr=="Tambah modal"?"Catat tambahan modal dari Ketua (owner).":tr?"Modal awal KSP dari Ketua (owner).":"Modal awal dan tambah modal dari Ketua (owner).")+'</p></div></div><form id="mdform" novalidate><div class="fg">'+
     F("mow","Pemilik modal",'<input id="mow" type="text" value="Ketua (owner)" readonly>')+
-    F("mj","Jenis",SEL("mj",["Modal awal","Tambah modal"],""))+
+    (tr?'<input id="mj" type="hidden" value="'+tr+'">':F("mj","Jenis",SEL("mj",["Modal awal","Tambah modal"],"")))+
     F("mt","Tanggal",'<input id="mt" type="date">')+
     F("mn","Jumlah (Rp)",'<input id="mn" type="text" inputmode="numeric" placeholder="Contoh: 50.000.000" autocomplete="off">')+
     F("mk","Keterangan (opsional)",'<input id="mk" type="text" autocomplete="off">')+
-    '</div><div id="mmsg" class="ok" role="status">'+flash+'</div><button class="btn" type="submit" style="max-width:260px">Simpan modal</button><p class="mutp">Modal awal hanya satu. Menyimpan modal awal lagi akan memperbarui nilainya.</p></form></div>':
+    '</div><div id="mmsg" class="ok" role="status">'+flash+'</div><button class="btn" type="submit" style="max-width:260px">Simpan modal</button><p class="mutp">'+(tr=="Tambah modal"?"Setiap tambah modal tercatat sebagai catatan baru.":"Modal awal hanya satu. Menyimpan modal awal lagi akan memperbarui nilainya.")+'</p></form></div>':
     '<div class="panel" style="margin-bottom:16px"><div class="empty"><b>Hanya Ketua (owner) yang dapat mencatat modal</b>Anda masuk sebagai '+ex(ROLE)+". Anda tetap bisa melihat ringkasan dan riwayat modal.</div></div>";
   flash="";if(tr)return cards+form;
   return cards+form+modalHist();
@@ -1475,7 +1475,7 @@ function bindBu(){
     BU.push({id:id,tg:today(),jenis:j,jml:v,ket:$("#bk").value.trim()});flash=j+" "+rp(v)+" tersimpan. Saldo kas ikut berkurang.";berhasil("Pengeluaran berhasil disimpan",flash);page()};
 }
 function page(){
-  if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal";cur="sim1"}
+  if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal KSP";cur="sim1"}
   saveSoon();var f=find(cur),t=f[0];
   $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":f[1]?f[1]+" / "+t:t;
   if(cur=="dash"){
