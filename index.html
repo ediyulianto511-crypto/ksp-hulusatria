@@ -908,11 +908,16 @@ function lapJurnal(){var m=lapM||today().slice(0,7),a=m+"-01",z=blnAkhir(m),J=ju
   '<p class="mutp">Jurnal dibuat otomatis dari setiap transaksi. Pembayaran angsuran dipecah menjadi pokok dan bunga sesuai perbandingan pokok terhadap total pengembalian.</p></div>'}
 /* ===== Tagihan ===== */
 function mktList(){return KAR.filter(function(k){return k.jab=="Marketing Lapangan"&&k.aktif!==false})}
+/* Marketing yang boleh dipilih di Tagihan: hanya marketing di cabang yang sedang dilihat (Administrasi dkk. otomatis cabangnya sendiri). */
+function mktListV(){var c=viewCab();return mktList().filter(function(k){return !c||cabOf(k)==c})}
+/* Marketing Lapangan hanya melihat tagihannya sendiri; jabatan lain tidak boleh memilih marketing dari cabang lain. */
+function tagKunci(){if(ROLE=="Marketing Lapangan"){var k=myKar();tagMk=k?k.no:"#";return}
+  if(tagMk&&tagMk!="-"&&!mktListV().some(function(k){return k.no==tagMk}))tagMk=""}
 function mktNama(no){if(!no)return "Belum ditentukan";var k=KAR.filter(function(x){return x.no==no})[0];return k?k.nama:"Belum ditentukan"}
 function mktCocok(l){return !tagMk||(tagMk=="-"?!mktList().some(function(k){return k.no==l.mkt}):l.mkt==tagMk)}
-function mktSel(id,val,all){var L=mktList();return '<select id="'+id+'"'+(id.indexOf("mk_")==0?' data-mk="'+id.slice(3)+'"':"")+'>'+(all?'<option value="">Semua marketing</option>':'<option value="">'+(L.length?"Pilih marketing":"Belum ada karyawan Marketing Lapangan")+'</option>')+L.map(function(k){return '<option value="'+k.no+'"'+(val==k.no?" selected":"")+'>'+ex(k.nama)+'</option>'}).join("")+(all?'<option value="-"'+(val=="-"?" selected":"")+'>Belum ditentukan</option>':"")+'</select>'}
+function mktSel(id,val,all){var L=id=="pmk"?mktList():mktListV(),kunci=ROLE=="Marketing Lapangan"&&id!="pmk";if(val&&val!="-"&&!L.some(function(k){return k.no==val})){var k0=KAR.filter(function(x){return x.no==val})[0];if(k0)L=L.concat([k0])}return '<select id="'+id+'"'+(kunci?" disabled":"")+(id.indexOf("mk_")==0?' data-mk="'+id.slice(3)+'"':"")+'>'+(all?'<option value="">Semua marketing</option>':'<option value="">'+(L.length?"Pilih marketing":"Belum ada karyawan Marketing Lapangan")+'</option>')+L.map(function(k){return '<option value="'+k.no+'"'+(val==k.no?" selected":"")+'>'+ex(k.nama)+'</option>'}).join("")+(all?'<option value="-"'+(val=="-"?" selected":"")+'>Belum ditentukan</option>':"")+'</select>'}
 function tagCocok(l){return !l.pt&&seeNo(l.no)&&mktCocok(l)&&(!tagJn||(l.model||"bl")==tagJn)}
-function jnSel(id){var A=LOAN.filter(function(l){return !l.pt&&sisaP(l)>0&&mktCocok(l)}),n=function(k){return A.filter(function(l){return (l.model||"bl")==k}).length};
+function jnSel(id){var A=LOAN.filter(function(l){return !l.pt&&sisaP(l)>0&&seeNo(l.no)&&mktCocok(l)}),n=function(k){return A.filter(function(l){return (l.model||"bl")==k}).length};
   return '<select id="'+id+'"><option value="">Semua jenis ('+A.length+')</option>'+MK.map(function(k){return '<option value="'+k+'"'+(tagJn==k?" selected":"")+'>'+MODEL[k].n+' ('+n(k)+')</option>'}).join("")+'</select>'}
 var tagJn="",tagMk="",tagF="due",tagQ="",tagOpen="",tag2M="",tag2S="";
 function hariAntara(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)}
@@ -930,7 +935,7 @@ function kolOf(l,asOf){if(sisaP(l)<=0)return null;if(l.pt)return {n:5,kode:"Pemu
   return {n:n,kode:KOL[n][0],nama:KOL[n][1],telat:tel,kali:c,kurang:kurang,dari:n==1?"":a>=b?"lama telat":"jumlah tunggakan"}}
 function kolBadge(q){if(q&&q.pt)return '<span class="kol kpt">Pemutihan</span>';return q?'<span class="kol k'+q.n+'" title="'+q.nama+'">'+q.kode+' · '+q.nama+'</span>':'<span class="kol k1">Lunas</span>'}
 var STX={late:"Terlambat",today:"Jatuh tempo hari ini",soon:"7 hari lagi",done:"Lunas",wait:"Belum jatuh tempo"};
-function tagPage(){
+function tagPage(){tagKunci();
   var t=today(),bln=t.slice(0,7),A=LOAN.filter(function(l){return sisaP(l)>0&&tagCocok(l)}).map(function(l){return {l:l,r:ringkas(l)}});
   var sToday=0,nToday=0,sLate=0,nLate=0,dLate=0,sSoon=0,nSoon=0;
   A.forEach(function(o){o.r.I.forEach(function(x){if(x.sisa<=0)return;if(x.st=="today"){sToday+=x.sisa;nToday++}else if(x.st=="late"){sLate+=x.sisa;dLate+=x.denda;nLate++}else if(x.st=="soon"){sSoon+=x.sisa;nSoon++}})});
@@ -938,9 +943,9 @@ function tagPage(){
   var C=[["Jatuh tempo hari ini",rp(sToday),nToday+" angsuran",4],["Terlambat",rp(sLate+dLate),nLate+" angsuran · denda "+rp(dLate),1],["7 hari ke depan",rp(sSoon),nSoon+" angsuran",2],["Tertagih bulan ini",rp(tert),"angsuran + denda",3]];
   var sum='<div class="tgsum">'+C.map(function(c){return '<div style="--bg-c:var(--c'+c[3]+');--tx-c:var(--t'+c[3]+')"><small>'+c[0]+'</small><strong>'+c[1]+'</strong><span>'+c[2]+'</span></div>'}).join("")+'</div>';
   var F=[["due","Hari ini & terlambat"],["soon","7 hari ke depan"],["all","Semua berjalan"],["done","Sudah lunas"]];
-  var ML=mktList(),rk=ML.map(function(k){return [k.no,k.nama]}).concat([["-","Belum ditentukan"]]).map(function(k){var n=0,s=0,d=0;LOAN.forEach(function(l){if(tagJn&&(l.model||"bl")!=tagJn)return;var own=k[0]=="-"?!ML.some(function(x){return x.no==l.mkt}):l.mkt==k[0];if(!own||sisaP(l)<=0)return;var r=ringkas(l);if(r.due.length){n++;s+=r.tung;d+=r.denda}});return [k[0],k[1],n,s,d]}).filter(function(k){return k[0]!="-"||k[2]});
+  var ML=mktList(),rk=mktListV().map(function(k){return [k.no,k.nama]}).concat([["-","Belum ditentukan"]]).map(function(k){var n=0,s=0,d=0;LOAN.forEach(function(l){if(l.pt||!seeNo(l.no))return;if(tagJn&&(l.model||"bl")!=tagJn)return;var own=k[0]=="-"?!ML.some(function(x){return x.no==l.mkt}):l.mkt==k[0];if(!own||sisaP(l)<=0)return;var r=ringkas(l);if(r.due.length){n++;s+=r.tung;d+=r.denda}});return [k[0],k[1],n,s,d]}).filter(function(k){return k[0]!="-"||k[2]});
   var rekap=tagMk?"":'<div class="tblw" style="margin:0"><table class="tbl"><thead><tr><th>Marketing</th><th class="num">Pinjaman ditagih</th><th class="num">Tunggakan + denda</th></tr></thead><tbody>'+rk.map(function(k){return '<tr><td><button class="lnk" type="button" data-rmk="'+k[0]+'">'+ex(k[1])+'</button></td><td class="num">'+k[2]+'</td><td class="num">'+rp(k[3]+k[4])+'</td></tr>'}).join("")+'</tbody></table></div>';
-  var mkf='<div class="fg"><div><label for="tmk" style="margin-top:0">Marketing lapangan</label><div class="field" style="margin-bottom:12px">'+mktSel("tmk",tagMk,true)+'</div></div><div><label for="tjn" style="margin-top:0">Jenis pinjaman</label><div class="field" style="margin-bottom:12px">'+jnSel("tjn")+'</div></div></div>'+(ML.length?"":'<p class="mutp" style="margin:-6px 0 12px">Belum ada karyawan dengan jabatan Marketing Lapangan. Tambahkan di Data karyawan &gt; Daftar karyawan.</p>');
+  var mkf='<div class="fg"><div><label for="tmk" style="margin-top:0">Marketing lapangan</label><div class="field" style="margin-bottom:12px">'+mktSel("tmk",tagMk,true)+'</div></div><div><label for="tjn" style="margin-top:0">Jenis pinjaman</label><div class="field" style="margin-bottom:12px">'+jnSel("tjn")+'</div></div></div>'+(ROLE=="Marketing Lapangan"?'<p class="mutp" style="margin:-6px 0 12px">Anda hanya melihat tagihan milik Anda sendiri.</p>':ML.length?"":'<p class="mutp" style="margin:-6px 0 12px">Belum ada karyawan dengan jabatan Marketing Lapangan. Tambahkan di Data karyawan &gt; Daftar karyawan.</p>');
   var flt='<div class="mgrid">'+F.map(function(f){return '<button class="pbtn" type="button" data-tf="'+f[0]+'" aria-pressed="'+(tagF==f[0])+'">'+f[1]+'</button>'}).join("")+'</div>';
   var srch='<label for="tq" style="margin-top:0">Cari anggota</label><div class="field" style="margin-bottom:4px"><input id="tq" type="search" placeholder="Cari nama anggota atau nomor pinjaman" value="'+ex(tagQ)+'" autocomplete="off"></div>';
   var KC=[0,0,0,0,0,0];A.forEach(function(o){var z=kolOf(o.l);if(z)KC[z.n]++});
@@ -1003,7 +1008,7 @@ function bindTag(){
     f.onsubmit=function(e){e.preventDefault();bayarTagihan(l,dig($("#tb_"+id).value),$("#tt_"+id).value||today(),$("#tm_"+id),$("#tmt_"+id).value)};
     var cb=f.querySelector("[data-close]");if(cb)cb.onclick=function(){closeLunas(l,$("#tt_"+id).value||today(),$("#tm_"+id),$("#tmt_"+id).value)};
     f.querySelector("[data-full]").onclick=function(){var tg=$("#tt_"+id).value||today();bayarTagihan(l,lunasNet(l,tg),tg,$("#tm_"+id),$("#tmt_"+id).value)}})}
-function tag2Page(){
+function tag2Page(){tagKunci();
   var bln=tag2M||today().slice(0,7),R=[];
   var KQ={};LOAN.forEach(function(l){if(!tagCocok(l))return;var z=kolOf(l);KQ[l.id]=z;if(tag2K&&(!z||z.n!=tag2K))return;inst(l).forEach(function(x){if(x.tg.slice(0,7)!=bln)return;if(tag2S&&x.st!=tag2S&&!(tag2S=="open"&&x.sisa>0))return;R.push({l:l,x:x})})});
   R.sort(function(a,b){return a.x.tg<b.x.tg?-1:a.x.tg>b.x.tg?1:0});
