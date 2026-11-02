@@ -669,7 +669,7 @@ function hitung(k,p,nSel){
 var ckM="mg",ckP="",ckN="",ckOpen=false;
 function cekHTML(){var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   return '<div class="noprint" style="margin:0 0 16px;padding:14px 16px;border:1px solid var(--line);border-radius:16px"><div class="phead"><div><h3>Simulasi Pinjaman</h3><p>Hitung angsuran untuk anggota yang bertanya. Hanya simulasi, tidak tersimpan.</p></div></div>'+
-  '<div class="mgrid">'+MK.map(function(k){return '<button class="pbtn" type="button" data-ck="'+k+'" aria-pressed="'+(k==ckM)+'">'+MODEL[k].n+"</button>"}).join("")+'</div>'+
+  '<label style="margin:0 0 6px">Jenis pinjaman</label>'+'<div class="mgrid">'+MK.map(function(k){return '<button class="pbtn" type="button" data-ck="'+k+'" aria-pressed="'+(k==ckM)+'">'+MODEL[k].n+"</button>"}).join("")+'</div>'+
   '<div class="fg">'+F("ckp","Realisasi pinjaman (Rp)",'<input id="ckp" type="text" inputmode="numeric" placeholder="Contoh: 5.000.000" autocomplete="off" value="'+ckP+'">')+F("ckn","Jangka waktu",'<select id="ckn"></select>')+'</div>'+
   '<div id="ckout"></div><p class="mutp" style="margin:8px 0 0">Kategori '+MODEL[ckM].n+': '+tierTxt(ckM)+'. Angka mengikuti Regulasi Pendapatan &amp; Bunga.</p></div>'}
 function cekBind(){var inp=$("#ckp"),sel=$("#ckn"),out=$("#ckout");if(!inp)return;
@@ -678,8 +678,7 @@ function cekBind(){var inp=$("#ckp"),sel=$("#ckn"),out=$("#ckout");if(!inp)retur
     ckN=sel.value;var r=p&&t?hitung(ckM,p,+sel.value):null;
     if(!p){out.innerHTML="";return}
     if(!r||r.err){out.innerHTML='<p class="err" style="margin:12px 0 0">Realisasi pinjaman '+rp(p)+' belum masuk kategori '+MODEL[ckM].n+'. Kategori: '+tierTxt(ckM)+'.</p>';return}
-    var per=MODEL[ckM].per;
-    out.innerHTML='<div class="tup"><div><small>Realisasi pinjaman</small><strong>'+rp(p)+'</strong></div><div><small>Jangka waktu</small><strong>'+tenorTxt(ckM,r.n).split(" · ")[0]+'</strong></div><div class="tb"><small>Angsuran</small><strong>'+rp(r.ang)+'</strong><p>Per '+per+'</p></div><div><small>Jumlah angsuran</small><strong>'+r.n+' kali</strong></div></div>'};
+    out.innerHTML='<div class="tup"><div><small>Jenis pinjaman</small><strong>'+MODEL[ckM].n+'</strong></div><div><small>Realisasi pinjaman</small><strong>'+rp(p)+'</strong></div><div><small>Jangka waktu</small><strong>'+tenorTxt(ckM,r.n).split(" · ")[0]+'</strong></div><div class="tb"><small>Angsuran</small><strong>'+rp(r.ang)+'</strong></div><div><small>Jumlah angsuran</small><strong>'+r.n+' kali</strong></div></div>'};
   inp.oninput=function(){var d=dig(this.value);this.value=d?d.toLocaleString("id-ID"):"";upd()};sel.onchange=upd;
   document.querySelectorAll("[data-ck]").forEach(function(b){b.onclick=function(){ckM=this.dataset.ck;ckN="";page()}});upd()}
 function isoD(d){var q=function(x){return String(x).padStart(2,"0")};return d.getFullYear()+"-"+q(d.getMonth()+1)+"-"+q(d.getDate())}
