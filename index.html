@@ -418,7 +418,7 @@ var HAKDEF={"Akuntan":["sim3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","
 "Analis Kredit":["ang2","pin1","pin2","tag1","tag2","set3"],
 "Marketing Lapangan":["ang1","ang2","pin1","tag1","tag2","set3"]},HAK={},hakJab="Akuntan";
 function hakOf(j){return HAK[j]?HAK[j]:(HAKDEF[j]||["set3"])}
-function boleh(id){if(id=="lap6"&&myCab())return false;if(id=="dash"||id=="apv"||ROLE=="Ketua (owner)")return true;if(id=="pin1"&&ROLE=="Marketing Lapangan")return true;if(id=="pin3"&&ROLE=="Administrasi")return true;if(id=="sim0"||id=="kar2"||id=="set2"||id=="set4")return false;return hakOf(ROLE).indexOf(id)>=0}
+function boleh(id){if(id=="lap6"&&myCab())return false;if(id=="dash"||id=="apv"||ROLE=="Ketua (owner)")return true;if(id=="pin1"&&ROLE=="Marketing Lapangan")return true;if(id=="pin3"&&(ROLE=="Administrasi"||LVL[ROLE]))return true;if(id=="sim0"||id=="kar2"||id=="set2"||id=="set4")return false;return hakOf(ROLE).indexOf(id)>=0}
 var OWNONLY={sim0:"khusus Ketua",kar2:"khusus Ketua",set2:"khusus Ketua",set4:"khusus Ketua"};
 function hakPage(){
   var own=ROLE=="Ketua (owner)",J=JAB.filter(function(j){return j!="Ketua (owner)"});if(J.indexOf(hakJab)<0)hakJab=J[0];
@@ -444,7 +444,7 @@ function nav(){gCabUI();
     if(m.length==1){var nx=M.slice(ix+1),hasAny=false;for(var q=0;q<nx.length&&nx[q].length>1;q++){if(nx[q][3]?nx[q][3].some(function(c){return boleh(c[0])}):boleh(nx[q][0]))hasAny=true}return hasAny?"<small>"+m[0]+"</small>":""}
     if(m[3]){m=m.slice();m[3]=m[3].filter(function(c){return boleh(c[0])});if(!m[3].length)return ""}
     if(m.length==1)return "<small>"+m[0]+"</small>";
-    var bv=m[0]=="tag"?tagCount():m[0]=="apv"?apvCount():m[0]=="pin"&&boleh("pin3")?ajuSiap().length:m[2],sub=m[3],bd=bv?'<span class="badge">'+bv+"</span>":"";
+    var bv=m[0]=="tag"?tagCount():m[0]=="apv"?apvCount():m[0]=="pin"&&boleh("pin3")?ajuSiap().length+ajuTunggu().filter(function(x){return x.t=="pin"}).length:m[2],sub=m[3],bd=bv?'<span class="badge">'+bv+"</span>":"";
     if(m[0]=="ang")return '<button class="nav'+(cur=="ang1"||cur=="ang2"?" on":"")+'" data-id="'+sub[0][0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     if(!sub)return '<button class="nav'+(m[0]==cur?" on":"")+'" data-id="'+m[0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     var o=!!open[m[0]],aktif=!o&&sub.some(function(c){return c[0]==cur});
@@ -1105,8 +1105,10 @@ function realisasiPin(x,tg,cm){var P=x.d,v=ajuJml(x),no=P.no,a=MEM.filter(functi
   return {id:id,msg:"Pinjaman "+id+" ("+MODEL[P.model].n+") untuk "+a.nama+" berhasil direalisasi."+(lalu?" Saldo lalu "+rp(lalu)+" ("+LA.map(function(l){return l.id}).join(", ")+") dilunasi.":"")+" Terima bersih "+rp(r.bersih-lalu)+", angsuran "+rp(r.ang)+" per kali."}}
 /* Halaman Realisasi pinjaman (Administrasi) */
 function realPage(){var L=ajuSiap(),x=L.filter(function(y){return y.id==realSel})[0],h=doneBlock();if(!x)realSel="";
-  if(!L.length)return h+'<div class="panel"><div class="empty"><b>Belum ada proposal yang siap direalisasi</b>Proposal pinjaman yang sudah disetujui di menu Persetujuan akan muncul di sini.</div></div>';
-  h+='<div class="panel"><div class="phead"><div><h3>Proposal disetujui, menunggu realisasi</h3><p>'+L.length+' proposal · klik Pilih untuk merealisasikan</p></div></div><div class="tblw"><table class="tbl wide"><thead><tr><th>No. ajuan</th><th>Anggota</th><th>Jenis pinjaman</th><th class="num">Disetujui</th><th>Disetujui oleh</th><th>Marketing</th><th class="noprint">Aksi</th></tr></thead><tbody>'+
+  var W=AJU.filter(function(y){return y.t=="pin"&&y.st=="tunggu"&&cabOk(y)}).sort(function(a,b){return a.at<b.at?-1:1});
+  h+='<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:#F39C12;--hf:#fff"><div><h3>1. Persetujuan proposal</h3><p>'+(W.length?W.length+" proposal menunggu persetujuan":"Tidak ada proposal yang menunggu")+' · wewenang sesuai jumlah pinjaman</p></div></div>'+(W.length?"":'<p class="mutp" style="margin:0">Proposal baru dari Marketing Lapangan akan muncul di sini.</p>')+'</div>'+W.map(ajuCard).join("");
+  if(!L.length)return h+'<div class="panel"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>2. Realisasi pinjaman</h3><p>Dibukukan Administrasi</p></div></div><div class="empty"><b>Belum ada proposal yang siap direalisasi</b>Proposal pinjaman yang sudah disetujui di menu Persetujuan akan muncul di sini.</div></div>';
+  h+='<div class="panel"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>2. Realisasi: proposal disetujui</h3><p>'+L.length+' proposal · klik Pilih untuk merealisasikan</p></div></div><div class="tblw"><table class="tbl wide"><thead><tr><th>No. ajuan</th><th>Anggota</th><th>Jenis pinjaman</th><th class="num">Disetujui</th><th>Disetujui oleh</th><th>Marketing</th><th class="noprint">Aksi</th></tr></thead><tbody>'+
   L.map(function(y){var d=y.d;return '<tr'+(y.id==realSel?' style="background:var(--c1)"':'')+'><td>'+y.id+'</td><td>'+ex(d.no)+' · '+ex(d.nama)+'</td><td>'+MODEL[d.model].n+' · '+ex(d.stat)+'<br><small>'+tenorTxt(d.model,d.n)+'</small></td><td class="num">'+rp(ajuJml(y))+'</td><td>'+(y.ap?ex(y.ap.oleh)+'<br><small>'+ex(y.ap.jab)+'</small>':'-')+'</td><td>'+ex(mktNama(d.mkt))+'</td><td class="noprint"><button class="pbtn" type="button" data-rsel="'+y.id+'">'+(y.id==realSel?"Dipilih":"Pilih")+'</button></td></tr>'}).join("")+'</tbody></table></div></div>';
   return h+(x?realForm(x):"")}
 function realForm(x){var P=x.d,F=function(id,lb,inp,au){return '<div><label for="'+id+'">'+lb+'</label><div class="field'+(au?" auto":"")+'">'+inp+"</div></div>"};
@@ -1753,7 +1755,7 @@ function page(){
   }else{
     h+='<div class="panel"><div class="empty"><b>Halaman ini dibuat di tahap berikutnya</b>Kirim rincian isi halaman '+esc(t)+" dan kita tambahkan bertahap.</div></div>";
   }
-  $("#view").innerHTML=h;if(cur=="ang1"||cur=="ang2"){if($("#mform"))bindForm();if($("#anglist"))bindAng2()}if(cur=="sim1")bindSimTrans();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="pin3")bindReal();if(cur=="apv"||cur=="set2")bindRpf();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="set4")bindCab();if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();
+  $("#view").innerHTML=h;if(cur=="ang1"||cur=="ang2"){if($("#mform"))bindForm();if($("#anglist"))bindAng2()}if(cur=="sim1")bindSimTrans();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="pin3")bindReal();if(cur=="apv"||cur=="set2"||cur=="pin3")bindRpf();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="set4")bindCab();if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();
 }
 /* ===== Laporan perbandingan cabang (satu baris per cabang + total) ===== */
 function lapCabang(){var bl=today().slice(0,7),LC={};LOAN.forEach(function(l){LC[l.id]=l});
