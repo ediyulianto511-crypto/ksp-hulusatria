@@ -176,6 +176,7 @@ main{margin-left:248px;min-height:100vh}
 .pdoc .drop small{display:block;font-size:12px;opacity:.8}
 .ptolak{text-align:center;border:2px solid #C0392B;background:#FDECEA;color:#B3261E;border-radius:18px;padding:18px 16px;margin:16px 0 0}.ptolak b{display:block;font-size:26px;letter-spacing:.06em}.ptolak span{display:block;font-size:18px;font-weight:800;margin-top:6px}.ptolak small{display:block;margin-top:8px;font-size:13px;font-weight:600;line-height:1.5}
 .tpop{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}.tpop .tpb{background:var(--panel,#fff);border-radius:22px;padding:16px;max-width:460px;width:100%;text-align:center}.tpop .ptolak{margin:0}
+.field.auto select:disabled{color:var(--ink);-webkit-text-fill-color:var(--ink);opacity:1;font-weight:700}
 .apvn{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}.apvn .pbtn{background:#C0392B;color:#fff}
 .pdone{border:1px solid #B9DEC7;background:#E7F4EC;color:#1F5E3A;border-radius:20px;padding:18px;margin-bottom:18px}
 .pdone b{display:block;font-size:17px}.pdone p{margin:4px 0 0;font-size:14px}
@@ -249,7 +250,7 @@ main{margin-left:248px;min-height:100vh}
 .tbl .st{margin:0}
 .st.jn{background:var(--c3);color:var(--t3)}
 .kol{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;margin-top:6px;white-space:nowrap;-webkit-print-color-adjust:exact;print-color-adjust:exact}.tbl .kol{margin:0}
-.kol.k1{background:#E7F4EC;color:#1F5E3A}.kol.k2{background:#FDF3C4;color:#6B5000}.kol.k3{background:#FDE2C8;color:#8A4300}.kol.k4{background:#FBD5DC;color:#8E1B2F}.kol.k5{background:#7E1426;color:#FFFFFF}
+.kol.k1{background:#E7F4EC;color:#1F5E3A}.kol.k2{background:#FDF3C4;color:#6B5000}.kol.k3{background:#FDE2C8;color:#8A4300}.kol.k4{background:#FBD5DC;color:#8E1B2F}.kol.k5{background:#7E1426;color:#FFFFFF}.kol.kpt{background:#E5E7EB;color:#374151}.ptt>tbody>tr>td,.ptt>thead>tr>th{padding:8px 6px;font-size:13px}
 .kq{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 6px}.kq .pbtn{padding:7px 12px;font-size:13px}.kq .pbtn[aria-pressed="false"]{background:var(--c6);color:var(--t6)}
 .kdet{margin-top:10px;font-size:13px;color:var(--mut)}
 .tbl .lnk{text-align:left}
@@ -380,16 +381,18 @@ window.KSP_CONFIG = {
 </div>
 
 <script>
-var I={apv:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5",kar:"M4 5h16v14H4zM9 11a2 2 0 100-4 2 2 0 000 4zM6 16c0-2 1.5-3 3-3s3 1 3 3M14 9h4M14 13h4",dash:"M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",ang:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-4 4-6 8-6s8 2 8 6",sim:"M4 7h16v12H4zM4 11h16",pin:"M6 4h12v16H6zM9 9h6M9 13h6",tag:"M3 6h18v12H3zM3 10h18",kel:"M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M9 12h6",lap:"M5 20V10M12 20V4M19 20v-7",set:"M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4"};
-var M=[["MENU UTAMA"],["dash","Dashboard"],["apv","Persetujuan"],
+var I={apv:"M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6zM8.5 12l2.5 2.5 4.5-5",kar:"M4 5h16v14H4zM9 11a2 2 0 100-4 2 2 0 000 4zM6 16c0-2 1.5-3 3-3s3 1 3 3M14 9h4M14 13h4",dash:"M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z",ang:"M12 12a4 4 0 100-8 4 4 0 000 8zM4 20c0-4 4-6 8-6s8 2 8 6",sim:"M4 7h16v12H4zM4 11h16",pin:"M6 4h12v16H6zM9 9h6M9 13h6",tag:"M3 6h18v12H3zM3 10h18",kel:"M12 3a9 9 0 100 18 9 9 0 000-18zM12 8v8M9 12h6",lap:"M5 20V10M12 20V4M19 20v-7",set:"M4 7h10M18 7h2M4 17h2M10 17h10M16 5v4M8 15v4",pmt:"M5 4h14v16H5zM9 9l6 6M15 9l-6 6"};
+var M=[["MENU UTAMA"],["dash","Dashboard"],
 ["ang","Anggota",0,[["ang1","Input anggota baru"],["ang2","Rincian anggota (cek & cetak)"]]],
 ["sim","Simpanan",0,[["sim1","Transaksi simpanan"],["sim3","Riwayat simpanan"]]],
 ["pin","Pinjaman",0,[["pin1","Proposal pinjaman"],["pin3","Realisasi pinjaman"],["pin2","Cek & cetak daftar pinjaman"]]],
 ["tag","Tagihan",0,[["tag1","Daftar tagihan"],["tag2","Cek & cetak daftar tagihan"]]],
 ["kel","Pengeluaran (BU)",0,[["kel1","Tambah transaksi"],["kel2","Cek & cetak pengeluaran (BU)"]]],
 ["lap","Laporan",0,[["lap1","Laporan kas HS"],["lap2","Laporan neraca"],["lap3","Jurnal umum"],["lap4","Laporan hasil kerja"],["lap5","Penghasilan karyawan (gaji)"],["lap6","Perbandingan cabang"]]],
-["PENGATURAN"],
+["apv","Persetujuan"],
 ["kar","Data karyawan",0,[["kar1","Input karyawan baru"],["kar3","Mutasi karyawan"],["kar2","Hak akses"]]],
+["PENGATURAN"],
+["pmt","Data pemutihan",0,[["pmt1","Input angsuran pemutihan"],["pmt2","Rincian anggota pemutihan"]]],
 ["set","Pengaturan",0,[["set2","Regulasi Pendapatan & Bunga"],["set4","Kantor cabang"],["set3","Tema (pilihan warna tampilan)"]]]];
 var KAR=[],BU=[],MUT=[],CAB0=["Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
 /* Kantor cabang: data lama tanpa cabang (atau "Kantor Pusat") dihitung sebagai Cabang 1. */
@@ -400,7 +403,9 @@ function loanCab(l){var m=MEM.filter(function(x){return x.no==l.no})[0];return m
 var JAB=["Ketua (owner)","Akuntan","Manager Utama","Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
 /* Jabatan ini hanya melihat data cabangnya sendiri. Ketua, Akuntan, Manager Utama melihat semua cabang (tetap dibatasi Hak akses menu). */
 var JAB_CAB=["Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
-function myCab(){if(JAB_CAB.indexOf(ROLE)<0)return "";var p=typeof PROF!="undefined"&&PROF||{},k=KAR.filter(function(x){return (p.kar_no&&x.no==p.kar_no)||(p.hp&&hpNorm(x.hp||x.user)==hpNorm(p.hp))})[0];return cabOf(k||{})}
+/* Data karyawan milik akun yang sedang login (dicocokkan dari nomor karyawan atau HP). */
+function myKar(){var p=typeof PROF!="undefined"&&PROF||{};return KAR.filter(function(x){return (p.kar_no&&x.no==p.kar_no)||(p.hp&&hpNorm(x.hp||x.user)==hpNorm(p.hp))})[0]}
+function myCab(){if(JAB_CAB.indexOf(ROLE)<0)return "";return cabOf(myKar()||{})}
 /* Filter cabang global (atas aplikasi) untuk Ketua, Akuntan, Manager Utama. Diingat antar halaman. */
 var gCab="";try{gCab=localStorage.getItem("ksp_cab")||""}catch(e){}
 function viewCab(){var c=myCab();if(c)return c;if(gCab&&CAB.indexOf(gCab)<0)gCab="";return gCab}
@@ -416,10 +421,10 @@ function ic(d){return '<svg viewBox="0 0 24 24" width="20" height="20" fill="non
 var toastT;function berhasil(j,p){var t=document.getElementById("toast");if(!t)return;document.getElementById("tj").textContent=j;document.getElementById("tp").textContent=p||"";t.classList.remove("show");void t.offsetWidth;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(function(){t.classList.remove("show")},4500);t.querySelector(".tcl").onclick=function(){t.classList.remove("show")}}
 function rp(n){return "Rp "+n.toLocaleString("id-ID")}
 function find(id){for(var i=0;i<M.length;i++){var m=M[i];if(m[0]==id)return[m[1],""];if(m[3])for(var j=0;j<m[3].length;j++)if(m[3][j][0]==id)return[m[3][j][1],m[1]]}return["",""]}
-var HAKDEF={"Akuntan":["sim3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","lap3","lap4","lap5","lap6","set3"],
-"Administrasi":["ang1","ang2","sim1","sim2","sim3","pin3","pin2","tag1","tag2","kel1","kel2","set3"],
-"Manager Utama":["ang1","ang2","sim1","sim2","sim3","pin1","pin3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","lap3","lap4","lap5","lap6","kar1","kar3","set3"],
-"Manager Operasional":["ang1","ang2","sim1","sim2","sim3","pin1","pin2","tag1","tag2","kel1","kel2","lap1","lap4","set3"],
+var HAKDEF={"Akuntan":["sim3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","lap3","lap4","lap5","lap6","pmt2","set3"],
+"Administrasi":["ang1","ang2","sim1","sim2","sim3","pin3","pin2","tag1","tag2","kel1","kel2","pmt1","pmt2","set3"],
+"Manager Utama":["ang1","ang2","sim1","sim2","sim3","pin1","pin3","pin2","tag1","tag2","kel1","kel2","lap1","lap2","lap3","lap4","lap5","lap6","kar1","kar3","pmt1","pmt2","set3"],
+"Manager Operasional":["ang1","ang2","sim1","sim2","sim3","pin1","pin2","tag1","tag2","kel1","kel2","lap1","lap4","pmt1","pmt2","set3"],
 "Analis Kredit":["ang2","pin1","pin2","tag1","tag2","set3"],
 "Marketing Lapangan":["ang1","ang2","pin1","tag1","tag2","set3"]},HAK={},hakJab="Akuntan";
 function hakOf(j){return HAK[j]?HAK[j]:(HAKDEF[j]||["set3"])}
@@ -450,7 +455,7 @@ function nav(){gCabUI();
     if(m[3]){m=m.slice();m[3]=m[3].filter(function(c){return boleh(c[0])});if(!m[3].length)return ""}
     if(m.length==1)return "<small>"+m[0]+"</small>";
     var bv=m[0]=="tag"?tagCount():m[0]=="apv"?apvCount():m[0]=="pin"&&boleh("pin3")?ajuSiap().length+ajuTunggu().filter(function(x){return x.t=="pin"}).length:m[2],sub=m[3],bd=bv?'<span class="badge">'+bv+"</span>":"";
-    if(m[0]=="ang")return '<button class="nav'+(cur=="ang1"||cur=="ang2"?" on":"")+'" data-id="'+sub[0][0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
+    if(m[0]=="ang"||m[0]=="pmt")return '<button class="nav'+(cur==m[0]+"1"||cur==m[0]+"2"?" on":"")+'" data-id="'+sub[0][0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     if(!sub)return '<button class="nav'+(m[0]==cur?" on":"")+'" data-id="'+m[0]+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+"</button>";
     var o=!!open[m[0]],aktif=!o&&sub.some(function(c){return c[0]==cur});
     return '<button class="nav'+(aktif?" on":"")+'" data-grp="'+m[0]+'" aria-expanded="'+o+'">'+ic(I[m[0]])+"<span>"+m[1]+"</span>"+bd+'<span class="chev'+(o?" r":"")+'" aria-hidden="true">›</span></button>'+(o?'<div class="sub">'+sub.map(function(c){return '<button class="nav'+(c[0]==cur?" on":"")+'" data-id="'+c[0]+'">'+navLbl(c[1])+"</button>"}).join("")+"</div>":"");
@@ -680,7 +685,7 @@ function dibayar(l){return PAY.filter(function(x){return x.id==l.id}).reduce(fun
 /* Bunga diakui (khusus Bulanan, bunga per bulan): saat dilunasi/top up sebelum tenor habis, bunga ditagih minimal 6 kali;
    bunga = bulan berjalan + 6 bulan maju, paling banyak sebanyak tenor. Sisa bunganya dipotong (pb). */
 function bdCfg(){var r=REG.m&&REG.m.bl&&REG.m.bl.bd;if(r===false)return null;r=r||{};if(!r.v)r={};return {min:r.min==null?6:+r.min,maju:r.maju==null?6:+r.maju}}
-function bdInfo(l,tg){var c=bdCfg();if(!c||(l.model||"bl")!="bl"||l.basis=="total"||!l.tenor)return null;
+function bdInfo(l,tg){var c=bdCfg();if(!c||l.pt||(l.model||"bl")!="bl"||l.basis=="total"||!l.tenor)return null;
   var bpb=(tagih(l)-l.pokok)/l.tenor;if(!(bpb>0))return null;
   var ke=jadL(l).filter(function(d){return d<=tg}).length,off=l.imp?impKe(l):0;ke+=off;
   var n=Math.min(l.tenor,Math.max(c.min,ke+c.maju)),pb=Math.max(0,Math.min(sisaP(l),Math.round((l.tenor-n)*bpb)));
@@ -696,12 +701,12 @@ function saldoPokok(l,tg){var T=tagih(l),n=l.tenor||1,bpb=(T-l.pokok)/n,paid=PAY
   return Math.max(0,l.pokok-pk)+tung}
 function potB(l,tg){var b=bdInfo(l,tg);return b?b.pb:0}
 function lunasNet(l,tg){return sisaP(l)-potB(l,tg)+dendaB(l,tg)}
-function sisaP(l){return tagih(l)-dibayar(l)}
+function sisaP(l){if(l.pt)return Math.max(0,(+l.pt.s||0)-ptBayar(l));return tagih(l)-dibayar(l)}
 function saldoPin(no){return LOAN.filter(function(l){return l.no==no}).reduce(function(a,l){return a+sisaP(l)},0)}
 function aktifPin(no){return LOAN.filter(function(l){return l.no==no&&sisaP(l)>0})}
 // Persen denda per hari. Pinjaman hasil impor yang belum punya angka denda memakai denda dari Regulasi (sesuai jenis & plafon).
 function dendaPct(l){var p=+l.denda||0;if(p>0||!(l.imp||l.denda==null))return p;var k=l.model||"bl",t=tierOf(k,+l.pokok||+l.saldoAwal||0);return (t&&t.denda)||+rule(k).denda||0}
-function dendaB(l,asOf){var sp=sisaP(l),pct=dendaPct(l);if(sp<=0||pct<=0||!asOf)return 0;
+function dendaB(l,asOf){if(l.pt)return 0;var sp=sisaP(l),pct=dendaPct(l);if(sp<=0||pct<=0||!asOf)return 0;
   // Denda dihitung per hari dari sisa angsuran yang lewat jatuh bayar, dikurangi denda yang sudah dibayar.
   // Pembayaran diproses urut tanggal: denda dulu, sisanya untuk angsuran tertua.
   // Bila ada uang masuk ke angsuran, denda sampai hari itu dianggap selesai (lunas/dibebaskan);
@@ -728,7 +733,7 @@ function tupBlok(no,asOf){var R=[];aktifPin(no).forEach(function(l){var ko=kolOf
 /* Riwayat Kol: Kol terburuk yang pernah dicapai tiap pinjaman, termasuk yang sudah lunas.
    Kol paling buruk terjadi tepat sebelum uang masuk, jadi dicek sehari sebelum tiap setoran dan hari ini. */
 var KMC={},KMK="";
-function kolMaks(l){var key=LOAN.length+"|"+PAY.length+"|"+today();if(key!=KMK){KMC={};KMK=key}if(KMC[l.id]!=null)return KMC[l.id];
+function kolMaks(l){var key=LOAN.length+"|"+PAY.length+"|"+today();if(key!=KMK){KMC={};KMK=key}if(KMC[l.id]!=null)return KMC[l.id];if(l.pt)return KMC[l.id]=5;
   var J=jadL(l),T=tagih(l),A=J.map(function(d,i){return i==J.length-1?T-l.ang*(J.length-1):l.ang}),k=(l.model||"bl"),f=k=="mg"?30/7:k=="dm"?30/14:1;
   var P=PAY.filter(function(x){return x.id==l.id}),D=P.filter(function(x){return !x.imp&&x.tg}).map(function(x){return x.tg});if(sisaP(l)>0)D.push(today());
   var mx=1;D.forEach(function(d){var paid=P.reduce(function(a,x){return a+((x.imp||(x.tg&&x.tg<d)||(d==today()&&x.tg==d))?(+x.jml||0):0)},0),cum=0,tel=0,c=0;
@@ -737,7 +742,7 @@ function kolMaks(l){var key=LOAN.length+"|"+PAY.length+"|"+today();if(key!=KMK){
   return KMC[l.id]=mx}
 function tkBlk(){var v=(REG.tk||{}).blk;return v===""?null:v==null?3:+v}
 function riwBuruk(no){var b=tkBlk();if(b==null)return [];var a=MEM.filter(function(d){return d.no==no})[0],nik=a&&a.nik,N={};N[no]=1;if(nik)MEM.forEach(function(d){if(d.nik==nik)N[d.no]=1});return LOAN.filter(function(l){return N[l.no]||(nik&&l.nik==nik)}).map(function(l){return {l:l,n:kolMaks(l)}}).filter(function(x){return x.n>=b})}
-function riwMsg(R){return "Pengajuan ditolak: riwayat pinjaman buruk. "+R.map(function(x){return x.l.id+" ("+(sisaP(x.l)>0?"berjalan":"sudah lunas")+") pernah "+KOL[x.n][0]+" "+KOL[x.n][1]}).join("; ")+". Sesuai Regulasi, anggota yang pernah "+KOL[tkBlk()][0]+" ke atas tidak bisa mengajukan pinjaman lagi."}
+function riwMsg(R){return "Pengajuan ditolak: riwayat pinjaman buruk. "+R.map(function(x){return x.l.id+" ("+(sisaP(x.l)>0?"berjalan":"sudah lunas")+") "+(x.l.pt?"masuk pemutihan":"pernah "+KOL[x.n][0]+" "+KOL[x.n][1])}).join("; ")+". Sesuai Regulasi, anggota yang pernah "+KOL[tkBlk()][0]+" ke atas tidak bisa mengajukan pinjaman lagi."}
 function tupMsg(L,asOf){return "Belum bisa top up. "+L.map(function(x){var l=x.l;return x.kunci?l.id+" berstatus "+KOL[x.n][0]+" ("+KOL[x.n][1]+"): top up dikunci untuk Kol 3 ke atas, tunggakan harus dibereskan dulu":l.id+" ("+KOL[x.n][0]+", realisasi pinjaman "+rp(l.pokok)+"): saldo top up "+rp(x.s)+", batas "+rp(x.b)+" ("+x.t+"), kurang setor "+rp(x.s-x.b)}).join("; ")+"."}
 function terimaOf(l){return l.bersih-(l.lalu||0)}
 function statAng(no){return aktifPin(no).length?"Anggota lama (top up)":LOAN.some(function(l){return l.no==no})?"Anggota lama":"Anggota baru"}
@@ -796,11 +801,12 @@ function pinForm(){var MEM=memV();
   if(cair)fields+=F("pp","Realisasi pinjaman (Rp)",'<input id="pp" type="text" inputmode="numeric" placeholder="Contoh: 1.000.000" autocomplete="off">')+F("pns","Jangka waktu",'<select id="pns"><option value="">Isi realisasi pinjaman dulu</option></select>')+F("pcat","Catatan survei (opsional)",'<input id="pcat" type="text" placeholder="Hasil kunjungan, usaha, kemampuan bayar" autocomplete="off">')+
     (pinModel=="pg"?F("pgj","Jenis barang jaminan",'<input id="pgj" type="text" placeholder="Contoh: Emas 10 gram, BPKB motor" autocomplete="off">')+F("pgn","Taksiran nilai jaminan (Rp)",'<input id="pgn" type="text" inputmode="numeric" placeholder="Contoh: 15.000.000" autocomplete="off">')+F("pgk","Keterangan jaminan (opsional)",'<input id="pgk" type="text" placeholder="Kondisi, nomor, lokasi simpan" autocomplete="off">'):"");
   else fields+=F("pl","Pinjaman",'<select id="pl"></select>')+F("pp","Jumlah bayar (Rp)",'<input id="pp" type="text" inputmode="numeric" placeholder="Contoh: 1.000.000" autocomplete="off">');
-  pinMode="cair";cair=true;var h='<div class="panel">'+(cair?mt:"")+'<form id="pform" novalidate><div class="fg">'+fields+'</div>'+(cair?'<div class="tup" id="ptup"><div class="tb"><small>Saldo pinjaman lalu</small><strong id="plalu">Rp 0</strong><p id="plalut">Pilih anggota untuk melihat pinjaman berjalan.</p><p id="pstat" style="font-weight:700;color:var(--ink)"></p></div><div class="tb"><small>Terima bersih</small><strong id="pterima">Rp 0</strong><p>Diterima setelah potongan dan pelunasan saldo lalu.</p></div></div>'+docBlock():"")+'<div id="prc" class="mutp" style="line-height:1.7"></div><div id="pmsg" class="ok" role="status">'+flash+'</div><div id="ptolak"></div><div class="acts"><button class="btn" type="submit" id="psub" style="max-width:280px">Ajukan proposal</button></div><p class="mutp">Proposal yang lolos aturan Kol masuk ke menu Persetujuan. Setelah disetujui, Administrasi merealisasikan pinjaman di menu Realisasi pinjaman.</p>'+
-    (cair?'<p class="mutp">Potongan, bunga, jangka waktu, dan jadwal mengikuti Regulasi Pendapatan &amp; Bunga untuk model yang dipilih, jadi tidak perlu diisi lagi. Potongan simpanan wajib (khusus Mingguan) langsung tercatat sebagai simpanan wajib anggota. Dokumen sebelum realisasi bisa diunggah sebagai foto (opsional). Foto fisik jaminan bisa lebih dari satu: Pegadaian sampai 15 foto, jenis lain sampai 5 foto. Untuk anggota top up, sisa pinjaman lama otomatis dipotong saat realisasi dan pinjaman lama tercatat lunas.</p>':"")+"</form></div>"+'<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Proposal terbaru</h3><p>15 proposal terakhir'+(myCab()?" · "+ex(myCab()):"")+'</p></div></div>'+ajuTabel(ajuTerbaru("pin"),"Belum ada proposal pinjaman")+'</div>';
+  pinMode="cair";cair=true;var h='<div class="panel">'+(cair?mt:"")+'<form id="pform" novalidate><div class="fg">'+fields+'</div>'+(cair?'<div class="tup" id="ptup"><div class="tb"><small>Saldo pinjaman lalu</small><strong id="plalu">Rp 0</strong><p id="plalut">Pilih anggota untuk melihat pinjaman berjalan.</p><p id="pstat" style="font-weight:700;color:var(--ink)"></p></div><div class="tb"><small>Terima bersih</small><strong id="pterima">Rp 0</strong><p>Diterima setelah potongan dan pelunasan saldo lalu.</p></div></div>'+"":"")+'<div id="prc" class="mutp" style="line-height:1.7"></div><div id="pmsg" class="ok" role="status">'+flash+'</div><div id="ptolak"></div><div class="acts"><button class="btn" type="submit" id="psub" style="max-width:280px">Ajukan proposal</button></div><p class="mutp">Proposal yang lolos aturan Kol masuk ke menu Persetujuan. Setelah disetujui, Administrasi merealisasikan pinjaman di menu Realisasi pinjaman.</p>'+
+    (cair?'<p class="mutp">Potongan, bunga, jangka waktu, dan jadwal mengikuti Regulasi Pendapatan &amp; Bunga untuk model yang dipilih, jadi tidak perlu diisi lagi. Potongan simpanan wajib (khusus Mingguan) langsung tercatat sebagai simpanan wajib anggota. Dokumen sebelum realisasi dan foto jaminan diunggah Administrasi di menu Realisasi pinjaman. Untuk anggota top up, sisa pinjaman lama otomatis dipotong saat realisasi dan pinjaman lama tercatat lunas.</p>':"")+"</form></div>"+'<div class="panel" style="margin-top:14px"><div class="phead"><div><h3>Proposal terbaru</h3><p>15 proposal terakhir'+(myCab()?" · "+ex(myCab()):"")+'</p></div></div>'+ajuTabel(ajuTerbaru("pin"),"Belum ada proposal pinjaman")+'</div>';
   flash="";return h;
 }
 var CLOUD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>';
+function docBind(msg){DOCN.forEach(function(t,i){var inp=$("#pd"+i);if(inp)inp.onchange=function(){var f=this.files[0];if(!f)return;if(!/^image\//.test(f.type)){$(msg).className="err";$(msg).textContent="Dokumen harus berupa foto (JPG/PNG).";return}PDOC[i]=f;var L=$("#pdl"+i);L.className="drop done";L.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>'+t+"<small>"+ex(f.name)+"</small></b>";$("#pdc").textContent=Object.keys(PDOC).length+"/4 siap · KTP otomatis dari Data Anggota"}});fotoBind();}
 function docBlock(){var n=Object.keys(PDOC).length;
   return '<div class="pdoc"><div class="ph"><b>Dokumen sebelum realisasi</b><span id="pdc">'+n+'/4 siap · KTP otomatis dari Data Anggota</span></div>'+
   DOCN.map(function(t,i){var f=PDOC[i];return '<label class="drop'+(f?" done":"")+'" id="pdl'+i+'" for="pd'+i+'">'+(f?'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>':CLOUD)+'<b>'+t+(f?'<small>'+ex(f.name)+'</small>':"")+'</b></label><input class="sr" id="pd'+i+'" type="file" accept="image/*" aria-label="Unggah '+t+'">'}).join("")+'<div id="pfw">'+fotoInner()+'</div></div>'}
@@ -851,7 +857,11 @@ function jurnal(){var J=[],add=function(tg,ref,ket,L){if(!tg)return;L=L.filter(f
     else add(t.tg,r,"Penarikan "+k.toLowerCase().replace(t.nama.toLowerCase(),t.nama),[[t.jenis,t.jml,0],["Kas",0,t.jml]])});
   LOAN.forEach(function(l){if(l.imp)return;add(l.tg,l.id,"Realisasi pinjaman "+mdl(l).n+" · "+l.nama,[["Piutang pinjaman anggota",l.pokok,0],["Kas",0,l.bersih],["Pendapatan provisi",0,l.prov||0],["Titipan asuransi",0,l.asr||0],["Simpanan wajib",0,l.wj||0],["Pendapatan bunga",0,l.bm||0]])});
   var cum={};
-  PAY.forEach(function(p,i){var l=LOAN.filter(function(x){return x.id==p.id})[0];if(!l||p.imp)return;if(l.imp){var dn0=p.denda||0,tp0=/^Pelunasan top up/.test(p.ket||"");add(p.tg,"AN-"+pad3(i+1),(tp0?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn0,0]].concat(+p.pb>0?[["Potongan bunga pinjaman",+p.pb,0]]:[]).concat([["Piutang pinjaman anggota",0,p.jml+(+p.pb||0)],["Pendapatan denda",0,dn0]]));return}var T=tagih(l),c=cum[l.id]||{b:0,k:0},b0=c.b;c.b+=p.jml+(+p.pb||0);
+  var ptSisa={};
+  PAY.forEach(function(p,i){var l=LOAN.filter(function(x){return x.id==p.id})[0];if(!l||p.imp)return;
+    // Angsuran pemutihan: mengurangi piutang yang masih tercatat; kelebihannya (bunga & denda yang dibekukan) jadi Pendapatan pemutihan.
+    if(p.pt&&l.pt){var r=ptSisa[l.id]!=null?ptSisa[l.id]:(+l.pt.pk||0),k=Math.min(r,+p.jml||0);ptSisa[l.id]=r-k;add(p.tg,"AN-"+pad3(i+1),"Angsuran pemutihan "+l.id+" · "+l.nama,[["Kas",+p.jml||0,0],["Piutang pinjaman anggota",0,k],["Pendapatan pemutihan",0,(+p.jml||0)-k]]);return}
+    if(l.imp){var dn0=p.denda||0,tp0=/^Pelunasan top up/.test(p.ket||"");add(p.tg,"AN-"+pad3(i+1),(tp0?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn0,0]].concat(+p.pb>0?[["Potongan bunga pinjaman",+p.pb,0]]:[]).concat([["Piutang pinjaman anggota",0,p.jml+(+p.pb||0)],["Pendapatan denda",0,dn0]]));return}var T=tagih(l),c=cum[l.id]||{b:0,k:0},b0=c.b;c.b+=p.jml+(+p.pb||0);
     var pk=c.b>=T?l.pokok-c.k:(l.model||"bl")=="bl"?pkKum(l,c.b)-pkKum(l,b0):Math.round(p.jml*l.pokok/T);c.k+=pk;cum[l.id]=c;var dn=p.denda||0,top=/^Pelunasan top up/.test(p.ket||"");
     add(p.tg,"AN-"+pad3(i+1),(top?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn,0],["Piutang pinjaman anggota",0,pk],["Pendapatan bunga",0,p.jml-pk],["Pendapatan denda",0,dn]])});
   BU.forEach(function(b){add(b.tg,"BU-"+pad3(b.id),b.jenis+(b.ket?" · "+b.ket:""),[["Beban "+bebanNm(b.jenis),b.jml,0],["Kas",0,b.jml]])});
@@ -901,12 +911,12 @@ function mktList(){return KAR.filter(function(k){return k.jab=="Marketing Lapang
 function mktNama(no){if(!no)return "Belum ditentukan";var k=KAR.filter(function(x){return x.no==no})[0];return k?k.nama:"Belum ditentukan"}
 function mktCocok(l){return !tagMk||(tagMk=="-"?!mktList().some(function(k){return k.no==l.mkt}):l.mkt==tagMk)}
 function mktSel(id,val,all){var L=mktList();return '<select id="'+id+'"'+(id.indexOf("mk_")==0?' data-mk="'+id.slice(3)+'"':"")+'>'+(all?'<option value="">Semua marketing</option>':'<option value="">'+(L.length?"Pilih marketing":"Belum ada karyawan Marketing Lapangan")+'</option>')+L.map(function(k){return '<option value="'+k.no+'"'+(val==k.no?" selected":"")+'>'+ex(k.nama)+'</option>'}).join("")+(all?'<option value="-"'+(val=="-"?" selected":"")+'>Belum ditentukan</option>':"")+'</select>'}
-function tagCocok(l){return seeNo(l.no)&&mktCocok(l)&&(!tagJn||(l.model||"bl")==tagJn)}
-function jnSel(id){var A=LOAN.filter(function(l){return sisaP(l)>0&&mktCocok(l)}),n=function(k){return A.filter(function(l){return (l.model||"bl")==k}).length};
+function tagCocok(l){return !l.pt&&seeNo(l.no)&&mktCocok(l)&&(!tagJn||(l.model||"bl")==tagJn)}
+function jnSel(id){var A=LOAN.filter(function(l){return !l.pt&&sisaP(l)>0&&mktCocok(l)}),n=function(k){return A.filter(function(l){return (l.model||"bl")==k}).length};
   return '<select id="'+id+'"><option value="">Semua jenis ('+A.length+')</option>'+MK.map(function(k){return '<option value="'+k+'"'+(tagJn==k?" selected":"")+'>'+MODEL[k].n+' ('+n(k)+')</option>'}).join("")+'</select>'}
 var tagJn="",tagMk="",tagF="due",tagQ="",tagOpen="",tag2M="",tag2S="";
 function hariAntara(a,b){return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/864e5)}
-function inst(l,asOf){asOf=asOf||today();var J=jadL(l),T=tagih(l),paid=dibayar(l),cum=0,pct=dendaPct(l),top=PAY.some(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")});
+function inst(l,asOf){if(l.pt)return [];asOf=asOf||today();var J=jadL(l),T=tagih(l),paid=dibayar(l),cum=0,pct=dendaPct(l),top=PAY.some(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")});
   return J.map(function(d,i){var a=i==J.length-1?T-l.ang*(J.length-1):l.ang,prev=cum;cum+=a;var by=Math.max(0,Math.min(a,paid-prev)),sisa=a-by,h=hariAntara(d,asOf),dn=sisa>0&&h>0?Math.round(sisa*pct/100*h):0;
     var st=sisa<=0?"done":h>0?"late":h==0?"today":h>=-7?"soon":"wait";
     return {ke:i+1,n:J.length,tg:d,amt:a,by:by,sisa:sisa,denda:dn,telat:h,st:st,top:top&&sisa<=0}})}
@@ -914,11 +924,11 @@ function ringkas(l){var I=inst(l),due=I.filter(function(x){return x.sisa>0&&x.te
   return {I:I,due:due,next:nx,tung:due.reduce(function(a,x){return a+x.sisa},0),denda:dendaB(l,today()),late:due.filter(function(x){return x.telat>0}).length}}
 function tagCount(){return loanV().filter(function(l){return sisaP(l)>0&&ringkas(l).due.length}).length}
 var KOL=[null,["Kol 1","Lancar"],["Kol 2","Dalam perhatian khusus"],["Kol 3","Kurang lancar"],["Kol 4","Diragukan"],["Kol 5","Macet"]],tagKol=0,tag2K=0;
-function kolOf(l,asOf){if(sisaP(l)<=0)return null;var I=inst(l,asOf),late=I.filter(function(x){return x.sisa>0&&x.telat>0}),k=(l.model||"bl"),f=k=="mg"?30/7:k=="dm"?30/14:1;
+function kolOf(l,asOf){if(sisaP(l)<=0)return null;if(l.pt)return {n:5,kode:"Pemutihan",nama:"Pemutihan",telat:0,kali:0,kurang:0,dari:"",pt:1};var I=inst(l,asOf),late=I.filter(function(x){return x.sisa>0&&x.telat>0}),k=(l.model||"bl"),f=k=="mg"?30/7:k=="dm"?30/14:1;
   var tel=late.length?late[0].telat:0,eq=tel*f,c=late.length,kurang=late.reduce(function(a,x){return a+x.sisa},0);
   var a=!tel?1:eq<=90?2:eq<=120?3:eq<=180?4:5,b=!c?1:c<=3?2:c==4?3:c<=6?4:5,n=Math.max(a,b);
   return {n:n,kode:KOL[n][0],nama:KOL[n][1],telat:tel,kali:c,kurang:kurang,dari:n==1?"":a>=b?"lama telat":"jumlah tunggakan"}}
-function kolBadge(q){return q?'<span class="kol k'+q.n+'" title="'+q.nama+'">'+q.kode+' · '+q.nama+'</span>':'<span class="kol k1">Lunas</span>'}
+function kolBadge(q){if(q&&q.pt)return '<span class="kol kpt">Pemutihan</span>';return q?'<span class="kol k'+q.n+'" title="'+q.nama+'">'+q.kode+' · '+q.nama+'</span>':'<span class="kol k1">Lunas</span>'}
 var STX={late:"Terlambat",today:"Jatuh tempo hari ini",soon:"7 hari lagi",done:"Lunas",wait:"Belum jatuh tempo"};
 function tagPage(){
   var t=today(),bln=t.slice(0,7),A=LOAN.filter(function(l){return sisaP(l)>0&&tagCocok(l)}).map(function(l){return {l:l,r:ringkas(l)}});
@@ -1031,8 +1041,8 @@ function bindPin(){
       var TB=no&&pinStat=="lama"?tupBlok(no,tgl0):[];if(TB.length){$("#plalut").textContent=tupMsg(TB,tgl0);$("#plalut").style.color="#A12B3C"}else $("#plalut").style.color="";var RB=no?riwBuruk(no):[];if(RB.length){$("#plalut").textContent=riwMsg(RB);$("#plalut").style.color="#A12B3C"}
       $("#pterima").textContent=rp(Math.max(br-la,0));var TL=no?tolakPin(no,tgl0):null,PT=no&&!TL?pinTunda(no):null;$("#ptolak").innerHTML=TL?tolakHTML(TL):PT?'<p class="err" style="margin:12px 0 0">Anggota ini sudah punya proposal '+PT.id+' yang sedang diproses ('+(PT.st=="tunggu"?"menunggu persetujuan":"menunggu realisasi")+').</p>':"";$("#psub").disabled=!!(TL||PT);if(TL&&no!=tolakNo){tolakNo=no;tolakPop(TL)}if(!TL)tolakNo="";
       $("#prc").innerHTML=!p?"":(t&&!+sel.value)?"Pilih jangka waktu untuk melihat rincian angsuran.":rinci(pinModel,p,$("#pt").value,+sel.value,la)};
-    DOCN.forEach(function(t,i){var inp=$("#pd"+i);if(inp)inp.onchange=function(){var f=this.files[0];if(!f)return;if(!/^image\//.test(f.type)){$("#pmsg").className="err";$("#pmsg").textContent="Dokumen harus berupa foto (JPG/PNG).";return}PDOC[i]=f;var L=$("#pdl"+i);L.className="drop done";L.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><b>'+t+"<small>"+ex(f.name)+"</small></b>";$("#pdc").textContent=Object.keys(PDOC).length+"/4 siap · KTP otomatis dari Data Anggota"}});fotoBind();
-    ["pp","pt"].forEach(function(id){$("#"+id).oninput=upd});$("#pt").onchange=upd;$("#pns").onchange=upd}else fillPl();if(ROLE=="Marketing Lapangan"&&PROF&&PROF.kar_no){var msx=$("#pmk");if(msx&&[].some.call(msx.options,function(o){return o.value==PROF.kar_no}))msx.value=PROF.kar_no}
+    docBind("#pmsg");
+    ["pp","pt"].forEach(function(id){$("#"+id).oninput=upd});$("#pt").onchange=upd;$("#pns").onchange=upd}else fillPl();var mk=myKar(),msx=$("#pmk");if(ROLE=="Marketing Lapangan"&&mk&&msx){if(![].some.call(msx.options,function(o){return o.value==mk.no})){var op=document.createElement("option");op.value=mk.no;op.text=mk.nama;msx.add(op)}msx.value=mk.no;msx.disabled=true;msx.parentNode.classList.add("auto")}
   f.onsubmit=function(e){e.preventDefault();
     var no=noOf($("#pa").value),a=MEM.filter(function(d){return d.no==no})[0],tg=$("#pt").value,o=$("#pmsg"),m="",v=dig($("#pp").value),n=+$("#pns").value,jam=null;
     if(!a)m="Pilih anggota.";else if(!tg)m="Isi tanggal pengajuan.";else if(v<=0)m="Isi realisasi pinjaman.";else if(!n)m="Pilih jangka waktu.";
@@ -1042,33 +1052,37 @@ function bindPin(){
     if(!m)m=cekPin({no:no,model:pinModel,v:v,n:n,jam:jam},tg);
     if(m){o.className="err";o.textContent=m;return}
     var id=ajuBaruId(),dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});PFOTO.forEach(function(x,j){simpanDoc(id+"_f"+(j+1),x.f)});
-    var d={no:no,nama:a.nama,model:pinModel,v:v,n:n,mkt:$("#pmk").value,jam:jam,stat:aktifPin(no).length?"Top up":"Pinjaman baru",tg:tg,cat:$("#pcat").value.trim(),docs:dk};if(PFOTO.length)d.ff=PFOTO.length;
+    var d={no:no,nama:a.nama,model:pinModel,v:v,n:n,mkt:$("#pmk").value,jam:jam,stat:naikPin(no,v)?"Top up (kenaikan pinjaman)":aktifPin(no).length?"Top up":"Pinjaman baru",naik:naikPin(no,v),tg:tg,cat:$("#pcat").value.trim(),docs:dk};if(PFOTO.length)d.ff=PFOTO.length;
     PDOC={};PFOTO=[];var x=ajuBuat("pin",memCab(a),d);if(x.ap)x.st="setuju";
     flash="Proposal "+x.id+" ("+MODEL[pinModel].n+", "+rp(v)+") untuk "+a.nama+(x.st=="setuju"?" langsung disetujui karena sesuai wewenang Anda, dan masuk ke menu Realisasi pinjaman.":" terkirim dan menunggu persetujuan "+lvlTxt(pinLvl(v))+".");
     berhasil("Proposal pinjaman terkirim",flash);nav();page()};
 }
 /* ===== Persetujuan uang keluar: proposal pinjaman, simpanan keluar, pengeluaran BU =====
    Ajuan disimpan di AJU. Saldo, kas, dan laporan belum berubah sampai ajuan disetujui (dan untuk pinjaman, direalisasi Administrasi). */
-var AJU=[],realSel="",AJT={pin:"Proposal pinjaman",sim:"Simpanan keluar",bu:"Pengeluaran BU"},APVDEF={a:5000000,b:20000000};
-function apvLim(){var v=REG.apv||{};return {a:+v.a>0?+v.a:APVDEF.a,b:+v.b>0?+v.b:APVDEF.b}}
+var AJU=[],realSel="",AJT={pin:"Proposal pinjaman",sim:"Simpanan keluar",bu:"Pengeluaran BU"},APVDEF={m:2000000,a:5000000,b:10000000,c:15000000};
+function apvLim(){var v=REG.apv||{};return {m:v.m!=null&&v.m!==""&&+v.m>=0?+v.m:APVDEF.m,a:+v.a>0?+v.a:APVDEF.a,b:+v.b>0?+v.b:APVDEF.b,c:+v.c>0?+v.c:APVDEF.c}}
 function siapa(){return (PROF&&PROF.nama)||ROLE}
 function ajuBaruId(){return "AJ-"+String(AJU.reduce(function(a,x){var m=/^AJ-(\d+)$/.exec(x.id||"");return m?Math.max(a,+m[1]):a},0)+1).padStart(4,"0")}
 function jamNow(){return new Date().toISOString()}
 function tglJam(s){var d=new Date(s);return isNaN(d)?"-":d.toLocaleString("id-ID",{day:"numeric",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"})}
 function ajuOf(id){return AJU.filter(function(x){return x.id==id})[0]}
-/* Wewenang pinjaman per jumlah: 1 Analis Kredit, 2 Manager Operasional, 3 Manager Utama atau Ketua. Pejabat lebih tinggi boleh menyetujui yang lebih kecil. */
-var LVL={"Analis Kredit":1,"Manager Operasional":2,"Manager Utama":3,"Ketua (owner)":3},APV_UANG=["Ketua (owner)","Manager Utama","Manager Operasional"];
-function pinLvl(v){var L=apvLim();return v<=L.a?1:v<=L.b?2:3}
-function lvlTxt(n){return n==1?"Analis Kredit, Manager Operasional, Manager Utama, atau Ketua":n==2?"Manager Operasional, Manager Utama, atau Ketua":"Manager Utama atau Ketua"}
+/* Persetujuan pinjaman berjenjang: Analis Kredit (1) → Manager Operasional (2) → Manager Utama (3) → Ketua (4).
+   Jumlah pinjaman menentukan sampai jenjang mana. Ajuan naik satu per satu; kalau ditolak di satu jenjang, berhenti. Ketua boleh memutuskan di jenjang mana pun. */
+var LVL={"Analis Kredit":1,"Manager Operasional":2,"Manager Utama":3,"Ketua (owner)":4},LVLN=[null,"Analis Kredit","Manager Operasional","Manager Utama","Ketua"],APV_UANG=["Ketua (owner)","Manager Utama","Manager Operasional"];
+function pinLvl(v){var L=apvLim();return v<=L.a?1:v<=L.b?2:v<=L.c?3:4}
+function lvlTxt(n){return LVLN.slice(1,n+1).join(" → ")}
+function ajuLv(x){return x.lv||1}
+function alurHTML(x){var need=pinLvl(ajuJml(x)),cur=ajuLv(x),A=x.aps||[];return LVLN.slice(1,need+1).map(function(n,i){var k=i+1,a=A.filter(function(q){return q.lv==k})[0];
+  return a?'<span style="color:#2E8B57">✓ '+n+' ('+ex(a.oleh)+')</span>':k==cur&&x.st=="tunggu"?'<b style="color:#B7791F">'+n+' (sekarang)</b>':x.st=="tolak"&&k==cur?'<b style="color:#B3261E">✗ '+n+'</b>':'<span style="color:var(--mut)">'+n+'</span>'}).join(" → ")}
 function ajuJml(x){return x.t=="pin"?(x.d.v2||x.d.v):x.d.jml}
 function cabOk(x){var c=myCab();return !c||cabNorm(x.cab)==c}
-function bisaSetuju(x,v){if(!cabOk(x))return false;if(x.t=="pin")return (LVL[ROLE]||0)>=pinLvl(v==null?x.d.v:v);return APV_UANG.indexOf(ROLE)>=0}
+function bisaSetuju(x){if(!cabOk(x))return false;if(x.t=="pin")return ROLE=="Ketua (owner)"||LVL[ROLE]==ajuLv(x);return APV_UANG.indexOf(ROLE)>=0}
 function ajuTunggu(){return AJU.filter(function(x){return x.st=="tunggu"&&bisaSetuju(x)})}
 function ajuSiap(){return AJU.filter(function(x){return x.t=="pin"&&x.st=="setuju"&&cabOk(x)})}
 function apvCount(){return ajuTunggu().length}
 function simTunda(no,j){return AJU.filter(function(x){return x.t=="sim"&&x.st=="tunggu"&&x.d.no==no&&x.d.jenis==j}).reduce(function(a,x){return a+x.d.jml},0)}
 function pinTunda(no){return AJU.filter(function(x){return x.t=="pin"&&(x.st=="tunggu"||x.st=="setuju")&&x.d.no==no})[0]}
-function ajuStat(x){if(x.st=="tunggu")return '<b style="color:#B7791F">Menunggu persetujuan</b>';
+function ajuStat(x){if(x.st=="tunggu")return '<b style="color:#B7791F">Menunggu persetujuan'+(x.t=="pin"?" "+LVLN[ajuLv(x)]:"")+'</b>'+(x.t=="pin"?"<br><small>"+alurHTML(x)+"</small>":"");
   if(x.st=="tolak")return '<b style="color:#B3261E">Ditolak</b>'+(x.tl?"<br><small>"+ex(x.tl.oleh)+" ("+ex(x.tl.jab)+"): "+ex(x.tl.alasan)+"</small>":"");
   if(x.st=="batal")return '<b style="color:var(--mut)">Dibatalkan pengaju</b>';
   var ap=x.ap?"<br><small>Disetujui "+ex(x.ap.oleh)+" ("+ex(x.ap.jab)+")"+(x.ap.ket?": "+ex(x.ap.ket):"")+"</small>":"";
@@ -1106,7 +1120,8 @@ function realisasiPin(x,tg,cm){var P=x.d,v=ajuJml(x),no=P.no,a=MEM.filter(functi
   var r=hitung(P.model,v,P.n),LA=aktifPin(no),ld=LA.reduce(function(s,l){return s+dendaB(l,tg)},0),lalu=LA.reduce(function(s,l){return s+lunasNet(l,tg)},0);
   var id="PJ-"+String(LOAN.reduce(function(s,y){var m=/^PJ-(\d+)$/.exec(y.id||"");return m?Math.max(s,+m[1]):s},0)+1).padStart(4,"0");
   var nL={nik:a.nik||"",mkt:P.mkt||"",kat:r.t.i,model:P.model,jam:P.jam||null,id:id,no:no,nama:a.nama,tg:tg,pokok:v,tenor:r.n,bunga:r.r.bunga,basis:r.r.basis,prov:r.prov,asr:r.asr,wj:r.wj,bm:r.bm,bt:r.bt,tot:r.tot,bersih:r.bersih,lalu:lalu,laluDenda:ld,lunasi:LA.map(function(l){return l.id}),ang:r.ang,denda:r.r.denda,cm:cm,rk:cm=="Transfer"?{b:a.rk.b,n:a.rk.n,a:a.rk.a}:null,aju:x.id,dref:x.id,docs:P.docs||[]};
-  if(P.ff)nL.ff=P.ff;LOAN.push(nL);
+  var dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});PFOTO.forEach(function(q,j){simpanDoc(id+"_f"+(j+1),q.f)});
+  if(dk.length||PFOTO.length){nL.docs=dk;delete nL.dref;if(PFOTO.length)nL.ff=PFOTO.length}else if(P.ff)nL.ff=P.ff;PDOC={};PFOTO=[];LOAN.push(nL);
   LA.forEach(function(l){var pb=potB(l,tg);PAY.push(strukMeta({id:l.id,tg:tg,jml:sisaP(l)-pb,pb:pb,denda:dendaB(l,tg),ket:"Pelunasan top up dari "+id}))});
   var pC=strukMeta({cair:1,tg:tg});nL.sns=pC.ns;setTimeout(function(){strukWA(nL,pC)},0);
   if(r.wj>0)TX.push({no:no,nama:a.nama,jenis:"Simpanan wajib",tipe:"masuk",jml:r.wj,tg:tg,ket:"Potongan otomatis dari pinjaman "+id});
@@ -1119,46 +1134,49 @@ function realPage(){var L=ajuSiap(),x=L.filter(function(y){return y.id==realSel}
   if(!L.length)return h+'<div class="panel"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>2. Realisasi pinjaman</h3><p>Dibukukan Administrasi</p></div></div><div class="empty"><b>Belum ada proposal yang siap direalisasi</b>Proposal pinjaman yang sudah disetujui di menu Persetujuan akan muncul di sini.</div></div>';
   h+='<div class="panel"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>2. Realisasi: proposal disetujui</h3><p>'+L.length+' proposal · klik Pilih untuk merealisasikan</p></div></div><div class="tblw"><table class="tbl wide"><thead><tr><th>No. ajuan</th><th>Anggota</th><th>Jenis pinjaman</th><th class="num">Disetujui</th><th>Disetujui oleh</th><th>Marketing</th><th class="noprint">Aksi</th></tr></thead><tbody>'+
   L.map(function(y){var d=y.d;return '<tr'+(y.id==realSel?' style="background:var(--c1)"':'')+'><td>'+y.id+'</td><td>'+ex(d.no)+' · '+ex(d.nama)+'</td><td>'+MODEL[d.model].n+' · '+ex(d.stat)+'<br><small>'+tenorTxt(d.model,d.n)+'</small></td><td class="num">'+rp(ajuJml(y))+'</td><td>'+(y.ap?ex(y.ap.oleh)+'<br><small>'+ex(y.ap.jab)+'</small>':'-')+'</td><td>'+ex(mktNama(d.mkt))+'</td><td class="noprint"><button class="pbtn" type="button" data-rsel="'+y.id+'">'+(y.id==realSel?"Dipilih":"Pilih")+'</button></td></tr>'}).join("")+'</tbody></table></div></div>';
-  return h+(x?realForm(x):"")}
+  if(x)pinModel=x.d.model;return h+(x?realForm(x):"")}
 function realForm(x){var P=x.d,F=function(id,lb,inp,au){return '<div><label for="'+id+'">'+lb+'</label><div class="field'+(au?" auto":"")+'">'+inp+"</div></div>"};
   return '<div class="panel" style="margin-top:14px"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>Realisasi '+x.id+'</h3><p>'+ex(P.nama)+' · '+MODEL[P.model].n+' · '+ex(P.stat)+'</p></div></div><form id="rlform" novalidate><div class="fg">'+
   F("rl_v","Realisasi pinjaman disetujui",'<input id="rl_v" type="text" readonly value="'+rp(ajuJml(x))+'">',1)+F("rl_n","Jangka waktu",'<input id="rl_n" type="text" readonly value="'+tenorTxt(P.model,P.n)+'">',1)+
   F("rl_tg","Tanggal realisasi",'<input id="rl_tg" type="date">',1)+
   F("pcm","Pencairan diterimakan secara",'<select id="pcm"><option value="">Pilih tunai / transfer</option><option>Tunai</option><option>Transfer</option></select>')+
   '<div id="prekw" hidden style="grid-column:1/-1"><div class="fg">'+F("prb","Bank tujuan",'<input id="prb" type="text" readonly placeholder="Dari data anggota">')+F("prn","No. rekening tujuan",'<input id="prn" type="text" readonly placeholder="Dari data anggota">')+F("pra","Atas nama rekening",'<input id="pra" type="text" readonly placeholder="Dari data anggota">')+'</div><p id="prekm" class="err" style="margin:4px 0 0" hidden>Rekening pencairan anggota ini belum ada. Isi dulu di panel Anggota (Rincian anggota, kolom Rekening pencairan, tombol Isi).</p></div>'+
-  '</div>'+(P.jam?'<p class="mutp">Jaminan: '+ex(P.jam.jenis)+' · taksiran '+rp(P.jam.nilai)+(P.jam.ket?' · '+ex(P.jam.ket):'')+'</p>':'')+'<div id="rl_rc" class="mutp" style="line-height:1.7"></div><div id="rl_msg" class="err" role="alert"></div><div class="acts"><button class="btn" type="submit" style="max-width:280px">Realisasikan pinjaman</button><button class="lnk" type="button" id="rl_x">Batal pilih</button></div><p class="mutp">Saat direalisasikan, pinjaman mulai berjalan, kas berkurang, bukti pencairan dikirim, dan pinjaman lama (top up) tercatat lunas. Aturan Kol dicek ulang pada tanggal realisasi.</p></form></div>'}
-function bindReal(){document.querySelectorAll("[data-rsel]").forEach(function(b){b.onclick=function(){realSel=this.dataset.rsel;lastPJ="";page()}});
+  '</div>'+(P.jam?'<p class="mutp">Jaminan: '+ex(P.jam.jenis)+' · taksiran '+rp(P.jam.nilai)+(P.jam.ket?' · '+ex(P.jam.ket):'')+'</p>':'')+docBlock()+'<div id="rl_rc" class="mutp" style="line-height:1.7"></div><div id="rl_msg" class="err" role="alert"></div><div class="acts"><button class="btn" type="submit" style="max-width:280px">Realisasikan pinjaman</button><button class="lnk" type="button" id="rl_x">Batal pilih</button></div><p class="mutp">Saat direalisasikan, pinjaman mulai berjalan, kas berkurang, bukti pencairan dikirim, dan pinjaman lama (top up) tercatat lunas. Aturan Kol dicek ulang pada tanggal realisasi.</p></form></div>'}
+function bindReal(){document.querySelectorAll("[data-rsel]").forEach(function(b){b.onclick=function(){realSel=this.dataset.rsel;PDOC={};PFOTO=[];lastPJ="";page()}});
   var f=$("#rlform"),x=ajuOf(realSel);if(!f||!x)return;var P=x.d,a=MEM.filter(function(d){return d.no==P.no})[0]||{};$("#rl_tg").value=today();
   var rek=function(){var rk=a.rk||{};[["prb","b"],["prn","n"],["pra","a"]].forEach(function(q){$("#"+q[0]).value=rk[q[1]]||""});$("#prekw").hidden=$("#pcm").value!="Transfer";$("#prekm").hidden=rekOk(rk)};
   var up=function(){var tg=$("#rl_tg").value||today();LTMP.pb=aktifPin(P.no).reduce(function(s,l){return s+potB(l,tg)},0);$("#rl_rc").innerHTML=rinci(P.model,ajuJml(x),tg,P.n,saldoLalu(P.no,tg))};
-  $("#pcm").onchange=rek;$("#rl_tg").onchange=up;rek();up();$("#rl_x").onclick=function(){realSel="";page()};
+  $("#pcm").onchange=rek;$("#rl_tg").onchange=up;rek();up();docBind("#rl_msg");$("#rl_x").onclick=function(){realSel="";page()};
   f.onsubmit=function(e){e.preventDefault();var R=realisasiPin(x,$("#rl_tg").value,$("#pcm").value);if(R.err){$("#rl_msg").textContent=R.err;return}realSel="";berhasil("Realisasi pinjaman berhasil",R.msg);nav();page();window.scrollTo(0,0)}}
 /* Halaman Persetujuan: semua ajuan uang keluar yang menunggu, lalu riwayat keputusan. */
 function ajuCard(x){var ok=bisaSetuju(x),d=x.d,R=[],id=x.id,tl=null;
   if(x.t=="pin"){var r=hitung(d.model,d.v,d.n),la=saldoLalu(d.no,today());tl=tolakPin(d.no,today());
     R=[["Anggota",ex(d.no)+" · "+ex(d.nama)+" · "+ex(statAng(d.no))],["Jenis pinjaman",MODEL[d.model].n+" · "+ex(d.stat)],["Realisasi pinjaman diajukan",rp(d.v)],["Jangka waktu",tenorTxt(d.model,d.n)],["Angsuran",r.err?"-":rp(r.ang)+" per kali"],["Saldo pinjaman lalu",rp(la)],["Perkiraan terima bersih",r.err?"-":rp(Math.max(r.bersih-la,0))],["Marketing lapangan",ex(mktNama(d.mkt))]];
-    if(d.jam)R.push(["Jaminan",ex(d.jam.jenis)+" · taksiran "+rp(d.jam.nilai)]);if(d.cat)R.push(["Catatan survei",ex(d.cat)]);R.push(["Wewenang",lvlTxt(pinLvl(d.v))])}
+    if(d.jam)R.push(["Jaminan",ex(d.jam.jenis)+" · taksiran "+rp(d.jam.nilai)]);if(d.cat)R.push(["Catatan survei",ex(d.cat)]);R.push(["Alur persetujuan",alurHTML(x)])}
   else if(x.t=="sim")R=[["Anggota",ex(d.no)+" · "+ex(d.nama)],["Jenis simpanan",ex(d.jenis)],["Jumlah keluar",rp(d.jml)],["Saldo saat ini",rp(saldo(d.no,d.jenis))],["Keterangan",ex(d.ket||"-")]];
   else R=[["Jenis biaya",ex(d.jenis)],["Jumlah pengeluaran",rp(d.jml)],["Keterangan",ex(d.ket||"-")]];
   R.push(["Cabang",ex(cabNorm(x.cab))],["Diajukan",ex(x.oleh)+" ("+ex(x.jab)+") · "+tglJam(x.at)]);
   return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:'+(x.t=="pin"?"#00C0EF":x.t=="sim"?"#F39C12":"#DD4B39")+';--hf:#fff"><div><h3>'+AJT[x.t]+' · '+id+'</h3><p>'+rp(d.v||d.jml)+'</p></div></div>'+
   '<div class="tblw"><table class="tbl"><tbody>'+R.map(function(q){return "<tr><td style=\"width:42%\">"+q[0]+"</td><td><b>"+q[1]+"</b></td></tr>"}).join("")+'</tbody></table></div>'+(tl?tolakHTML(tl):"")+
-  (ok?'<div class="fg" style="margin-top:12px">'+(x.t=="pin"?'<div><label for="av_'+id+'">Jumlah disetujui (Rp)</label><div class="field"><input id="av_'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(d.v)+'"></div></div>':"")+'<div><label for="ar_'+id+'">Catatan / alasan (wajib kalau ditolak)</label><div class="field"><input id="ar_'+id+'" type="text" autocomplete="off"></div></div></div><div id="am_'+id+'" class="err" role="alert"></div><div class="acts"><button class="btn" type="button" data-aok="'+id+'" style="max-width:200px;background:#2E8B57">Setujui</button><button class="btn" type="button" data-ano="'+id+'" style="max-width:200px;background:#C0392B">Tolak</button></div>'+(x.t=="pin"?'<p class="mutp">Jumlah boleh diturunkan dari yang diajukan. Setelah disetujui, proposal masuk ke menu Realisasi pinjaman untuk dibukukan Administrasi.</p>':'<p class="mutp">Setelah disetujui, transaksi langsung tercatat dan saldo berubah.</p>'):
-  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?lvlTxt(pinLvl(d.v)):"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Batalkan ajuan ini</button></div>':""))+'</div>'}
+  (ok?'<div class="fg" style="margin-top:12px">'+(x.t=="pin"?'<div><label for="av_'+id+'">Jumlah disetujui (Rp)</label><div class="field"><input id="av_'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(d.v)+'"></div></div>':"")+'<div><label for="ar_'+id+'">Catatan / alasan (wajib kalau ditolak)</label><div class="field"><input id="ar_'+id+'" type="text" autocomplete="off"></div></div></div><div id="am_'+id+'" class="err" role="alert"></div><div style="display:flex;gap:10px;margin-top:10px"><button class="btn" type="button" data-aok="'+id+'" style="flex:1;margin:0;background:#2E8B57">Setujui</button><button class="btn" type="button" data-ano="'+id+'" style="flex:1;margin:0;background:#C0392B">Tolak</button></div>'+(x.t=="pin"?'<p class="mutp">Jumlah boleh diturunkan dari yang diajukan. Kalau masih ada jenjang di atas, ajuan naik ke jenjang berikutnya. Pinjaman baru bisa direalisasi setelah jenjang terakhir menyetujui. Kalau ditolak, ajuan berhenti.</p>':'<p class="mutp">Setelah disetujui, transaksi langsung tercatat dan saldo berubah.</p>'):
+  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?LVLN[ajuLv(x)]:"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Batalkan ajuan ini</button></div>':""))+'</div>'}
 function apvPage(){var T=AJU.filter(function(x){return x.st=="tunggu"&&cabOk(x)}).sort(function(a,b){return a.at<b.at?-1:1}),n=T.filter(function(x){return bisaSetuju(x)}).length,
   H=AJU.filter(function(x){return x.st!="tunggu"&&cabOk(x)}).sort(function(a,b){return a.at<b.at?1:-1}).slice(0,30),L=apvLim();
-  return '<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">'+(T.length?T.length+" ajuan menunggu"+(n?", "+n+" bisa Anda setujui":", tidak ada yang sesuai wewenang Anda")+".":"Tidak ada ajuan yang menunggu.")+' Wewenang pinjaman: sampai '+rp(L.a)+' Analis Kredit; sampai '+rp(L.b)+' Manager Operasional; di atasnya Manager Utama atau Ketua. Simpanan keluar dan pengeluaran BU: Ketua, Manager Utama, atau Manager Operasional cabang. Batas diatur Ketua di Regulasi.</p></div>'+
-  T.map(ajuCard).join("")+'<div class="panel"><div class="phead"><div><h3>Riwayat persetujuan</h3><p>30 ajuan terakhir yang sudah diputuskan</p></div></div>'+ajuTabel(H,"Belum ada riwayat persetujuan")+'</div>'}
+  return '<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">'+(T.length?T.length+" ajuan menunggu"+(n?", "+n+" bisa Anda setujui":", tidak ada yang sesuai wewenang Anda")+".":"Tidak ada ajuan yang menunggu.")+' Persetujuan pinjaman berjenjang: Analis Kredit → Manager Operasional → Manager Utama → Ketua. Sampai '+rp(L.a)+' cukup Analis Kredit; sampai '+rp(L.b)+' sampai Manager Operasional; sampai '+rp(L.c)+' sampai Manager Utama; di atasnya sampai Ketua. Marketing Lapangan tanpa ajuan sampai '+rp(L.m)+' (kecuali kenaikan pinjaman). Simpanan keluar dan pengeluaran BU: Ketua, Manager Utama, atau Manager Operasional cabang. Batas bisa diubah Ketua di bagian bawah halaman ini.</p></div>'+
+  T.map(ajuCard).join("")+'<div class="panel" style="margin-bottom:14px"><div class="phead"><div><h3>Riwayat persetujuan</h3><p>30 ajuan terakhir yang sudah diputuskan</p></div></div>'+ajuTabel(H,"Belum ada riwayat persetujuan")+'</div>'+regApvPanel(ROLE=="Ketua (owner)"?"":" disabled")}
 function simTxOf(x){return {no:x.d.no,nama:x.d.nama,jenis:x.d.jenis,tipe:"keluar",jml:x.d.jml,tg:today(),ket:x.d.ket||"",cab:x.cab,aju:x.id}}
 function buRowOf(x){return {id:BU.reduce(function(a,y){return Math.max(a,y.id)},0)+1,tg:today(),jenis:x.d.jenis,jml:x.d.jml,ket:x.d.ket||"",aju:x.id}}
 function ajuSetuju(id){var x=ajuOf(id),m=$("#am_"+id);if(!x||x.st!="tunggu")return;var msg="",ket=($("#ar_"+id)||{}).value||"";
   if(!bisaSetuju(x)){m.textContent="Ajuan ini di luar wewenang "+ROLE+".";return}
   if(x.t=="pin"){var v=dig($("#av_"+id).value);if(v<=0)msg="Isi jumlah yang disetujui.";else if(v>x.d.v)msg="Jumlah disetujui tidak boleh lebih besar dari yang diajukan ("+rp(x.d.v)+").";else msg=cekPin({no:x.d.no,model:x.d.model,v:v,n:x.d.n,jam:x.d.jam},today());
-    if(msg){m.textContent=msg;return}if(v!=x.d.v)x.d.v2=v;else delete x.d.v2;x.st="setuju"}
+    if(msg){m.textContent=msg;return}if(v!=x.d.v)x.d.v2=v;else delete x.d.v2;
+    var lv=ROLE=="Ketua (owner)"?4:ajuLv(x),need=pinLvl(v);(x.aps=x.aps||[]).push({lv:ajuLv(x),oleh:siapa(),jab:ROLE,at:jamNow(),ket:ket.trim(),jml:v});
+    if(lv<need){x.lv=lv+1;saveSoon();berhasil("Ajuan diteruskan",AJT[x.t]+" "+id+" disetujui "+ROLE+", naik ke "+LVLN[x.lv]+".");nav();page();return}
+    x.st="setuju"}
   else if(x.t=="sim"){var s=saldo(x.d.no,x.d.jenis);if(x.d.jml>s){m.textContent="Saldo "+x.d.jenis.toLowerCase()+" tidak cukup. Saldo tersedia "+rp(s)+".";return}TX.push(simTxOf(x));x.st="selesai"}
   else{BU.push(buRowOf(x));x.st="selesai"}
   x.ap={oleh:siapa(),jab:ROLE,at:jamNow(),ket:ket.trim()};saveSoon();
-  berhasil("Ajuan disetujui",AJT[x.t]+" "+id+" "+rp(ajuJml(x))+(x.t=="pin"?" masuk ke menu Realisasi pinjaman.":" sudah tercatat."));nav();page()}
+  berhasil(x.t=="pin"?"Persetujuan akhir":"Ajuan disetujui",AJT[x.t]+" "+id+" "+rp(ajuJml(x))+(x.t=="pin"?" masuk ke menu Realisasi pinjaman.":" sudah tercatat."));nav();page()}
 function ajuTolak(id){var x=ajuOf(id),m=$("#am_"+id),al=(($("#ar_"+id)||{}).value||"").trim();if(!x||x.st!="tunggu"||!bisaSetuju(x))return;
   if(!al){m.textContent="Tulis alasan penolakan di kolom Catatan / alasan.";return}
   x.st="tolak";x.tl={oleh:siapa(),jab:ROLE,at:jamNow(),alasan:al};saveSoon();berhasil("Ajuan ditolak",AJT[x.t]+" "+id+" ditolak.");nav();page()}
@@ -1166,20 +1184,29 @@ function ajuBatal(id){var x=ajuOf(id);if(!x||x.st!="tunggu"||!confirm("Batalkan 
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-aok],[data-ano],[data-abt]");if(!b)return;
   if(b.dataset.aok)ajuSetuju(b.dataset.aok);else if(b.dataset.ano)ajuTolak(b.dataset.ano);else ajuBatal(b.dataset.abt)});
 /* Ajuan baru. Kalau pengaju sendiri berwenang, langsung disetujui. */
+/* Kenaikan pinjaman: top up dengan realisasi lebih besar dari realisasi pinjaman yang sedang berjalan. Selalu lewat persetujuan. */
+function naikPin(no,v){var A=aktifPin(no);return A.length>0&&v>A.reduce(function(m,l){return Math.max(m,l.pokok)},0)}
 function ajuBuat(t,cab,d){var x={id:ajuBaruId(),t:t,st:"tunggu",cab:cabNorm(cab),oleh:siapa(),jab:ROLE,at:jamNow(),d:d};
-  if(bisaSetuju(x))x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};AJU.push(x);saveSoon();return x}
+  if(t=="pin"){var L0=LVL[ROLE]||0,need=pinLvl(d.v);if(L0){x.aps=[];for(var k=1;k<=Math.min(L0,need);k++)x.aps.push({lv:k,oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri"});if(L0>=need)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};else x.lv=L0+1}}
+  else if(bisaSetuju(x))x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};
+  if(!x.ap&&t=="pin"&&ROLE=="Marketing Lapangan"&&!d.naik&&d.v<=apvLim().m)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Sesuai wewenang Marketing Lapangan"};AJU.push(x);saveSoon();return x}
 function apvNote(){var n=apvCount(),s=boleh("pin3")?ajuSiap().length:0;if(!n&&!s)return "";
   return '<div class="panel noprint apvn">'+(n?'<button class="pbtn" type="button" onclick="go(\'apv\')">'+n+' ajuan menunggu persetujuan Anda &rarr;</button>':"")+(s?'<button class="pbtn" type="button" onclick="go(\'pin3\')">'+s+' pinjaman siap direalisasi &rarr;</button>':"")+'</div>'}
 function regApvPanel(dis){var L=apvLim(),inp=function(id,lb,v){return '<label for="'+id+'" style="margin:10px 0 6px">'+lb+'</label><div class="field" style="max-width:260px"><input id="'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(v)+'"'+dis+'></div>'};
-  return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>Wewenang persetujuan pinjaman</h3><p>Proposal pinjaman disetujui sesuai jumlahnya, lalu direalisasi Administrasi</p></div></div>'+
-  inp("r_apa","Analis Kredit menyetujui sampai (Rp)",L.a)+inp("r_apb","Manager Operasional menyetujui sampai (Rp)",L.b)+
-  '<p class="mutp">Di atas batas Manager Operasional disetujui Manager Utama atau Ketua. Pejabat yang lebih tinggi juga boleh menyetujui jumlah yang lebih kecil. Simpanan keluar dan pengeluaran BU disetujui Ketua, Manager Utama, atau Manager Operasional cabang. Simpanan keluar otomatis saat pelunasan close tidak perlu persetujuan.</p></div>'}
+  return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:#00A65A;--hf:#fff"><div><h3>Batas wewenang persetujuan</h3><p>Realisasi pinjaman disetujui sesuai jumlahnya, lalu dibukukan Administrasi</p></div></div>'+
+  inp("r_apm","Marketing Lapangan boleh tanpa ajuan sampai (Rp)",L.m)+inp("r_apa","Analis Kredit menyetujui sampai (Rp)",L.a)+inp("r_apb","Manager Operasional menyetujui sampai (Rp)",L.b)+inp("r_apc","Manager Utama menyetujui sampai (Rp)",L.c)+
+  '<p class="mutp">Proposal Marketing Lapangan sampai batasnya (pinjaman baru maupun top up) langsung masuk ke Realisasi tanpa ajuan. Di atas batas itu, dan setiap <b>kenaikan pinjaman</b> (top up yang lebih besar dari realisasi pinjaman sebelumnya), harus lewat persetujuan. Isi 0 kalau semua proposal Marketing harus diajukan. Persetujuan berjalan berurutan: Analis Kredit, lalu Manager Operasional, lalu Manager Utama, lalu Ketua, sampai jenjang yang sesuai jumlah pinjaman. Di atas batas Manager Utama harus sampai Ketua. Kalau satu jenjang menolak, ajuan berhenti dan tidak naik. Pinjaman baru bisa direalisasi setelah jenjang terakhir menyetujui. Simpanan keluar dan pengeluaran BU disetujui Ketua, Manager Utama, atau Manager Operasional cabang. Simpanan keluar otomatis saat pelunasan close tidak perlu persetujuan.</p>'+(dis?'<p class="mutp">Batas wewenang hanya bisa diubah oleh Ketua (owner).</p>':'<div id="apmsg" class="ok" role="status"></div><button class="btn" type="button" id="apsave" style="max-width:260px">Simpan batas wewenang</button>')+'</div>'}
+function bindApv(){bindRpf();var b=$("#apsave");if(!b)return;b.onclick=function(){var o=$("#apmsg"),mm=dig($("#r_apm").value),a=dig($("#r_apa").value),c=dig($("#r_apb").value),u=dig($("#r_apc").value);if(ROLE!="Ketua (owner)")return;
+  if(!(u>c)){o.className="err";o.textContent="Batas Manager Utama harus lebih besar dari batas Manager Operasional.";return}
+  if(mm>a){o.className="err";o.textContent="Batas Marketing Lapangan tidak boleh lebih besar dari batas Analis Kredit.";return}
+  if(!(a>0&&c>a)){o.className="err";o.textContent="Batas Manager Operasional harus lebih besar dari batas Analis Kredit.";return}
+  REG.apv={m:mm,a:a,b:c,c:u};saveSoon();berhasil("Batas wewenang tersimpan","Analis Kredit sampai "+rp(a)+", Manager Operasional sampai "+rp(c)+".");page()}}
 
 function bindRpf(){document.querySelectorAll("[data-rpf]").forEach(function(i){i.oninput=function(){this.value=fmtRp(this.value)}})}
 /* Urutan daftar pinjaman: realisasi / top up terbaru di atas. */
 function pinBaru(a,b){return a.tg<b.tg?1:a.tg>b.tg?-1:String(a.id)<String(b.id)?1:-1}
 function pinList(){var LOAN=loanV();
-  var tp=0,ts=0,rows=LOAN.slice().sort(pinBaru).map(function(l){var sp=sisaP(l);tp+=l.pokok;ts+=sp;var m=mdl(l);return "<tr><td>"+l.id+"</td><td>"+tgl(l.tg)+"</td><td>"+l.no+" · "+ex(l.nama)+"</td><td>"+m.n+(l.kat?" (kat. "+l.kat+")":"")+'</td><td class="num">'+rp(l.pokok)+"</td><td>"+l.tenor+"× / "+m.per+"</td><td>"+l.bunga+"%"+(l.basis=="total"?" total":"")+"</td>"+'<td class="num">'+rp((l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0))+'</td><td class="num">'+rp(terimaOf(l))+(l.lalu?'<br><small>potong saldo lalu '+rp(l.lalu)+'</small>':'')+'</td><td class="num">'+rp(tagih(l))+'</td><td class="num">'+rp(dibayar(l))+'</td><td class="num">'+rp(sp)+"</td><td>"+pinStatus(l)+"</td><td>"+(l.jam?ex(l.jam.jenis)+" · "+rp(l.jam.nilai)+(sp<=0?" (dikembalikan)":" (ditahan)"):"-")+'</td><td class="noprint"><button class="kbtn" type="button" data-kartu="'+l.id+'">Buku angsuran</button>'+(ROLE=="Ketua (owner)"&&!l.imp?'<br><button class="pbtn" type="button" data-edpj="'+l.id+'" style="margin-top:6px">Edit realisasi</button> <button class="pbtn" type="button" data-cxpj="'+l.id+'" style="margin-top:6px;background:#DD4B39;color:#fff">Cancel realisasi</button>':"")+(salahBunga(l)?'<br><small style="color:#DD4B39;font-weight:700">Bunga masih "total", perlu Edit realisasi</small>':"")+'</td></tr>'}).join("");
+  var tp=0,ts=0,rows=LOAN.slice().sort(pinBaru).map(function(l){var sp=sisaP(l);tp+=l.pokok;ts+=sp;var m=mdl(l);return "<tr><td>"+l.id+"</td><td>"+tgl(l.tg)+"</td><td>"+l.no+" · "+ex(l.nama)+"</td><td>"+m.n+(l.kat?" (kat. "+l.kat+")":"")+'</td><td class="num">'+rp(l.pokok)+"</td><td>"+l.tenor+"× / "+m.per+"</td><td>"+l.bunga+"%"+(l.basis=="total"?" total":"")+"</td>"+'<td class="num">'+rp((l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0))+'</td><td class="num">'+rp(terimaOf(l))+(l.lalu?'<br><small>potong saldo lalu '+rp(l.lalu)+'</small>':'')+'</td><td class="num">'+rp(tagih(l))+'</td><td class="num">'+rp(dibayar(l))+'</td><td class="num">'+rp(sp)+"</td><td>"+pinStatus(l)+"</td><td>"+(l.jam?ex(l.jam.jenis)+" · "+rp(l.jam.nilai)+(sp<=0?" (dikembalikan)":" (ditahan)"):"-")+'</td><td class="noprint"><button class="kbtn" type="button" data-kartu="'+l.id+'">Buku angsuran</button>'+(ROLE=="Ketua (owner)"&&!l.pt&&sp>0?'<br><button class="pbtn" type="button" data-ptpj="'+l.id+'" style="margin-top:6px;background:#6B7280;color:#fff">Pindah ke pemutihan</button>':"")+(ROLE=="Ketua (owner)"&&!l.imp&&!l.pt?'<br><button class="pbtn" type="button" data-edpj="'+l.id+'" style="margin-top:6px">Edit realisasi</button> <button class="pbtn" type="button" data-cxpj="'+l.id+'" style="margin-top:6px;background:#DD4B39;color:#fff">Cancel realisasi</button>':"")+(salahBunga(l)?'<br><small style="color:#DD4B39;font-weight:700">Bunga masih "total", perlu Edit realisasi</small>':"")+'</td></tr>'}).join("");
   var H=["No. pinjaman","Tanggal","Anggota","Model","Pokok","Jangka waktu","Bunga","Total potongan","Diterima","Total tagihan","Dibayar","Sisa","Status","Jaminan","Buku angsuran"],N={4:1,7:1,8:1,9:1,10:1,11:1};
   return edPanel()+'<div class="panel"><div class="phead"><div><h3>Daftar pinjaman</h3><p>'+LOAN.length+' pinjaman · sisa tagihan '+rp(ts)+'</p></div><button class="pbtn" onclick="window.print()">Cetak daftar pinjaman</button></div>'+
   (LOAN.length?'<p class="mutp" style="margin:0 0 10px">Geser tabel ke samping untuk melihat semua kolom.</p><div class="tblw"><table class="tbl wide"><thead><tr>'+H.map(function(x,i){return "<th"+(N[i]?' class="num"':"")+">"+x+"</th>"}).join("")+"</tr></thead><tbody>"+rows+'</tbody><tfoot><tr><td colspan="4">Total</td><td class="num">'+rp(tp)+'</td><td colspan="6"></td><td class="num">'+rp(ts)+"</td><td></td><td></td><td></td></tr></tfoot></table></div>":'<div class="empty"><b>Belum ada pinjaman</b>Catat lewat menu Tambah transaksi.</div>')+"</div>";
@@ -1236,7 +1263,7 @@ function regPage(){
       nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+(k=="bl"?" disabled":dis)+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
     return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt(k)+'"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
     '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi realisasi pinjaman, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori realisasi pinjaman.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Realisasi pinjaman dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Jangka waktu (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="bl"?bdPanel(dis):"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari realisasi pinjaman saat realisasi.</p>':"")+'</div>'}).join("")+
-    tkPanel(dis)+regApvPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau realisasi pinjamannya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
+    tkPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau realisasi pinjamannya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
   flash="";return h;
 }
 /* Warna kepala panel di halaman Regulasi: hijau, merah, biru, kuning, lalu berulang dari hijau. Huruf putih. */
@@ -1271,9 +1298,8 @@ function bindReg(){
       if(k=="bl"&&!er){var bo=$("#r_bd_on");if(bo&&bo.value=="0")r.bd=false;else{var bm=Math.round(num(($("#r_bd_min")||{}).value||"6")),bj=Math.round(num(($("#r_bd_maju")||{}).value||"6"));if(!(bm>=0&&bm<=156&&bj>=0&&bj<=156)){er="Bunga diakui Bulanan: isi bunga minimal dan bunga maju dengan angka 0 sampai 156.";return}r.bd={min:bm,maju:bj,v:2}}}
       M[k]=r});
     var TK={};if(!er)[1,2].forEach(function(n){if(er)return;var e=$("#r_tk"+n),v=e?e.value.trim():"";if(!v){TK["k"+n]="";return}var x=num(v);if(!(x>0&&x<=100)){er="Syarat top up Kol "+n+" harus lebih dari 0 dan paling besar 100%.";return}TK["k"+n]=x});var be=$("#r_tkb");TK.blk=be?(be.value===""?"":+be.value):tkBlk();
-    var AP={a:dig(($("#r_apa")||{}).value||""),b:dig(($("#r_apb")||{}).value||"")};if(!er&&!(AP.a>0&&AP.b>AP.a))er="Wewenang persetujuan: batas Manager Operasional harus lebih besar dari batas Analis Kredit.";
     if(er){o.className="err";o.textContent=er;return}
-    REG={m:M,gaji:REG.gaji,tk:TK,apv:AP};flash="Regulasi bunga untuk 4 model pinjaman tersimpan.";berhasil("Regulasi berhasil disimpan",flash);page()};
+    REG={m:M,gaji:REG.gaji,tk:TK,apv:REG.apv};flash="Regulasi bunga untuk 4 model pinjaman tersimpan.";berhasil("Regulasi berhasil disimpan",flash);page()};
 }
 function lama(t){var h=Math.floor((Date.now()-t)/864e5);if(h<30)return h+" hari";var b=Math.floor(h/30);if(b<12)return b+" bulan";var y=Math.floor(b/12),m=b%12;return y+" tahun"+(m?" "+m+" bulan":"")}
 var angQ="";
@@ -1291,7 +1317,74 @@ function angRows(){var MEM=memA(),q=angQ.trim().toLowerCase(),out="",ts=0,tp=0,n
 // Riwayat pinjaman satu anggota: semua pinjaman (berjalan, lunas, lunas karena top up), tiap pinjaman bisa dibuka Buku angsurannya.
 var angRp={},angRk={};
 function pinUrut(l){var L=LOAN.filter(function(x){return x.no==l.no}).slice().sort(function(a,b){return a.tg<b.tg?-1:a.tg>b.tg?1:0});return L.indexOf(l)+1}
-function pinStatus(l){var sp=sisaP(l);if(sp>0)return "Berjalan";if(PAY.some(function(x){return x.id==l.id&&x.ket=="Pelunasan close"}))return "Lunas (close)";var t=PAY.filter(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")})[0];return t?"Lunas (top up "+String(t.ket).replace(/^Pelunasan top up dari\s*/,"")+")":"Lunas"}
+function pinStatus(l){var sp=sisaP(l);if(l.pt)return sp>0?"Pemutihan":"Lunas (pemutihan)";if(sp>0)return "Berjalan";if(PAY.some(function(x){return x.id==l.id&&x.ket=="Pelunasan close"}))return "Lunas (close)";var t=PAY.filter(function(x){return x.id==l.id&&/^Pelunasan top up/.test(x.ket||"")})[0];return t?"Lunas (top up "+String(t.ket).replace(/^Pelunasan top up dari\s*/,"")+")":"Lunas"}
+/* ===== Data pemutihan (2 Nov 2026) =====
+   Pinjaman pemutihan dibekukan: saldo akhir = saldo pokok + bunga + sisa denda pada hari dipindah (l.pt.s).
+   Sesudahnya tidak ada bunga berjalan, tidak ada denda, tidak ada jadwal jatuh bayar; setiap angsuran (PAY.pt) langsung mengurangi saldo akhir.
+   l.pt = {tg: tanggal pemutihan, s: saldo akhir beku, pk: piutang yang masih tercatat di pembukuan, oleh: nama yang memindah}. */
+var pmtQ="",pmtBuka="",pmtPil="";
+function ptBayar(l){return PAY.filter(function(x){return x.id==l.id&&x.pt}).reduce(function(a,x){return a+(+x.jml||0)},0)}
+// Piutang yang masih tercatat di jurnal untuk pinjaman ini (dipakai saat angsuran pemutihan dibukukan).
+function ptPiutang(l){var P=PAY.filter(function(x){return x.id==l.id&&!x.imp&&!x.pt});
+  if(l.imp)return Math.max(0,(+l.saldoAwal||0)-P.reduce(function(a,p){return a+(+p.jml||0)+(+p.pb||0)},0));
+  var T=tagih(l),b=0,k=0;P.forEach(function(p){var b0=b;b+=(+p.jml||0)+(+p.pb||0);k+=b>=T?l.pokok-k:(l.model||"bl")=="bl"?pkKum(l,b)-pkKum(l,b0):Math.round((+p.jml||0)*l.pokok/T)});
+  return Math.max(0,l.pokok-k)}
+function ptSaldoKini(l){var t=today();return {sp:Math.max(0,sisaP(l)-potB(l,t)),dn:dendaB(l,t)}}
+function ptPindah(l){var t=today(),k=ptSaldoKini(l);l.pt={tg:t,s:k.sp+k.dn,pk:ptPiutang(l),oleh:(PROF&&PROF.nama)||ROLE};return l.pt.s}
+function ptImpor(){return LOAN.filter(function(l){return l.imp&&!l.pt&&sisaP(l)>0})}
+function ptList(){return loanV().filter(function(l){return l.pt}).sort(pinBaru)}
+function pmtPage(){var f=boleh("pmt1"),r=boleh("pmt2"),own=ROLE=="Ketua (owner)",L=ptList(),A=L.filter(function(l){return sisaP(l)>0}),h='<h2>Data pemutihan</h2><p class="sub">'+A.length+' pinjaman pemutihan berjalan · tanpa bunga dan denda</p>';
+  var IM=ptImpor();
+  if(own&&IM.length){var tot=IM.reduce(function(a,l){var k=ptSaldoKini(l);return a+k.sp+k.dn},0);
+    h+='<div class="panel noprint" style="margin-bottom:14px;border:2px dashed var(--ma)"><div class="phead" style="margin-bottom:10px;padding-bottom:10px"><div><h3>Pindahkan data impor ke pemutihan</h3><p>Ada '+IM.length+' pinjaman hasil impor yang masih berjalan. Saldo akhir tiap pinjaman = saldo pokok + bunga + sisa denda hari ini. Total '+rp(tot)+'.</p></div></div><button class="pbtn" type="button" id="ptimp">Pindahkan '+IM.length+' pinjaman ke pemutihan</button></div>'}
+  if(f){var opt=A.filter(function(l){return seeNo(l.no)}).map(function(l){return '<option value="'+l.id+'"'+(pmtPil==l.id?" selected":"")+'>'+ex(l.nama)+' · '+ex(l.no)+' · '+l.id+'</option>'}).join(""),pl=A.filter(function(l){return l.id==pmtPil})[0];
+    h+='<div class="panel noprint"><div class="phead"><div><h3>Input angsuran pemutihan</h3><p>Catat angsuran yang masuk. Tanpa bunga dan denda: uang langsung mengurangi saldo akhir.</p></div></div>'+
+    (A.length?'<form id="ptf" novalidate><label for="pt_l" style="margin-top:0">Anggota pemutihan</label><div class="field"><select id="pt_l"><option value="">Pilih anggota pemutihan</option>'+opt+'</select></div>'+
+    '<label>Sisa saldo pemutihan</label><div class="field auto"><input id="pt_s" type="text" readonly value="'+(pl?rp(sisaP(pl)):"-")+'"></div>'+
+    '<div class="fg"><div><label for="pt_j">Jumlah angsuran masuk (Rp)</label><div class="field"><input id="pt_j" data-rpf type="text" inputmode="numeric" autocomplete="off"></div></div><div><label for="pt_t">Tanggal bayar</label><div class="field"><input id="pt_t" type="date" value="'+today()+'"></div></div><div><label for="pt_m">Metode bayar</label><div class="field"><select id="pt_m"><option value="">Pilih tunai / transfer</option><option>Tunai</option><option>Transfer</option></select></div></div></div>'+
+    '<label>Sisa saldo setelah angsuran</label><div class="field auto"><input id="pt_a" type="text" readonly value="-"></div><div id="pt_msg" class="err" role="alert"></div><button class="btn" type="submit">Simpan angsuran</button></form>':'<div class="empty"><b>Belum ada pinjaman pemutihan</b>Pinjaman dipindah ke pemutihan oleh Ketua lewat Pinjaman &gt; Cek &amp; cetak daftar pinjaman.</div>')+'</div>'}
+  if(r)h+='<div id="ptlist"'+(f?' style="margin-top:14px"':"")+'>'+pmtListHTML()+'</div>';
+  return h}
+function pmtListHTML(){var L=ptList(),q=pmtQ.toLowerCase(),own=ROLE=="Ketua (owner)";
+  var sb=L.reduce(function(a,l){return a+(+l.pt.s||0)},0),sd=L.reduce(function(a,l){return a+ptBayar(l)},0),ss=L.reduce(function(a,l){return a+sisaP(l)},0),na={};L.forEach(function(l){na[l.no]=1});
+  var C=[["Jumlah anggota",Object.keys(na).length+" anggota",L.length+" pinjaman",1],["Saldo akhir (beku)",rp(sb),"saat dipindah",3],["Sudah diangsur",rp(sd),"setelah pemutihan",4],["Sisa saldo pemutihan",rp(ss),"belum dibayar",2]];
+  var sum='<div class="tgsum">'+C.map(function(c){return '<div style="--bg-c:var(--c'+c[3]+');--tx-c:var(--t'+c[3]+')"><small>'+c[0]+'</small><strong>'+c[1]+'</strong><span>'+c[2]+'</span></div>'}).join("")+'</div>';
+  var V=L.filter(function(l){return !q||String(l.nama).toLowerCase().indexOf(q)>=0||String(l.no).toLowerCase().indexOf(q)>=0||String(l.id).toLowerCase().indexOf(q)>=0});
+  var rows=V.map(function(l){var by=ptBayar(l),sp=sisaP(l),P=PAY.filter(function(x){return x.id==l.id&&x.pt});
+    var n=function(v){return rp(v).replace("Rp ","")};
+    var tr='<tr><td><b>'+ex(l.nama)+'</b><br><small class="mutp" style="margin:0">'+ex(l.no)+' · '+l.id+'<br>'+mdl(l).n+' · realisasi '+tgl(l.tg)+'<br>pemutihan '+tgl(l.pt.tg)+'</small><div class="noprint" style="margin-top:6px"><button class="kbtn" type="button" data-ptr="'+l.id+'">'+(pmtBuka==l.id?"Tutup riwayat":"Riwayat ("+P.length+")")+'</button>'+(own&&!P.length?' <button class="kbtn" type="button" data-ptx="'+l.id+'" style="color:#C0392B">Batal pemutihan</button>':'')+'</div></td><td class="num">'+n(+l.pt.s||0)+'</td><td class="num">'+n(by)+'</td><td class="num"><b>'+n(sp)+'</b>'+(sp<=0?'<br><span class="kol k1">Lunas</span>':'')+'</td></tr>';
+    if(pmtBuka==l.id)tr+='<tr><td colspan="4" style="background:var(--bg)">'+'<b>Rincian angsuran pemutihan · '+ex(l.nama)+' · '+l.id+'</b>'+(function(){var run=+l.pt.s||0;return '<table class="tbl" style="margin:6px 0 0"><thead><tr><th>Ke</th><th>Tanggal</th><th>Metode</th><th class="num">Angsuran</th><th class="num">Sisa saldo</th><th class="noprint"></th></tr></thead><tbody><tr><td></td><td>'+tgl(l.pt.tg)+'</td><td colspan="2">Saldo akhir dibekukan</td><td class="num">'+n(run)+'</td><td class="noprint"></td></tr>'+P.map(function(p,i){run-=(+p.jml||0);return '<tr><td>'+(i+1)+'</td><td>'+tgl(p.tg)+(p.jam?'<br><small class="mutp" style="margin:0">'+ex(p.jam)+'</small>':'')+'</td><td>'+ex(p.met||"-")+'</td><td class="num">'+n(+p.jml||0)+'</td><td class="num">'+n(Math.max(0,run))+'</td><td class="noprint"><button class="kbtn" type="button" data-pts="'+PAY.indexOf(p)+'">Struk</button></td></tr>'}).join("")+'</tbody></table>'+(P.length?'':'<p class="mutp" style="margin:6px 0 0">Belum ada angsuran setelah pemutihan.</p>')})()+'<p class="mutp" style="margin:8px 0 0">Saldo akhir dibekukan '+tgl(l.pt.tg)+' sebesar '+rp(+l.pt.s||0)+(l.pt.oleh?' oleh '+ex(l.pt.oleh):'')+'.</p></td></tr>';
+    return tr}).join("");
+  return '<div class="panel"><div class="phead"><div><h3>Rincian anggota pemutihan</h3><p>Urut tanggal realisasi pinjaman, yang terbaru paling atas.</p></div><button class="pbtn noprint" type="button" onclick="window.print()">Cetak</button></div>'+sum+
+    '<div class="field noprint" style="margin:12px 0"><input id="ptq" type="search" placeholder="Cari nama atau nomor anggota..." value="'+ex(pmtQ)+'" autocomplete="off" aria-label="Cari anggota pemutihan"></div>'+
+    (rows?'<div class="tblw"><table class="tbl ptt"><thead><tr><th>Nama</th><th class="num">Saldo beku (Rp)</th><th class="num">Diangsur (Rp)</th><th class="num">Sisa (Rp)</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty"><b>Tidak ada data</b>'+(L.length?"Tidak ada yang cocok dengan pencarian.":"Belum ada pinjaman pemutihan.")+'</div>')+'</div>'}
+function pmtSegar(){var w=$("#ptlist");if(w){w.innerHTML=pmtListHTML();bindPmtList()}}
+function bindPmtList(){var q=$("#ptq");if(q)q.oninput=function(){pmtQ=this.value;var p=this.selectionStart;pmtSegar();var n=$("#ptq");if(n){n.focus();try{n.setSelectionRange(p,p)}catch(e){}}}}
+function bindPmt(){bindPmtList();bindRpf();
+  var bi=$("#ptimp");if(bi)bi.onclick=function(){var IM=ptImpor();if(!IM.length)return;
+    if(!confirm("Pindahkan "+IM.length+" pinjaman hasil impor ke pemutihan?\n\nSaldo akhir = saldo pokok + bunga + sisa denda hari ini. Sesudahnya bunga dan denda berhenti, dan pinjaman ini tidak muncul lagi di Tagihan.\n\nLanjutkan?"))return;
+    var tot=0;IM.forEach(function(l){tot+=ptPindah(l)});berhasil("Data impor masuk pemutihan",IM.length+" pinjaman · saldo akhir "+rp(tot));nav();page()};
+  var f=$("#ptf");if(!f)return;
+  var upd=function(){var l=LOAN.filter(function(x){return x.id==$("#pt_l").value})[0],j=dig($("#pt_j").value);$("#pt_s").value=l?rp(sisaP(l)):"-";$("#pt_a").value=l?rp(Math.max(0,sisaP(l)-j)):"-"};
+  $("#pt_l").onchange=function(){pmtPil=this.value;upd()};$("#pt_j").addEventListener("input",upd);upd();
+  f.onsubmit=function(e){e.preventDefault();var o=$("#pt_msg"),l=LOAN.filter(function(x){return x.id==$("#pt_l").value})[0],j=dig($("#pt_j").value),tg=$("#pt_t").value,met=$("#pt_m").value;
+    if(!l){o.textContent="Pilih anggota pemutihan.";return}if(j<=0){o.textContent="Isi jumlah angsuran.";return}
+    if(j>sisaP(l)){o.textContent="Jumlah melebihi sisa saldo pemutihan ("+rp(sisaP(l))+").";return}
+    if(!tg){o.textContent="Isi tanggal bayar.";return}if(tg<l.pt.tg){o.textContent="Tanggal bayar tidak boleh sebelum tanggal pemutihan ("+tgl(l.pt.tg)+").";return}
+    if(!met){o.textContent="Pilih metode bayar: tunai atau transfer.";return}
+    PAY.push(strukMeta({id:l.id,tg:tg,jml:j,denda:0,met:met,pt:1,ket:"Angsuran pemutihan"}));pmtPil="";
+    berhasil(sisaP(l)<=0?"Pemutihan lunas":"Angsuran pemutihan disimpan",l.nama+" · "+rp(j)+" · sisa "+rp(sisaP(l)));nav();page();strukWA(l,PAY[PAY.length-1])}}
+document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-ptpj],[data-ptr],[data-ptx],[data-pts]");if(!b)return;
+  if(b.dataset.pts!=null){var py=PAY[+b.dataset.pts],lp=py&&LOAN.filter(function(x){return x.id==py.id})[0];if(lp)strukWA(lp,py);return}
+  if(b.dataset.ptr){pmtBuka=pmtBuka==b.dataset.ptr?"":b.dataset.ptr;pmtSegar();return}
+  if(ROLE!="Ketua (owner)"){berhasil("Akses ditutup","Hanya Ketua (owner) yang bisa memindah atau membatalkan pemutihan.");return}
+  var id=b.dataset.ptpj||b.dataset.ptx,l=LOAN.filter(function(x){return x.id==id})[0];if(!l)return;
+  if(b.dataset.ptx){if(PAY.some(function(x){return x.id==id&&x.pt}))return alert("Batal pemutihan "+id+" tidak bisa: sudah ada angsuran pemutihan.");
+    if(!confirm("Batalkan pemutihan "+id+" · "+l.nama+"?\n\nPinjaman kembali berjalan seperti biasa (bunga, denda, dan jadwal angsuran dihitung lagi)."))return;
+    delete l.pt;berhasil("Pemutihan dibatalkan",l.nama+" · "+id+" kembali berjalan");nav();page();return}
+  if(l.pt||sisaP(l)<=0)return;var k=ptSaldoKini(l);
+  if(!confirm("Pindah ke pemutihan: "+id+" · "+l.nama+"\n\nSaldo pokok + bunga: "+rp(k.sp)+"\nSisa denda: "+rp(k.dn)+"\nSaldo akhir pemutihan: "+rp(k.sp+k.dn)+"\n\nSesudahnya bunga dan denda berhenti, dan setiap angsuran langsung mengurangi saldo akhir. Lanjutkan?"))return;
+  ptPindah(l);berhasil("Masuk pemutihan",l.nama+" · "+id+" · saldo akhir "+rp(l.pt.s));nav();page()});
 function riwayatPin(no){var L=LOAN.filter(function(x){return x.no==no}).slice().sort(pinBaru);
   return '<b style="font-size:14px">Riwayat pinjaman ('+L.length+' kali)</b><div class="tblw" style="margin-top:8px"><table class="tbl"><thead><tr><th>Ke</th><th>No. pinjaman</th><th>Tgl realisasi</th><th>Jenis</th><th class="num">Realisasi pinjaman</th><th>Jangka waktu</th><th class="num">Sisa</th><th>Status</th><th></th></tr></thead><tbody>'+
     L.map(function(l,i){var sp=Math.max(0,sisaP(l));return "<tr><td>"+(L.length-i)+"</td><td>"+l.id+"</td><td>"+tgl(l.tg)+"</td><td>"+mdl(l).n+'</td><td class="num">'+rp(+l.pokok||0)+"</td><td>"+l.tenor+'×</td><td class="num">'+rp(sp)+"</td><td>"+pinStatus(l)+'</td><td><button class="kbtn" type="button" data-kartu="'+l.id+'">Buku angsuran</button></td></tr>'}).join("")+"</tbody></table></div>"}
@@ -1699,7 +1792,7 @@ function bindBu(){
 function page(){
   if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal KSP";cur="sim1"}
   saveSoon();var f=find(cur),t=f[0];
-  $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":f[1]?f[1]+" / "+t:t;
+  $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":cur=="pmt1"||cur=="pmt2"?"Data pemutihan":f[1]?f[1]+" / "+t:t;
   if(cur=="dash"){
     var dashCab=viewCab();
     var cOk=function(l){return !dashCab||(l&&loanCab(l)==dashCab)},LC={};LOAN.forEach(function(l){LC[l.id]=l});
@@ -1724,6 +1817,8 @@ function page(){
     h+='<div class="panel"><p style="margin:0 0 14px">Pilih warna tampilan aplikasi. Pilihan tersimpan dan dipakai lagi saat aplikasi dibuka.</p>'+TM.map(function(t){return '<button type="button" class="pbtn" aria-pressed="'+(pal===t[0])+'" onclick="pilihTema(\''+t[0]+'\',\''+t[1]+'\')" style="display:block;width:100%;text-align:left;margin:0 0 12px;padding:14px 16px;border-radius:18px;background:var(--panel);color:var(--ink);border:1px solid var(--line)"><span style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px"><b style="font-size:17px">'+t[1]+(pal===t[0]?" ✓":"")+'</b><span style="font-size:11.5px;letter-spacing:.1em;text-transform:uppercase;opacity:.75">'+t[2]+'</span></span><span style="display:flex;gap:8px;margin-top:10px">'+t[3].map(function(c){return '<span style="flex:1;min-width:0"><span style="display:block;height:44px;border-radius:10px;background:'+c[0]+';border:1px solid rgba(0,0,0,.1)"></span><span style="display:block;font-size:11px;margin-top:5px;font-weight:700">'+c[0]+'</span><span style="display:block;font-size:10.5px;opacity:.75">'+c[1]+'</span></span>'}).join("")+'</span></button>'}).join("")+'</div>';
   }else if(cur=="ang1"||cur=="ang2"){
     h=angPage();
+  }else if(cur=="pmt1"||cur=="pmt2"){
+    h=pmtPage();
   }else if(cur=="sim1"){
     h+=simTrans();
   }else if(cur=="sim3"){
@@ -1765,7 +1860,7 @@ function page(){
   }else{
     h+='<div class="panel"><div class="empty"><b>Halaman ini dibuat di tahap berikutnya</b>Kirim rincian isi halaman '+esc(t)+" dan kita tambahkan bertahap.</div></div>";
   }
-  $("#view").innerHTML=h;if(cur=="ang1"||cur=="ang2"){if($("#mform"))bindForm();if($("#anglist"))bindAng2()}if(cur=="sim1")bindSimTrans();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="pin3")bindReal();if(cur=="apv"||cur=="set2"||cur=="pin3")bindRpf();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="set4")bindCab();if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();
+  $("#view").innerHTML=h;if(cur=="pmt1"||cur=="pmt2")bindPmt();if(cur=="ang1"||cur=="ang2"){if($("#mform"))bindForm();if($("#anglist"))bindAng2()}if(cur=="sim1")bindSimTrans();if(cur=="pin1")bindPin();if(cur=="pin2")bindEd();if(cur=="pin3")bindReal();if(cur=="pin3")bindRpf();if(cur=="apv")bindApv();if(cur=="set2"){bindReg();bindGajiReg()}if(cur=="set4")bindCab();if(cur=="lap5")bindGaji();if(cur=="lap4")bindHK();if(cur=="kar1")bindForm(true);if(cur=="kar2")bindHak();if(cur=="kar3")bindMut();if(cur=="tag1")bindTag();if(cur=="tag2")bindTag2();if(cur=="kel1")bindBu();if(cur=="lap1"||cur=="lap2"||cur=="lap3")bindLap();
 }
 /* ===== Laporan perbandingan cabang (satu baris per cabang + total) ===== */
 function lapCabang(){var bl=today().slice(0,7),LC={};LOAN.forEach(function(l){LC[l.id]=l});
@@ -2079,7 +2174,7 @@ function strukCair(l,p){var a=MEM.filter(function(d){return d.no==l.no})[0]||{},
 function strukData(l,p){if(p.cair)return strukCair(l,p);
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var top=/^Pelunasan top up/.test(p.ket||""),mT=top&&/dari (\S+)/.exec(p.ket||"");
-  return {no:strukNo(p),jenis:top?"TOP UP · PELUNASAN PINJAMAN LALU":(lunas||/^Pelunasan/.test(p.ket||""))?"PELUNASAN PINJAMAN":"PEMBAYARAN ANGSURAN",top:top,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,
+  return {no:strukNo(p),jenis:top?"TOP UP · PELUNASAN PINJAMAN LALU":p.pt?(lunas?"PELUNASAN PEMUTIHAN":"ANGSURAN PEMUTIHAN"):(lunas||/^Pelunasan/.test(p.ket||""))?"PELUNASAN PINJAMAN":"PEMBAYARAN ANGSURAN",top:top,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,
     tg:p.tg,jam:p.jam||"",ptg:p.ptg||"",ket:top?"Pelunasan pinjaman lalu":lunas?"Pelunasan pinjaman":(p.ket||"Angsuran").replace(/ke-(\d+)$/,"ke-$1 dari "+l.tenor),plafon:+l.pokok||0,tenor:+l.tenor||0,pola:(function(){try{return mdl(l).n}catch(e){return ""}})(),per:(function(){try{var m=mdl(l);return m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan"}catch(e){return "bulan"}})(),ang:+l.ang||0,baru:mT?mT[1]:"",jml:p.jml||0,denda:p.denda||0,total:(p.jml||0)+(p.denda||0),sisa:sisa,lunas:lunas,hp:String(a.hp||""),
     rin:lunas?null:(function(){var dn=dendaB(l,p.tg||today()),db=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),sm=0;try{sm=Math.max(0,+saldoSim(l.no)||0)}catch(e){}
       return {djalan:db+dn,dbayar:db,dsisa:dn,pb:sisa,sim:sm,lunasi:sisa+dn,close:Math.max(0,sisa+dn-sm)}})()};
@@ -2217,6 +2312,7 @@ function kartuGambar(l){
   return c}
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-kartu]");if(!b)return;
   var l=LOAN.filter(function(q){return q.id==b.dataset.kartu})[0];if(!l)return;
+  if(l.pt){pmtBuka=l.id;pmtQ="";go(boleh("pmt2")?"pmt2":"pmt1");return}
   fontSiap().then(function(){try{var c=kartuGambar(l);strukLihat({no:"Buku-Angsuran-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku angsuran "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
     document.getElementById("strukJ").textContent="Buku angsuran · "+l.nama}catch(err){console.error(err)}})});
 // Tunggu huruf Noto Serif siap dulu supaya struk tidak tergambar dengan huruf cadangan.
