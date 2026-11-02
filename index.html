@@ -854,7 +854,7 @@ function tipeAkun(a){for(var i=0;i<AKUN.length;i++)if(AKUN[i][0]==a)return AKUN[
 function bebanNm(j){var n=String(j).replace(/^Biaya /i,"");return /^[A-Z][a-z]/.test(n)?n[0].toLowerCase()+n.slice(1):n}
 function pad3(n){return String(n).padStart(3,"0")}
 function jurnal(){var J=[],add=function(tg,ref,ket,L){if(!tg)return;L=L.filter(function(x){return x[1]||x[2]});if(L.length)J.push({tg:tg,ref:ref,ket:ket,L:L})};
-  var IMP=LOAN.filter(function(l){return l.imp}).reduce(function(a,l){return a+(l.saldoAwal||0)},0);
+  var IMP=LOAN.filter(function(l){return l.imp&&!l.pt}).reduce(function(a,l){return a+(l.saldoAwal||0)},0);
   if(MOD.awal)add(MOD.awal.tg,"MD-001","Modal awal"+(MOD.awal.ket?" · "+MOD.awal.ket:""),[["Kas",MOD.awal.jml-IMP,0],["Piutang pinjaman anggota",IMP,0],["Modal disetor",0,MOD.awal.jml]]);
   (MOD.tam||[]).forEach(function(m,i){add(m.tg,"MD-"+pad3(i+2),"Tambah modal"+(m.ket?" · "+m.ket:""),[["Kas",m.jml,0],["Modal disetor",0,m.jml]])});
   TX.forEach(function(t,i){if(/^Potongan otomatis/.test(t.ket||""))return;var r="SP-"+pad3(i+1),k=t.jenis+" "+t.nama;
@@ -862,10 +862,12 @@ function jurnal(){var J=[],add=function(tg,ref,ket,L){if(!tg)return;L=L.filter(f
     else add(t.tg,r,"Penarikan "+k.toLowerCase().replace(t.nama.toLowerCase(),t.nama),[[t.jenis,t.jml,0],["Kas",0,t.jml]])});
   LOAN.forEach(function(l){if(l.imp)return;add(l.tg,l.id,"Realisasi pinjaman "+mdl(l).n+" · "+l.nama,[["Piutang pinjaman anggota",l.pokok,0],["Kas",0,l.bersih],["Pendapatan provisi",0,l.prov||0],["Titipan asuransi",0,l.asr||0],["Simpanan wajib",0,l.wj||0],["Pendapatan bunga",0,l.bm||0]])});
   var cum={};
-  var ptSisa={};
+  // Pemutihan (aturan Ketua 2 Nov 2026): sisa tagihan keluar dari outstanding. Data impor yang masuk pemutihan tidak lagi memotong modal awal;
+  // pinjaman berjalan yang dipindah: piutangnya dihapus pada tanggal pemutihan. Semua angsuran pemutihan jadi Pendapatan pemutihan.
+  LOAN.forEach(function(l){if(l.pt&&!l.imp&&+l.pt.pk>0)add(l.pt.tg,"PT-"+l.id,"Pemutihan "+l.id+" · "+l.nama+" (piutang dihapus)",[["Beban penghapusan piutang (pemutihan)",+l.pt.pk,0],["Piutang pinjaman anggota",0,+l.pt.pk]])});
   PAY.forEach(function(p,i){var l=LOAN.filter(function(x){return x.id==p.id})[0];if(!l||p.imp)return;
-    // Angsuran pemutihan: mengurangi piutang yang masih tercatat; kelebihannya (bunga & denda yang dibekukan) jadi Pendapatan pemutihan.
-    if(p.pt&&l.pt){var r=ptSisa[l.id]!=null?ptSisa[l.id]:(+l.pt.pk||0),k=Math.min(r,+p.jml||0);ptSisa[l.id]=r-k;add(p.tg,"AN-"+pad3(i+1),"Angsuran pemutihan "+l.id+" · "+l.nama,[["Kas",+p.jml||0,0],["Piutang pinjaman anggota",0,k],["Pendapatan pemutihan",0,(+p.jml||0)-k]]);return}
+    if(p.pt&&l.pt){add(p.tg,"AN-"+pad3(i+1),"Angsuran pemutihan "+l.id+" · "+l.nama,[["Kas",+p.jml||0,0],["Pendapatan pemutihan",0,+p.jml||0]]);return}
+    if(l.pt&&l.imp){var v0=(+p.jml||0)+(+p.denda||0);add(p.tg,"AN-"+pad3(i+1),"Angsuran "+l.id+" · "+l.nama+" (data impor, sekarang pemutihan)",[["Kas",v0,0],["Pendapatan pemutihan",0,v0]]);return}
     if(l.imp){var dn0=p.denda||0,tp0=/^Pelunasan top up/.test(p.ket||"");add(p.tg,"AN-"+pad3(i+1),(tp0?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn0,0]].concat(+p.pb>0?[["Potongan bunga pinjaman",+p.pb,0]]:[]).concat([["Piutang pinjaman anggota",0,p.jml+(+p.pb||0)],["Pendapatan denda",0,dn0]]));return}var T=tagih(l),c=cum[l.id]||{b:0,k:0},b0=c.b;c.b+=p.jml+(+p.pb||0);
     var pk=c.b>=T?l.pokok-c.k:(l.model||"bl")=="bl"?pkKum(l,c.b)-pkKum(l,b0):Math.round(p.jml*l.pokok/T);c.k+=pk;cum[l.id]=c;var dn=p.denda||0,top=/^Pelunasan top up/.test(p.ket||"");
     add(p.tg,"AN-"+pad3(i+1),(top?"Pelunasan top up ":"Angsuran ")+l.id+" · "+l.nama,[["Kas",p.jml+dn,0],["Piutang pinjaman anggota",0,pk],["Pendapatan bunga",0,p.jml-pk],["Pendapatan denda",0,dn]])});
@@ -1781,7 +1783,7 @@ function buTotal(L){return L.reduce(function(a,x){return a+x.jml},0)}
 function modTotal(){return (MOD.awal?MOD.awal.jml:0)+(MOD.tam||[]).reduce(function(a,x){return a+x.jml},0)}
 function kasPay(p){return !p.imp&&!/^Pelunasan top up/.test(p.ket||"")}
 function kasHS(){var sim=TX.filter(function(t){return !/^Potongan otomatis/.test(t.ket||"")}).reduce(function(a,t){return a+(t.tipe=="masuk"?t.jml:-t.jml)},0);
-  var out=LOAN.reduce(function(a,l){return a+(l.imp?(l.saldoAwal||0):(l.bersih-(l.lalu||0)))},0);
+  var out=LOAN.reduce(function(a,l){return a+(l.imp?(l.pt?0:(l.saldoAwal||0)):(l.bersih-(l.lalu||0)))},0);
   var inn=PAY.filter(kasPay).reduce(function(a,p){return a+p.jml+(p.denda||0)},0);
   return modTotal()+sim-out+inn-buTotal(BU)}
 function buCards(){
@@ -1861,7 +1863,7 @@ function page(){
     var dashCab=viewCab();
     var cOk=function(l){return !dashCab||(l&&loanCab(l)==dashCab)},LC={};LOAN.forEach(function(l){LC[l.id]=l});
     var bl=today().slice(0,7),RB=LOAN.filter(function(l){return !l.imp&&String(l.tg).slice(0,7)==bl&&cOk(l)}),SB=PAY.filter(function(p){return kasPay(p)&&String(p.tg).slice(0,7)==bl&&cOk(LC[p.id])}),
-      AK=LOAN.filter(function(l){return sisaP(l)>0&&cOk(l)}),OS=AK.reduce(function(a,l){return a+sisaP(l)},0),NP=AK.filter(function(l){var q=kolOf(l);return q&&q.n>=3}),NPS=NP.reduce(function(a,l){return a+sisaP(l)},0),
+      AK=LOAN.filter(function(l){return !l.pt&&sisaP(l)>0&&cOk(l)}),OS=AK.reduce(function(a,l){return a+sisaP(l)},0),NP=AK.filter(function(l){var q=kolOf(l);return q&&q.n>=3}),NPS=NP.reduce(function(a,l){return a+sisaP(l)},0),
       uq=function(L){var o={};L.forEach(function(x){o[x.no||x.id]=1});return Object.keys(o).length},sbA=uq(SB.map(function(p){var l=LOAN.filter(function(x){return x.id==p.id})[0];return {no:l?l.no:p.id}}));
     var K=[["Saldo kas HS",(dashCab?"Semua cabang · ":"")+"Modal + angsuran masuk − realisasi − pengeluaran",rp(kasHS())],["Realisasi pinjaman",uq(RB)+" anggota bulan ini",rp(RB.reduce(function(a,l){return a+l.pokok},0))],["Setoran angsuran",sbA+" anggota setor bulan ini",rp(SB.reduce(function(a,p){return a+p.jml+(p.denda||0)},0))],["Pengeluaran",(dashCab?"Semua cabang · ":"")+BU.filter(buBulan).length+" item bulan ini",rp(buTotal(BU.filter(buBulan)))],["NPL (kemacetan)",NP.length+" pinjaman Kol 3–5 (aturan OJK)",(OS?(NPS/OS*100):0).toFixed(2).replace(".",",")+"%"],["Aset kredit · Outstanding",AK.length+" pinjaman berjalan",rp(OS)]];
     $("#view").innerHTML="<h2>Selamat "+sapa()+", "+ex(ROLE)+".</h2><p class=\"sub\">Pantau kesehatan koperasi secara menyeluruh.</p>"+imporHTML()+apvNote()+
@@ -1928,7 +1930,7 @@ function page(){
 }
 /* ===== Laporan perbandingan cabang (satu baris per cabang + total) ===== */
 function lapCabang(){var bl=today().slice(0,7),LC={};LOAN.forEach(function(l){LC[l.id]=l});
-  var R=CAB.map(function(c){var M=MEM.filter(function(m){return memCab(m)==c}),L=LOAN.filter(function(l){return loanCab(l)==c}),AK=L.filter(function(l){return sisaP(l)>0});
+  var R=CAB.map(function(c){var M=MEM.filter(function(m){return memCab(m)==c}),L=LOAN.filter(function(l){return loanCab(l)==c}),AK=L.filter(function(l){return !l.pt&&sisaP(l)>0});
     var os=AK.reduce(function(a,l){return a+sisaP(l)},0),np=AK.filter(function(l){var q=kolOf(l);return q&&q.n>=3}).reduce(function(a,l){return a+sisaP(l)},0);
     return {c:c,ang:M.length,sim:M.reduce(function(a,m){return a+saldoSim(m.no)},0),os:os,np:np,
       set:PAY.filter(function(p){var l=LC[p.id];return l&&kasPay(p)&&String(p.tg).slice(0,7)==bl&&loanCab(l)==c}).reduce(function(a,p){return a+p.jml+(p.denda||0)},0),
@@ -2067,7 +2069,7 @@ function hkData(bln){var ML=mktList(),asOf=gajiAsOf(bln),R={},key=function(m){re
     if(!l.imp&&String(l.tg).slice(0,7)==bln){r.real+=l.pokok;
       if(l.lalu>0||(l.lunasi&&l.lunasi.length))r.tup[l.no]=1;
       else if(!LOAN.some(function(x){return x.no==l.no&&x.id!=l.id&&x.tg<=l.tg}))r.baru[l.no]=1}
-    var sp=sisaP(l);if(sp>0){r.aktif[l.no]=1;r.os+=sp;var q=kolOf(l,asOf);if(q){r.kol[q.n]++;if(q.n>=3)r.npl+=sp}}});
+    var sp=l.pt?0:sisaP(l);if(sp>0){r.aktif[l.no]=1;r.os+=sp;var q=kolOf(l,asOf);if(q){r.kol[q.n]++;if(q.n>=3)r.npl+=sp}}});
   PAY.forEach(function(p){if(String(p.tg||"").slice(0,7)!=bln||!kasPay(p))return;var l=LOAN.filter(function(x){return x.id==p.id})[0];if(l)row(key(l.mkt||"")).setor+=p.jml+(p.denda||0)});
   /* Anggota keluar: pinjaman terakhirnya lunas bulan ini (bukan karena top up) dan tidak punya pinjaman berjalan */
   MEM.forEach(function(a){var L=LOAN.filter(function(l){return l.no==a.no});if(!L.length||L.some(function(l){return sisaP(l)>0}))return;
