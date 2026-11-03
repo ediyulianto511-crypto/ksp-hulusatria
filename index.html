@@ -518,7 +518,7 @@ function formHTML(){
   '<label class="drop" for="ktp">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>'+'<b>Unggah foto KTP</b><span>Format JPG atau PNG · Wilayah dibaca dari KTP</span></label><input class="sr" id="ktp" type="file" accept="image/*" aria-label="Unggah foto KTP"><label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
-  F("fno","Nomor anggota",'<input id="fno" type="text" value="'+nomor(myCab()||CAB[0])+'" readonly>')+
+  F("fno","Nomor anggota",'<input id="fno" type="text" value="'+nomor(myCab()||cabDef())+'" readonly>')+
   F("fmc","Kantor cabang",myCab()?'<select id="fmc" disabled><option>'+ex(myCab())+'</option></select>':SEL("fmc",CAB.map(function(c){return c}),"").replace("<option>"+(viewCab()||cabDef())+"<","<option selected>"+(viewCab()||cabDef())+"<"))+
   F("fk","NIK",'<input id="fk" type="text" inputmode="numeric" maxlength="16" placeholder="16 digit NIK" autocomplete="off">')+
   F("ft","Tempat lahir",'<input id="ft" type="text" placeholder="Contoh: Jakarta" autocomplete="off">')+
@@ -843,8 +843,10 @@ function fotoBind(){var w=$("#pfw");if(!w)return;
 function doneBlock(){var l=LOAN.filter(function(x){return x.id==lastPJ})[0];if(!l)return "";
   return '<div class="pdone" role="status"><b>✓ Realisasi '+l.id+' berhasil</b><p>'+ex(l.nama)+' · '+mdl(l).n+' · terima bersih '+rp(terimaOf(l))+'. Cetak kartu untuk diserahkan ke anggota.</p><div class="acts"><button class="pbtn" type="button" onclick="cetakPinjaman(\''+l.id+'\')">Cetak kartu pinjaman</button><button class="pbtn" type="button" onclick="cetakAnggota(\''+l.no+'\')">Cetak kartu anggota</button><button class="lnk" type="button" onclick="lastPJ=\'\';page()">Tutup</button></div></div>'}
 function simpanDoc(key,file){kecil(file,function(img){if(!img)return;if(DB)DB.doc("doc/"+key).set({img:img}).catch(function(){})})}
+/* Foto KTP anggota impor yang nomornya diganti tetap tersimpan di nomor lama (fno). */
+function ktpKey(no){var m=MEM.filter(function(x){return x.no==no})[0];return m&&m.fno||no}
 function ambilFoto(no,cb){var ls=null;
-  if(DB)DB.doc("ktp/"+no).get().then(function(sn){var d=sn&&sn.data?sn.data():null;cb(d&&d.img?d.img:ls)}).catch(function(){cb(ls)});else cb(ls)}
+  if(DB)DB.doc("ktp/"+ktpKey(no)).get().then(function(sn){var d=sn&&sn.data?sn.data():null;cb(d&&d.img?d.img:ls)}).catch(function(){cb(ls)});else cb(ls)}
 function cetakHtml(h){var c=document.getElementById("cetak");if(!c){c=document.createElement("div");c.id="cetak";document.body.appendChild(c)}
   c.innerHTML=h;document.body.classList.add("pc");var done=function(){document.body.classList.remove("pc");window.removeEventListener("afterprint",done)};
   window.addEventListener("afterprint",done);setTimeout(function(){window.print();setTimeout(done,1500)},150)}
@@ -1653,7 +1655,17 @@ function imporData(inp){var f=inp.files[0],m=$("#impmsg");if(!f)return;m.classNa
     function next(){if(i>=rows.length)return Promise.resolve();var b=rows.slice(i,i+40);i+=40;m.textContent="Mengimpor "+Math.min(i,rows.length)+" dari "+rows.length+" data...";return SB.from("docs").upsert(b,{onConflict:"col,id"}).then(sbCek).then(next)}
     return next().then(function(){m.className="ok";m.textContent=rows.length+" data berhasil diimpor. Memuat ulang...";setTimeout(function(){location.reload()},1200)})})
   .catch(function(e){m.className="err";m.textContent="Impor gagal: "+(e&&e.message?sbErr(e):e)+". Pastikan file yang dipilih data_awal.json."})}
-function afterLoad(){karSyncAng();nav();if(!$("#app").hidden)page()}
+/* Nomor anggota hasil impor data awal (format lama AG-00001, tanpa kode cabang) diganti menjadi AG-IMP-00001
+   supaya beda dengan nomor baru berkode cabang. Semua rujukan ikut diganti; foto KTP tetap dibaca dari nomor lama (fno).
+   Garis miring tidak dipakai karena tidak bisa jadi kunci data. Berjalan sekali saat Ketua membuka aplikasi. */
+function impRenum(){if(!isOwner())return 0;var M={},n=0;
+  MEM.forEach(function(m){var r=/^AG-(\d+)$/.exec(String(m.no||""));if(!r)return;var nn="AG-IMP-"+r[1];if(MEM.some(function(x){return x.no==nn}))return;M[m.no]=nn});
+  MEM.forEach(function(m){var nn=M[m.no];if(!nn)return;if(m.foto&&!m.fno)m.fno=m.no;m.noLama=m.no;m.no=nn;n++});
+  if(!n)return 0;
+  LOAN.forEach(function(l){if(M[l.no])l.no=M[l.no]});TX.forEach(function(t){if(M[t.no])t.no=M[t.no]});
+  AJU.forEach(function(x){if(x.d&&M[x.d.no])x.d.no=M[x.d.no]});KAR.forEach(function(k){if(M[k.ang])k.ang=M[k.ang]});
+  return n}
+function afterLoad(){var rn=impRenum();karSyncAng();if(rn)saveSoon();nav();if(!$("#app").hidden)page()}
 function jpegKtp(file){return new Promise(function(res){
   var im=new Image(),u=URL.createObjectURL(file);
   im.onload=function(){var m=1600,r=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
@@ -1672,6 +1684,7 @@ function simpanFoto(no,file){
     if(!img)return;
     
     if(DB)DB.doc("ktp/"+no).set({img:img}).catch(function(){});
+    MEM.forEach(function(m){if(m.no==no&&m.fno){delete m.fno;saveSoon()}});
   });
 }
 function lihatKtp(no){
@@ -1680,7 +1693,7 @@ function lihatKtp(no){
   var t=document.createElement("div");t.style.cssText="color:#fff;font:15px sans-serif";t.textContent="Memuat foto KTP...";ov.appendChild(t);document.body.appendChild(ov);
   var show=function(img){if(!img){t.textContent="Foto KTP tidak ditemukan.";return}
     var i=document.createElement("img");i.src=img;i.alt="Foto KTP "+no;i.style.cssText="max-width:100%;max-height:100%;border-radius:12px";ov.innerHTML="";ov.appendChild(i)};
-  if(DB)DB.doc("ktp/"+no).get().then(function(sn){var d=sn&&sn.data?sn.data():null;show(d&&d.img?d.img:null)}).catch(function(){show(null)});
+  if(DB)DB.doc("ktp/"+ktpKey(no)).get().then(function(sn){var d=sn&&sn.data?sn.data():null;show(d&&d.img?d.img:null)}).catch(function(){show(null)});
   else show(null);
 }
 
