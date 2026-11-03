@@ -2285,19 +2285,20 @@ function strukMeta(p){var d=new Date(),z=function(n){return String(n).padStart(2
 function strukNo(p){if(p.ns)return p.ns;var i=PAY.indexOf(p);return "ST-"+String(p.tg||"").replace(/-/g,"")+"-"+String(i+1).padStart(4,"0")}
 /* Bukti pencairan top up: rincian pinjaman baru, potongan, pelunasan pinjaman lalu, dan terima bersih. */
 function strukCair(l,p){var a=MEM.filter(function(d){return d.no==l.no})[0]||{},m=mdl(l);
-  return {cair:1,no:p.ns||l.sns||("CR-"+l.id),jenis:l.lalu>0?"BUKTI PENCAIRAN TOP UP":"BUKTI PENCAIRAN PINJAMAN",cm:l.cm||"",rk:l.cm=="Transfer"&&l.rk?l.rk:null,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,tg:p.tg||l.tg,jam:p.jam||l.jam||"",ptg:p.ptg||"",
+  return {cair:1,no:p.ns||l.sns||("CR-"+l.id),jenis:"RINCIAN PENCAIRAN PINJAMAN",cm:l.cm||"",rk:l.cm=="Transfer"&&l.rk?l.rk:null,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,tg:p.tg||l.tg,jam:p.jam||l.jam||"",ptg:p.ptg||"",
     pola:m.n,per:m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan",plafon:+l.pokok||0,tenor:+l.tenor||0,ang:+l.ang||0,
     pot:(l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0),lalu:+l.lalu||0,lunasi:(l.lunasi||[]).join(", "),terima:terimaOf(l),total:terimaOf(l),hp:String(a.hp||"")}}
 function strukData(l,p){if(p.cair)return strukCair(l,p);
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},sisa=Math.max(0,sisaP(l)),lunas=sisa<=0;
   var top=/^Pelunasan top up/.test(p.ket||""),mT=top&&/dari (\S+)/.exec(p.ket||"");
-  return {no:strukNo(p),jenis:top?"TOP UP · PELUNASAN PINJAMAN LALU":p.pt?(lunas?"PELUNASAN PEMUTIHAN":"ANGSURAN PEMUTIHAN"):(lunas||/^Pelunasan/.test(p.ket||""))?"PELUNASAN PINJAMAN":"PEMBAYARAN ANGSURAN",top:top,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,
-    tg:p.tg,jam:p.jam||"",ptg:p.ptg||"",ket:top?"Pelunasan pinjaman lalu":lunas?"Pelunasan pinjaman":(p.ket||"Angsuran").replace(/ke-(\d+)$/,"ke-$1 dari "+l.tenor),plafon:+l.pokok||0,tenor:+l.tenor||0,pola:(function(){try{return mdl(l).n}catch(e){return ""}})(),per:(function(){try{var m=mdl(l);return m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan"}catch(e){return "bulan"}})(),ang:+l.ang||0,baru:mT?mT[1]:"",jml:p.jml||0,denda:p.denda||0,total:(p.jml||0)+(p.denda||0),sisa:sisa,lunas:lunas,hp:String(a.hp||""),met:p.ket=="Pelunasan close"?"Close (simpanan"+(p.met?" + "+p.met.toLowerCase():"")+")":top?"Top up":(p.met||""),
+  return {no:strukNo(p),// Hanya 3 jenis struk (user 3 Nov 2026): Pembayaran angsuran, Rincian pencairan pinjaman, Bukti pelunasan.
+    jenis:(top||lunas||/^Pelunasan/.test(p.ket||""))?"BUKTI PELUNASAN":"PEMBAYARAN ANGSURAN",top:top,nama:l.nama||a.nama||"",nomor:l.no||"",pinjaman:l.id,
+    tg:p.tg,jam:p.jam||"",ptg:p.ptg||"",ket:top?"Pelunasan lewat top up":p.ket=="Pelunasan close"?"Pelunasan close (anggota keluar)":p.pt&&lunas?"Pelunasan pemutihan":lunas?"Pelunasan pinjaman":(p.ket||"Angsuran").replace(/ke-(\d+)$/,"ke-$1 dari "+l.tenor),plafon:+l.pokok||0,tenor:+l.tenor||0,pola:(function(){try{return mdl(l).n}catch(e){return ""}})(),per:(function(){try{var m=mdl(l);return m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan"}catch(e){return "bulan"}})(),ang:+l.ang||0,baru:mT?mT[1]:"",jml:p.jml||0,denda:p.denda||0,total:(p.jml||0)+(p.denda||0),sisa:sisa,lunas:lunas,hp:String(a.hp||""),met:p.ket=="Pelunasan close"?"Close (simpanan"+(p.met?" + "+p.met.toLowerCase():"")+")":top?"Top up":(p.met||""),
     rin:true?null:(function(){var dn=dendaB(l,p.tg||today()),db=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),sm=0;try{sm=Math.max(0,+saldoSim(l.no)||0)}catch(e){}
       return {djalan:db+dn,dbayar:db,dsisa:dn,pb:sisa,sim:sm,lunasi:sisa+dn,close:Math.max(0,sisa+dn-sm)}})()};
 }
 function strukGambar(d){
-  var W=720,c=document.createElement("canvas"),x=c.getContext("2d"),H=d.cair?690+52*4+(d.ptg?52:0)+(d.pot?52:0)+(d.lalu?104:0)+(d.cm?52:0)+(d.rk?34:0)+(STRUK_REK?84:0):(d.lunas?1020:910)+(d.ptg?52:0)+(d.baru?52:0)+(d.plafon?52:0)+(d.pola?52:0)+(STRUK_REK?84:0)+(d.tenor?52:0)+(d.ang?52:0)+(d.met?52:0)+104-52-(d.lunas?0:52);c.width=W;c.height=H;
+  var W=720,c=document.createElement("canvas"),x=c.getContext("2d"),H=d.cair?690+52*5+(d.ptg?52:0)+(d.pot?52:0)+(d.lalu?104:0)+(d.cm?52:0)+(d.rk?34:0)+(STRUK_REK?84:0):(d.lunas?1020:910)+(d.ptg?52:0)+(d.baru?52:0)+(d.plafon?52:0)+(d.pola?52:0)+(STRUK_REK?84:0)+(d.tenor?52:0)+(d.ang?52:0)+(d.met?52:0)+104-52-(d.lunas?0:52);c.width=W;c.height=H;
   x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var K=STRUK_MODEL==4?{u:"#7A3E4B",b:"#F3E6E9"}:{u:"#2E2A2B",b:"#F6F2EF"},hh=STRUK_MODEL==4?42:0;H+=hh;c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0,tx=ada?180:40;
@@ -2317,7 +2318,7 @@ function strukGambar(d){
   function baris(k,v,b){x.textAlign="left";x.fillStyle="#666";x.font="24px "+SERIF;x.fillText(k,50,y);
     x.textAlign="right";x.fillStyle="#222";x.font=(b?"bold 28px":"26px")+" "+SERIF;
     var s=String(v);while(x.measureText(s).width>440&&s.length>3)s=s.slice(0,-2);x.fillText(s,W-50,y);y+=52}
-  if(d.cair){garis();baris("Nama",d.nama);baris("No. anggota",d.nomor);baris("No. pinjaman baru",d.pinjaman);baris("Tipe pinjaman","Pinjaman "+d.pola);baris("Jangka waktu",d.tenor+" kali");baris("Angsuran per "+(d.per||"bulan"),rp(d.ang));if(d.lunasi)baris("Pinjaman lalu dilunasi",d.lunasi);if(d.ptg)baris("Petugas",d.ptg);
+  if(d.cair){garis();baris("Nama",d.nama);baris("No. anggota",d.nomor);baris("No. pinjaman baru",d.pinjaman);baris("Keterangan",d.lalu?"Top up":"Anggota baru");baris("Tipe pinjaman","Pinjaman "+d.pola);baris("Jangka waktu",d.tenor+" kali");baris("Angsuran per "+(d.per||"bulan"),rp(d.ang));if(d.lunasi)baris("Pinjaman lalu dilunasi",d.lunasi);if(d.ptg)baris("Petugas",d.ptg);
     garis();baris("Realisasi pinjaman",rp(d.plafon));if(d.pot)baris("Potongan (provisi, dll.)","− "+rp(d.pot));if(d.lalu)baris("Pelunasan saldo lalu","− "+rp(d.lalu));baris("Terima bersih",rp(d.terima),true);if(d.cm)baris("Diterimakan secara",d.cm);if(d.rk){var rt="Ditransfer ke rekening "+d.rk.b+" "+d.rk.n+" a.n. "+d.rk.a,fz=20;x.textAlign="right";x.fillStyle="#888";do{x.font="italic "+fz+"px "+SERIF;fz--}while(x.measureText(rt).width>W-100&&fz>12);x.fillText(rt,W-50,y-18);y+=34}
     garis();x.textAlign="center";x.fillStyle=K.u;x.font="bold 26px "+SERIF;x.fillText("Bukti pencairan sah · Terima kasih",W/2,H-70);
     x.fillStyle="#999";x.font="20px "+SERIF;x.fillText("Simpan bukti ini. No. tercatat di sistem KSP Hulusatria",W/2,H-35);return c}
