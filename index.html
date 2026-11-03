@@ -1659,7 +1659,7 @@ function imporData(inp){var f=inp.files[0],m=$("#impmsg");if(!f)return;m.classNa
    supaya beda dengan nomor baru berkode cabang. Semua rujukan ikut diganti; foto KTP tetap dibaca dari nomor lama (fno).
    Garis miring tidak dipakai karena tidak bisa jadi kunci data. Berjalan sekali saat Ketua membuka aplikasi. */
 function impRenum(){if(!isOwner())return 0;var M={},n=0;
-  MEM.forEach(function(m){var r=/^AG-(\d+)$/.exec(String(m.no||""));if(!r)return;var nn="AG-IMP-"+r[1];if(MEM.some(function(x){return x.no==nn}))return;M[m.no]=nn});
+  MEM.forEach(function(m){var r=/^AG-(\d+)$/.exec(String(m.no||""));if(!r)return;var nn="AG-IMP-"+String(+r[1]).padStart(5,"0");if(MEM.some(function(x){return x.no==nn}))return;M[m.no]=nn});
   MEM.forEach(function(m){var nn=M[m.no];if(!nn)return;if(m.foto&&!m.fno)m.fno=m.no;m.noLama=m.no;m.no=nn;n++});
   if(!n)return 0;
   LOAN.forEach(function(l){if(M[l.no])l.no=M[l.no]});TX.forEach(function(t){if(M[t.no])t.no=M[t.no]});
