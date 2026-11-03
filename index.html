@@ -200,7 +200,7 @@ main{margin-left:248px;min-height:100vh}
 .mgrid .pbtn small{display:block;font-size:12.5px;font-weight:500;opacity:.9;margin-top:2px}
 /* Tombol jenis pinjaman: warna dari kotak Dashboard */
 .mgrid .pbtn[data-model],.mgrid .pbtn[data-ck]{background:var(--mc);color:#fff;outline-color:var(--md)}
-.mgrid .pbtn[data-model="mg"],.mgrid .pbtn[data-ck="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"],.mgrid .pbtn[data-ck="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"],.mgrid .pbtn[data-ck="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"],.mgrid .pbtn[data-ck="pg"]{--mc:#1F9FD0;--md:#1A89B4}
+.mgrid .pbtn[data-model="kk"],.mgrid .pbtn[data-ck="kk"]{--mc:#7A3E4B;--md:#5E2F3A}.mgrid .pbtn[data-model="mg"],.mgrid .pbtn[data-ck="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"],.mgrid .pbtn[data-ck="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"],.mgrid .pbtn[data-ck="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"],.mgrid .pbtn[data-ck="pg"]{--mc:#1F9FD0;--md:#1A89B4}
 .mgrid .pbtn[data-model][aria-pressed="true"],.mgrid .pbtn[data-ck][aria-pressed="true"]{background:var(--md);outline-width:4px}
 @media (max-width:640px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pact{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-top:22px}
@@ -405,7 +405,7 @@ function cabDef(){return CAB.indexOf("Cabang 1")>=0?"Cabang 1":(CAB.filter(funct
 function cabNorm(n){n=String(n||"").trim();return !n||n=="Kantor Pusat"?cabDef():n}
 function cabGabung(L){var o=CAB0.slice();(L||[]).forEach(function(c){c=cabNorm(c);if(o.indexOf(c)<0)o.push(c)});return o}
 function memCab(m){return cabNorm(m&&m.cab)}
-function loanCab(l){var m=MEM.filter(function(x){return x.no==l.no})[0];return memCab(m)}
+function loanCab(l){if(l&&l.model=="kk")return KOPKAR;var m=MEM.filter(function(x){return x.no==l.no})[0];return memCab(m)}
 var JAB=["Ketua (owner)","Akuntan","Manager Utama","Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
 /* Jabatan ini hanya melihat data cabangnya sendiri. Ketua, Akuntan, Manager Utama melihat semua cabang (tetap dibatasi Hak akses menu). */
 var JAB_CAB=["Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
@@ -687,9 +687,11 @@ function bindModal(){
     berhasil("Modal berhasil disimpan",flash);page();
   };
 }
-var MODEL={mg:{n:"Mingguan",per:"minggu",hari:7},dm:{n:"Dua mingguan",per:"periode 2 minggu",hari:14},bl:{n:"Bulanan",per:"bulan"},pg:{n:"Pegadaian",per:"bulan"}},MK=["mg","dm","bl","pg"];
-var POT={mg:["prov","asr","wajib"],dm:["prov","asr"],bl:["prov","asr"],pg:["prov","asr"]};
-var RDEF={mg:{n:12,bunga:20,basis:"total",prov:0,asr:0,wajib:0,denda:0},dm:{n:6,bunga:1,basis:"periode",prov:0,asr:0,wajib:0,denda:0},bl:{n:12,bunga:1.5,basis:"periode",prov:0,asr:0,wajib:0,denda:0},pg:{n:12,bunga:1.5,basis:"periode",prov:0,asr:0,wajib:0,denda:0}};
+var MODEL={kk:{n:"Koperasi karyawan HS",per:"bulan"},mg:{n:"Mingguan",per:"minggu",hari:7},dm:{n:"Dua mingguan",per:"periode 2 minggu",hari:14},bl:{n:"Bulanan",per:"bulan"},pg:{n:"Pegadaian",per:"bulan"}},MK=["kk","mg","dm","bl","pg"];
+/* Koperasi karyawan HS memakai bentuk regulasi yang sama dengan Bulanan (3 pilihan jangka waktu, bunga per bulan). */
+function bl3(k){return k=="bl"||k=="kk"}
+var POT={kk:["prov","asr"],mg:["prov","asr","wajib"],dm:["prov","asr"],bl:["prov","asr"],pg:["prov","asr"]};
+var RDEF={kk:{n:12,bunga:1,basis:"periode",prov:0,asr:0,wajib:0,denda:0},mg:{n:12,bunga:20,basis:"total",prov:0,asr:0,wajib:0,denda:0},dm:{n:6,bunga:1,basis:"periode",prov:0,asr:0,wajib:0,denda:0},bl:{n:12,bunga:1.5,basis:"periode",prov:0,asr:0,wajib:0,denda:0},pg:{n:12,bunga:1.5,basis:"periode",prov:0,asr:0,wajib:0,denda:0}};
 var PFOTO=[],pinStat="baru",lastPJ="",PDOC={},DOCN=["Cek Plot / Lokasi Map","Bukti / Struk Realisasi","Dokumen Jaminan","Tanda Tangan Realisasi"];
 var LOAN=[],PAY=[],pinMode="cair",pinModel="mg",REG={m:{}};
 function rule(k){var o={},d=RDEF[k],r=(REG.m&&REG.m[k])||{};for(var x in d)o[x]=(r[x]!=null?r[x]:d[x]);return o}
@@ -764,7 +766,7 @@ function statAng(no){return aktifPin(no).length?"Anggota lama (top up)":LOAN.som
 function noOf(v){return String(v).split(" · ")[0]}
 function num(v){return parseFloat(String(v).replace(",","."))||0}
 function dig(v){return parseInt(String(v).replace(/[^0-9]/g,""),10)||0}
-function tierOf(k,p){var T=(REG.m&&REG.m[k]&&REG.m[k].tier)||[],d=rule(k);for(var i=0;i<T.length;i++){var t=T[i];if(t&&t.min!==""&&t.max!==""&&t.min!=null&&t.max!=null&&p>=t.min&&p<=t.max){var ns=(Array.isArray(t.ns)&&t.ns.length)?t.ns.map(Number):[Math.round(+t.n)||d.n];return{i:i+1,min:t.min,max:t.max,prov:+t.prov||0,asr:+t.asr||0,wajib:+t.wajib||0,ns:ns,n:ns[0],bunga:(t.bunga===""||t.bunga==null)?d.bunga:+t.bunga,basis:k=="bl"?"periode":(t.basis||d.basis),denda:+t.denda||0}}}return null}
+function tierOf(k,p){var T=(REG.m&&REG.m[k]&&REG.m[k].tier)||[],d=rule(k);for(var i=0;i<T.length;i++){var t=T[i];if(t&&t.min!==""&&t.max!==""&&t.min!=null&&t.max!=null&&p>=t.min&&p<=t.max){var ns=(Array.isArray(t.ns)&&t.ns.length)?t.ns.map(Number):[Math.round(+t.n)||d.n];return{i:i+1,min:t.min,max:t.max,prov:+t.prov||0,asr:+t.asr||0,wajib:+t.wajib||0,ns:ns,n:ns[0],bunga:(t.bunga===""||t.bunga==null)?d.bunga:+t.bunga,basis:bl3(k)?"periode":(t.basis||d.basis),denda:+t.denda||0}}}return null}
 function tierTxt(k){var T=(REG.m&&REG.m[k]&&REG.m[k].tier)||[],a=[];T.forEach(function(t,i){if(t&&t.min!==""&&t.max!==""&&t.min!=null&&t.max!=null)a.push("Kategori "+(i+1)+": "+rp(t.min)+" – "+rp(t.max))});return a.length?a.join(" · "):"belum diatur"}
 function tenorTxt(k,n){var b=function(x){return String(Math.round(x*10)/10).replace(".",",")};
   if(k=="dm")return (n%2?n*2+" minggu":b(n/2)+" bulan")+" · "+n+"x penagihan";
@@ -1125,6 +1127,8 @@ function tolakPop(r){var w=document.createElement("div");w.className="tpop";w.in
 function tolakHTML(r){return '<div class="ptolak" role="alert"><b>PINJAMAN DITOLAK</b><span>'+ex(r.j)+'</span><small>'+ex(r.t)+'</small></div>'}
 /* Cek aturan pinjaman: dipakai saat proposal, persetujuan, dan realisasi. */
 function cekPin(P,tg){var a=MEM.filter(function(d){return d.no==P.no})[0];if(!a)return "Anggota tidak ditemukan.";
+  if(P.model=="kk"&&!KAR.some(function(k){return k.ang==a.no}))return "Pinjaman Koperasi karyawan HS khusus anggota yang terdaftar sebagai karyawan.";
+  if(P.model!="kk"&&memCab(a)==KOPKAR)return "Anggota Koperasi karyawan HS memakai jenis pinjaman Koperasi karyawan HS.";
   var r=hitung(P.model,P.v,P.n);if(r.err)return r.err;if(!P.n)return "Pilih jangka waktu.";
   var tl=tolakPin(P.no,tg);if(tl)return "Pinjaman ditolak: "+tl.j+".";
   if(r.bersih<=0)return "Potongan melebihi realisasi pinjaman. Periksa Regulasi bunga.";
@@ -1281,17 +1285,17 @@ function regPage(){
   var h='<form id="rform" novalidate>'+(own?"":'<div class="panel" style="margin-bottom:14px"><p class="mutp" style="margin:0">Regulasi pendapatan dan bunga hanya bisa diubah oleh Ketua (owner). Anda melihat aturan yang berlaku.</p></div>')+MK.map(function(k){var m=MODEL[k],T=(REG.m&&REG.m[k]&&REG.m[k].tier)||[],pw=POT[k].indexOf("wajib")>=0,d=RDEF[k];
     var rows=[0,1,2].map(function(i){var t=T[i]||{},v=function(x){return t[x]==null?"":t[x]},id=function(x){return "r_"+k+"_t"+i+"_"+x};
       var inp=function(x,ph,val,mode){return '<td><input id="'+id(x)+'" type="text" inputmode="'+(mode||"decimal")+'" placeholder="'+ph+'" value="'+val+'"'+dis+' style="min-width:90px"></td>'};
-      var ns=Array.isArray(t.ns)?t.ns:(t.n?[t.n]:[]),multi=(k=="dm"||k=="bl"),nIn='<td style="white-space:nowrap">'+(multi?[0,1,2]:[0]).map(function(j){return '<input id="'+id("n"+j)+'" type="text" inputmode="numeric" placeholder="'+(multi?"pilihan "+(j+1):"kali")+'" value="'+(ns[j]==null?(k=="mg"&&j==0&&!ns.length?12:""):ns[j])+'"'+dis+' style="min-width:80px;width:80px;margin-right:4px">'}).join("")+"</td>";
-      var bs=k=="bl"?"periode":(v("basis")||(k=="mg"?"total":"periode"));
+      var ns=Array.isArray(t.ns)?t.ns:(t.n?[t.n]:[]),multi=(k=="dm"||bl3(k)),nIn='<td style="white-space:nowrap">'+(multi?[0,1,2]:[0]).map(function(j){return '<input id="'+id("n"+j)+'" type="text" inputmode="numeric" placeholder="'+(multi?"pilihan "+(j+1):"kali")+'" value="'+(ns[j]==null?(k=="mg"&&j==0&&!ns.length?12:""):ns[j])+'"'+dis+' style="min-width:80px;width:80px;margin-right:4px">'}).join("")+"</td>";
+      var bs=bl3(k)?"periode":(v("basis")||(k=="mg"?"total":"periode"));
       return '<tr><td>Kategori '+(i+1)+'</td>'+inp("min","Dari (Rp)",fmtRp(v("min")),"numeric")+inp("max","Sampai (Rp)",fmtRp(v("max")),"numeric")+inp("prov","%",v("prov"))+inp("asr","%",v("asr"))+(pw?inp("wajib","%",v("wajib")):"")+
-      nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+(k=="bl"?" disabled":dis)+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
-    return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt(k)+'"><div><h3>Regulasi bunga '+m.n+'</h3><p>Angsuran '+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+', jatuh tempo di hari/tanggal yang sama dengan realisasi</p></div></div>'+
-    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi realisasi pinjaman, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori realisasi pinjaman.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Realisasi pinjaman dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Jangka waktu (kali, '+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="bl"&&BD_AKTIF?bdPanel(dis):"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari realisasi pinjaman saat realisasi.</p>':"")+'</div>'}).join("")+
+      nIn+inp("bunga","%",v("bunga"))+'<td><select id="'+id("basis")+'"'+(bl3(k)?" disabled":dis)+'><option value="total"'+(bs=="total"?" selected":"")+'>Total dari pokok</option><option value="periode"'+(bs=="periode"?" selected":"")+'>Per '+m.per+'</option></select></td>'+inp("denda","% per hari",v("denda"))+"</tr>"}).join("");
+    return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="'+hcSt(k)+'"><div><h3>Regulasi bunga '+m.n+'</h3><p>'+(k=="kk"?"Khusus anggota yang terdaftar sebagai karyawan. Angsuran tiap bulan, dipotong otomatis dari penghasilan karyawan":"Angsuran "+(m.hari?(m.hari==7?"tiap minggu":"tiap 2 minggu"):"tiap bulan")+", jatuh tempo di hari/tanggal yang sama dengan realisasi")+'</p></div></div>'+
+    '<p class="mutp" style="margin:0 0 8px">Geser tabel ke kanan. Kolom <b>Penerimaan</b> mengurangi realisasi pinjaman, kolom <b>Pengembalian</b> mengatur angsuran. Keduanya mengikuti kategori realisasi pinjaman.</p><div class="tblw"><table class="tbl wide"><thead><tr><th>Kategori</th><th>Realisasi pinjaman dari (Rp)</th><th>Sampai (Rp)</th><th>Provisi (%)</th><th>Asuransi (%)</th>'+(pw?"<th>Simpanan wajib (%)</th>":"")+'<th>Jangka waktu (kali, '+(k=="dm"||bl3(k)?"3 pilihan":"1 pilihan")+')</th><th>Bunga (%)</th><th>Bunga dihitung</th><th>Denda harian (%)</th></tr></thead><tbody>'+rows+'</tbody></table></div>'+(k=="bl"&&BD_AKTIF?bdPanel(dis):"")+(k=="kk"?'<label for="r_kk_tgl" style="margin:14px 0 6px">Tanggal tutup penggajian</label><div class="field" style="max-width:220px"><input id="r_kk_tgl" type="text" inputmode="numeric" value="'+kkCut()+'"'+dis+'><span style="padding:0 14px;color:var(--mut)">tiap bulan</span></div><p class="mutp" style="margin:6px 0 0">Penggajian pertama setelah realisasi langsung terpotong angsuran pertama. Realisasi sampai tanggal ini dipotong di gaji bulan itu, realisasi sesudahnya dipotong mulai gaji bulan berikutnya.</p>':"")+(k=="pg"?'<p class="mutp" style="margin:8px 0 0">Bunga di muka: bunga otomatis dipotong dari realisasi pinjaman saat realisasi.</p>':"")+'</div>'}).join("")+
     regApvPanel(dis)+tkPanel(dis)+'<div id="rmsg" class="ok" role="status">'+flash+'</div>'+(own?'<button class="btn" type="submit" style="max-width:260px">Simpan regulasi</button>':"")+'<p class="mutp">Semua isian dikosongkan dulu, Ketua (owner) yang mengisi. Denda dihitung per hari dari angsuran yang terlambat. Pinjaman hanya bisa direalisasi kalau realisasi pinjamannya masuk salah satu kategori. Pinjaman yang sudah direalisasi tidak berubah.</p></form>';
   flash="";return h;
 }
 /* Warna kepala panel di halaman Regulasi: hijau, merah, biru, kuning, lalu berulang dari hijau. Huruf putih. */
-var HCOL=["#00A65A","#DD4B39","#00C0EF","#F39C12"],HCK={mg:0,dm:1,bl:2,pg:3,apv:4,tk:5,gaji:6};
+var HCOL=["#00A65A","#DD4B39","#00C0EF","#F39C12"],HCK={kk:0,mg:1,dm:2,bl:3,pg:4,apv:5,tk:6,gaji:7};
 function hcSt(k){return "--hb:"+HCOL[(HCK[k]||0)%4]+";--hf:#FFFFFF"}
 function bdPanel(dis){var c=bdCfg(),on=!!c;c=c||{min:6,maju:6};
   return '<div style="margin-top:14px;padding:14px 16px;border:1px solid var(--line);border-radius:16px"><label for="r_bd_on" style="margin:0 0 6px">Bunga diakui saat pelunasan / top up</label><div class="field" style="max-width:260px"><select id="r_bd_on"'+dis+'><option value="1"'+(on?" selected":"")+'>Dipakai</option><option value="0"'+(on?"":" selected")+'>Tidak dipakai (bunga penuh)</option></select></div>'+
@@ -1307,23 +1311,24 @@ function bindReg(){
     if(ROLE!="Ketua (owner)"){o.className="err";o.textContent="Hanya Ketua (owner) yang bisa mengubah regulasi.";return}
     MK.forEach(function(k){if(er)return;var r={tier:[]},pw=POT[k].indexOf("wajib")>=0,rg=[],N=MODEL[k].n;
       for(var i=0;i<3;i++){var g=function(x){var e=$("#r_"+k+"_t"+i+"_"+x);return e?e.value.trim():""};
-        var mn=g("min"),mx=g("max"),a=g("prov"),b=g("asr"),c=pw?g("wajib"):"",an=(k=="dm"||k=="bl"?[0,1,2]:[0]).map(function(j){return g("n"+j)}).filter(function(x){return x}),bg=g("bunga"),bs=g("basis"),dn=g("denda"),K="Kategori "+(i+1)+" "+N+": ";
+        var mn=g("min"),mx=g("max"),a=g("prov"),b=g("asr"),c=pw?g("wajib"):"",an=(k=="dm"||bl3(k)?[0,1,2]:[0]).map(function(j){return g("n"+j)}).filter(function(x){return x}),bg=g("bunga"),bs=g("basis"),dn=g("denda"),K="Kategori "+(i+1)+" "+N+": ";
         if(!mn&&!mx){if(a||b||c||dn)er=K+"isi realisasi pinjaman dari dan sampai dulu.";r.tier.push({min:"",max:"",prov:"",asr:"",wajib:"",ns:an.map(Number).filter(function(x){return x>0}),bunga:bg,basis:bs,denda:""});if(er)return;continue}
         var n1=dig(mn),n2=dig(mx),pa=a?num(a):0,pb=b?num(b):0,pc=c?num(c):0,nn=an.map(function(x){return Math.round(num(x))}),bb=num(bg),dd=dn?num(dn):0;
         if(!mn||!mx||n1<=0||n2<n1){er=K+"realisasi pinjaman 'dari' harus lebih kecil atau sama dengan 'sampai'.";return}
         if(pa<0||pb<0||pc<0||pa+pb+pc>=100){er=K+"total potongan harus di bawah 100%.";return}
-        if(!nn.length||nn.some(function(x){return !(x>=1&&x<=156)})){er=K+"isi jangka waktu ("+(k=="dm"||k=="bl"?"3 pilihan":"1 pilihan")+", 1 sampai 156 kali).";return}
+        if(!nn.length||nn.some(function(x){return !(x>=1&&x<=156)})){er=K+"isi jangka waktu ("+(k=="dm"||bl3(k)?"3 pilihan":"1 pilihan")+", 1 sampai 156 kali).";return}
         if(nn.filter(function(x,j){return nn.indexOf(x)==j}).length<nn.length){er=K+"pilihan jangka waktu tidak boleh sama.";return}
-        if((k=="dm"||k=="bl")&&nn.length<3){er=K+"isi ketiga pilihan jangka waktu.";return}
+        if((k=="dm"||bl3(k))&&nn.length<3){er=K+"isi ketiga pilihan jangka waktu.";return}
         if(!bg||bb<0||bb>=100){er=K+"isi bunga (0 sampai di bawah 100%).";return}
         if(dd<0||dd>=100){er=K+"denda harian tidak valid.";return}
         rg.forEach(function(q){if(n1<=q[1]&&n2>=q[0])er=K+"rentang realisasi pinjaman tumpang tindih dengan kategori lain."});if(er)return;
-        rg.push([n1,n2]);r.tier.push({min:n1,max:n2,prov:a?pa:"",asr:b?pb:"",wajib:c?pc:"",ns:nn,n:nn[0],bunga:bb,basis:k=="bl"?"periode":(bs||"total"),denda:dn?dd:""})}
+        rg.push([n1,n2]);r.tier.push({min:n1,max:n2,prov:a?pa:"",asr:b?pb:"",wajib:c?pc:"",ns:nn,n:nn[0],bunga:bb,basis:bl3(k)?"periode":(bs||"total"),denda:dn?dd:""})}
       if(k=="bl"&&!er){var bo=$("#r_bd_on");if(bo&&bo.value=="0")r.bd=false;else{var bm=Math.round(num(($("#r_bd_min")||{}).value||"6")),bj=Math.round(num(($("#r_bd_maju")||{}).value||"6"));if(!(bm>=0&&bm<=156&&bj>=0&&bj<=156)){er="Bunga diakui Bulanan: isi bunga minimal dan bunga maju dengan angka 0 sampai 156.";return}r.bd={min:bm,maju:bj,v:2}}}
+      if(k=="kk"&&!er){var kt=Math.round(num(($("#r_kk_tgl")||{}).value||"25"));if(!(kt>=1&&kt<=31)){er="Tanggal tutup penggajian Koperasi karyawan HS harus 1 sampai 31.";return}r.tgl=kt}
       M[k]=r});
     var TK={};if(!er)[1,2].forEach(function(n){if(er)return;var e=$("#r_tk"+n),v=e?e.value.trim():"";if(!v){TK["k"+n]="";return}var x=num(v);if(!(x>0&&x<=100)){er="Syarat top up Kol "+n+" harus lebih dari 0 dan paling besar 100%.";return}TK["k"+n]=x});var be=$("#r_tkb");TK.blk=be?(be.value===""?"":+be.value):tkBlk();
     if(er){o.className="err";o.textContent=er;return}
-    REG={m:M,gaji:REG.gaji,tk:TK,apv:REG.apv};flash="Regulasi bunga untuk 4 model pinjaman tersimpan.";berhasil("Regulasi berhasil disimpan",flash);page()};
+    REG={m:M,gaji:REG.gaji,tk:TK,apv:REG.apv};flash="Regulasi bunga untuk "+MK.length+" jenis pinjaman tersimpan.";berhasil("Regulasi berhasil disimpan",flash);page()};
 }
 function lama(t){var h=Math.floor((Date.now()-t)/864e5);if(h<30)return h+" hari";var b=Math.floor(h/30);if(b<12)return b+" bulan";var y=Math.floor(b/12),m=b%12;return y+" tahun"+(m?" "+m+" bulan":"")}
 var angQ="";
@@ -1355,7 +1360,7 @@ function ptBayar(l){return PAY.filter(function(x){return x.id==l.id&&x.pt}).redu
 // Piutang yang masih tercatat di jurnal untuk pinjaman ini (dipakai saat angsuran pemutihan dibukukan).
 function ptPiutang(l){var P=PAY.filter(function(x){return x.id==l.id&&!x.imp&&!x.pt});
   if(l.imp)return Math.max(0,(+l.saldoAwal||0)-P.reduce(function(a,p){return a+(+p.jml||0)+(+p.pb||0)},0));
-  var T=tagih(l),b=0,k=0;P.forEach(function(p){var b0=b;b+=(+p.jml||0)+(+p.pb||0);k+=b>=T?l.pokok-k:(l.model||"bl")=="bl"?pkKum(l,b)-pkKum(l,b0):Math.round((+p.jml||0)*l.pokok/T)});
+  var T=tagih(l),b=0,k=0;P.forEach(function(p){var b0=b;b+=(+p.jml||0)+(+p.pb||0);k+=b>=T?l.pokok-k:bl3(l.model||"bl")?pkKum(l,b)-pkKum(l,b0):Math.round((+p.jml||0)*l.pokok/T)});
   return Math.max(0,l.pokok-k)}
 function ptSaldoKini(l){var t=today();return {sp:Math.max(0,sisaP(l)-potB(l,t)),dn:dendaB(l,t)}}
 function ptPindah(l){var t=today(),k=ptSaldoKini(l);l.pt={tg:t,s:k.sp+k.dn,pk:ptPiutang(l),oleh:(PROF&&PROF.nama)||ROLE};return l.pt.s}
@@ -1989,14 +1994,14 @@ function macetMkt(no,bln,kmin){var asOf=gajiAsOf(bln);return LOAN.filter(functio
    Aturan Ketua (3-11-2026): penggajian pertama setelah realisasi langsung terpotong angsuran pertama.
    Setiap bulan gaji: satu angsuran per pinjaman aktif milik anggota yang terhubung ke karyawan.
    Saat penghasilan disimpan, potongan langsung dicatat sebagai setoran angsuran (metode "Potong gaji"). */
-function kkCut(){var t=+(REG&&REG.kopkar&&REG.kopkar.tgl);return t>=1&&t<=31?t:25}
+function kkCut(){var t=+(REG&&REG.m&&REG.m.kk&&REG.m.kk.tgl);return t>=1&&t<=31?t:25}
 function blnPlus(b,n){var d=new Date(b+"-01T00:00:00");d.setMonth(d.getMonth()+n);return isoD(d).slice(0,7)}
 /* Bulan gaji pertama yang memotong: bulan realisasi bila realisasi sampai tanggal tutup gaji, selain itu bulan berikutnya. */
 function kkMulai(l){var t=String(l.tg||"");if(!t)return "9999-99";var b=t.slice(0,7);return +t.slice(8,10)>kkCut()?blnPlus(b,1):b}
 function kkTag(k,bln){return bln+"|"+k.no}
 function kkSudah(l,k,bln){return PAY.filter(function(p){return p.id==l.id&&p.gj==kkTag(k,bln)}).reduce(function(a,p){return a+(+p.jml||0)},0)}
 function kkPin(k,bln){var m=karAngOf(k);if(!m)return [];
-  return LOAN.filter(function(l){if(l.no!=m.no||l.pt||kkMulai(l)>bln)return false;return sisaP(l)+kkSudah(l,k,bln)>0}).map(function(l){var sd=kkSudah(l,k,bln);return {l:l,v:Math.max(0,Math.min(+l.ang||0,sisaP(l)+sd)),sd:sd}}).filter(function(x){return x.v>0})}
+  return LOAN.filter(function(l){if(l.no!=m.no||l.model!="kk"||l.pt||kkMulai(l)>bln)return false;return sisaP(l)+kkSudah(l,k,bln)>0}).map(function(l){var sd=kkSudah(l,k,bln);return {l:l,v:Math.max(0,Math.min(+l.ang||0,sisaP(l)+sd)),sd:sd}}).filter(function(x){return x.v>0})}
 function kkTot(k,bln){return kkPin(k,bln).reduce(function(a,x){return a+x.v},0)}
 function kkKet(k,bln){var L=kkPin(k,bln);if(!L.length)return karAngOf(k)?"otomatis dari pinjaman karyawan · tidak ada angsuran bulan ini":"karyawan belum terhubung ke data anggota";
   return "otomatis potong gaji · "+L.map(function(x){return x.l.id+" "+rp(x.v)}).join(", ")}
@@ -2017,9 +2022,9 @@ function gajiHitung(k,bln){var R=gajiR(),th=tahunKerja(k.tm),gp=+R.gp[k.jab]||0,
     ["bt","Bonus tahunan",0,"diisi Ketua saat dibagikan"]];
   var rk=Math.round(mc*R.rk/100),cap=R.rkMax?Math.round(gp*R.rkMax/100):0,kena=cap&&rk>cap;if(kena)rk=cap;
   var Q=[["rk","Risiko kemacetan",rk,mkt?pctTx(R.rk)+"% × tunggakan "+(R.rkKol<5?"Kol "+R.rkKol+"–5":"Kol 5")+" "+rp(mc)+(kena?", dibatasi "+pctTx(R.rkMax)+"% gaji pokok":""):"khusus Marketing Lapangan"],
-    ["kk","Angsuran Kopkar",kkTot(k,bln),kkKet(k,bln)]];
+    ["kk","Angsuran Koperasi karyawan HS",kkTot(k,bln),kkKet(k,bln)]];
   return {P:P,Q:Q}}
-function gajiData(k,bln){var s=k.gaji&&k.gaji[bln];if(s)return {P:s.P,Q:s.Q,simpan:true,tg:s.tg};var h=gajiHitung(k,bln);
+function gajiData(k,bln){var s=k.gaji&&k.gaji[bln];if(s)return {P:s.P,Q:s.Q.map(function(x){return x[0]=="Angsuran Kopkar"?["Angsuran Koperasi karyawan HS",x[1],x[2]]:x}),simpan:true,tg:s.tg};var h=gajiHitung(k,bln);
   return {P:h.P.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""]]),Q:h.Q.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""],["",0,""]]),simpan:false}}
 function gajiTot(d){var a=d.P.reduce(function(s,x){return s+(+x[1]||0)},0),b=d.Q.reduce(function(s,x){return s+(+x[1]||0)},0);return {kotor:a,pot:b,bersih:a-b}}
 function gajiNmBln(b){return new Date(b+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"})}
@@ -2044,7 +2049,7 @@ function gajiForm(k,bln,ed){var d=gajiData(k,bln),t=gajiTot(d),dis=ed?"":" disab
     '<div id="gmsg" class="ok" role="status">'+gajiFlash+'</div>'+
     (ed?'<div class="acts"><button class="btn" type="button" id="gsv" style="max-width:260px;margin-top:8px">Simpan penghasilan</button>'+(d.simpan?'<button class="lnk" type="button" id="grs">Hitung ulang dari regulasi</button>':'<button class="lnk" type="button" id="ghu">Hitung ulang dengan data di atas</button>')+'</div>':'<p class="mutp">Hanya Ketua (owner) dan Akuntan yang bisa mengubah penghasilan.</p>')+'</div>'}
 function kkInfo(k,bln){var m=karAngOf(k),L=kkPin(k,bln);
-  return '<p class="mutp">Anggota KSP: '+(m?"<b>"+ex(m.no)+"</b> · "+ex(memCab(m)):"belum terhubung")+'. Angsuran Kopkar dipotong otomatis dari pinjaman karyawan'+(L.length?": "+L.map(function(x){return ex(x.l.id)+" "+rp(x.v)}).join(", "):" (bulan ini tidak ada)")+'. Saat penghasilan disimpan, potongan ini langsung tercatat sebagai setoran angsuran.</p>'}
+  return '<p class="mutp">Anggota KSP: '+(m?"<b>"+ex(m.no)+"</b> · "+ex(memCab(m)):"belum terhubung")+'. Angsuran Koperasi karyawan HS dipotong otomatis'+(L.length?": "+L.map(function(x){return ex(x.l.id)+" "+rp(x.v)}).join(", "):" (bulan ini tidak ada)")+'. Saat penghasilan disimpan, potongan ini langsung tercatat sebagai setoran angsuran.</p>'}
 function gajiBaca(base){var rd=function(g,B){return B.map(function(x,i){var nm=document.querySelector('[data-gn="'+g+i+'"]'),j=document.querySelector('[data-gj="'+g+i+'"]');return [nm?nm.value.trim():x[0],dig(j?j.value:0),x[2]||""]})};
   return {P:rd("p",base.P),Q:rd("q",base.Q)}}
 function gajiSlip(k,bln){var d=gajiData(k,bln),t=gajiTot(d),kv=function(a,b){return "<tr><td>"+a+'</td><td class="num">'+b+"</td></tr>"},L=function(A){return A.filter(function(x){return x[0]||x[1]}).map(function(x,i){return kv(String.fromCharCode(97+i)+". "+ex(x[0]||"Lainnya"),rp(+x[1]||0))}).join("")};
@@ -2063,7 +2068,7 @@ function bindGaji(){var gb=$("#gbl");if(gb)gb.onchange=function(){gajiBln=this.v
   var hu=$("#ghu");if(hu)hu.onclick=function(){simpanK();gajiFlash="";saveSoon();page()};
   var rs=$("#grs");if(rs)rs.onclick=function(){if(k.gaji)delete k.gaji[bln];kkHapus(k,bln);simpanK();gajiFlash="Angka bulan ini dihitung ulang dari regulasi. Tekan Simpan untuk mengunci lagi.";saveSoon();page()};
   var sv=$("#gsv");if(sv)sv.onclick=function(){if(!gajiBoleh())return;var d=gajiBaca(base),t=gajiTot(d);if(t.bersih<0){var m=$("#gmsg");m.className="err";m.textContent="Jumlah potongan melebihi gaji kotor.";return}
-    simpanK();k.gaji=k.gaji||{};k.gaji[bln]={P:d.P,Q:d.Q,tg:today(),oleh:ROLE};var kkj=+(d.Q[1]&&d.Q[1][1])||0,kkn=kkCatat(k,bln,kkj,today());gajiFlash="Penghasilan "+k.nama+" "+gajiNmBln(bln)+" tersimpan. Terima bersih "+rp(t.bersih)+"."+(kkn?" Angsuran Kopkar "+rp(kkj)+" otomatis tercatat sebagai setoran.":"");saveSoon();berhasil("Penghasilan berhasil disimpan",k.nama+" · "+rp(t.bersih));page()}}
+    simpanK();k.gaji=k.gaji||{};k.gaji[bln]={P:d.P,Q:d.Q,tg:today(),oleh:ROLE};var kkj=+(d.Q[1]&&d.Q[1][1])||0,kkn=kkCatat(k,bln,kkj,today());gajiFlash="Penghasilan "+k.nama+" "+gajiNmBln(bln)+" tersimpan. Terima bersih "+rp(t.bersih)+"."+(kkn?" Angsuran Koperasi karyawan HS "+rp(kkj)+" otomatis tercatat sebagai setoran.":"");saveSoon();berhasil("Penghasilan berhasil disimpan",k.nama+" · "+rp(t.bersih));page()}}
 /* Regulasi penghasilan (di halaman Regulasi bunga) */
 function gajiRegHTML(){var R=gajiR(),own=ROLE=="Ketua (owner)",dis=own?"":" disabled",J=JAB;
   var inp=function(id,v,ph,mode){return '<div class="field"><input id="'+id+'" type="text" inputmode="'+(mode||"numeric")+'" placeholder="'+ph+'" value="'+v+'"'+dis+(mode=="decimal"?"":' data-rpf')+'></div>'};
@@ -2074,7 +2079,7 @@ function gajiRegHTML(){var R=gajiR(),own=ROLE=="Ketua (owner)",dis=own?"":" disa
   '<div class="lsec">d. Bonus bulanan (Marketing Lapangan)</div><div class="fg"><div><label for="rg_bb">% dari setoran angsuran bulan itu</label>'+inp("rg_bb",R.bb?pctTx(R.bb):"","Contoh: 2","decimal")+'</div></div><p class="mutp">Rumus: % × total angsuran yang masuk dari pinjaman yang dipegang marketing tersebut.</p>'+
   '<div class="lsec">e. Bonus tahunan</div><p class="mutp" style="margin:0">Diisi langsung oleh Ketua di rincian penghasilan pada bulan pembagian.</p>'+
   '<div class="lsec">Potongan a. Risiko kemacetan (Marketing Lapangan)</div><div class="fg"><div><label for="rg_rk">% dari tunggakan</label>'+inp("rg_rk",R.rk?pctTx(R.rk):"","Contoh: 5","decimal")+'</div><div><label for="rg_rkk">Dihitung mulai kualitas</label><div class="field"><select id="rg_rkk"'+dis+'>'+[3,4,5].map(function(n){return '<option value="'+n+'"'+(R.rkKol==n?" selected":"")+'>'+KOL[n][0]+" · "+KOL[n][1]+(n<5?" sampai Kol 5":"")+'</option>'}).join("")+'</select></div></div><div><label for="rg_rkm">Batas maksimal (% dari gaji pokok)</label>'+inp("rg_rkm",R.rkMax?pctTx(R.rkMax):"","Kosongkan bila tanpa batas","decimal")+'</div></div><p class="mutp">Rumus: % × angsuran tertunggak dari pinjaman marketing tersebut yang kualitasnya sama atau lebih buruk dari pilihan ini.</p>'+
-  '<div class="lsec">Potongan b. Angsuran Kopkar</div><p class="mutp" style="margin:0">Nominal tetap per karyawan, diisi di rincian penghasilan masing-masing.</p>'+
+  '<div class="lsec">Potongan b. Angsuran Koperasi karyawan HS</div><p class="mutp" style="margin:0">Otomatis dari pinjaman Koperasi karyawan HS milik karyawan, satu angsuran per bulan. Saat penghasilan disimpan, potongan langsung tercatat sebagai setoran angsuran.</p>'+
   '<div id="rgmsg" class="ok" role="status"></div>'+(own?'<button class="btn" type="button" id="rgsv" style="max-width:260px">Simpan regulasi penghasilan</button>':'<p class="mutp">Hanya Ketua (owner) yang bisa mengubah regulasi penghasilan.</p>')+'</div>'}
 function bindGajiReg(){var b=$("#rgsv");if(!b)return;document.querySelectorAll("[id^=rg_][data-rpf]").forEach(function(i){i.oninput=function(){this.value=fmtRp(this.value)}});
   b.onclick=function(){if(ROLE!="Ketua (owner)")return;var o=$("#rgmsg"),gp={};JAB.forEach(function(j,i){var v=dig($("#rg_gp"+i).value);if(v)gp[j]=v});
