@@ -1108,7 +1108,7 @@ function ajuJml(x){return x.t=="pin"?(x.d.v2||x.d.v):x.d.jml}
 function cabOk(x){var c=myCab();return !c||cabNorm(x.cab)==c}
 function bisaSetuju(x){if(!cabOk(x))return false;if(x.t=="pin")return ROLE=="Ketua (owner)"||LVL[ROLE]==ajuLv(x);return APV_UANG.indexOf(ROLE)>=0}
 function ajuTunggu(){return AJU.filter(function(x){return x.st=="tunggu"&&bisaSetuju(x)})}
-function ajuSiap(){return AJU.filter(function(x){return x.t=="pin"&&x.st=="setuju"&&cabOk(x)})}
+function ajuSiap(){return AJU.filter(function(x){return x.t=="pin"&&x.st=="setuju"&&cabOk(x)&&(!ajuKk(x)||isOwner())})}
 function apvCount(){return ajuTunggu().length}
 function simTunda(no,j){return AJU.filter(function(x){return x.t=="sim"&&x.st=="tunggu"&&x.d.no==no&&x.d.jenis==j}).reduce(function(a,x){return a+x.d.jml},0)}
 function pinTunda(no){return AJU.filter(function(x){return x.t=="pin"&&(x.st=="tunggu"||x.st=="setuju")&&x.d.no==no})[0]}
@@ -1144,7 +1144,7 @@ function cekPin(P,tg){var a=MEM.filter(function(d){return d.no==P.no})[0];if(!a)
   if(P.jam&&P.v>P.jam.nilai)return "Realisasi pinjaman tidak boleh melebihi taksiran jaminan ("+rp(P.jam.nilai)+").";
   return ""}
 /* Realisasi oleh Administrasi: baru di sini pinjaman dibuat, pinjaman lama (top up) dilunasi, dan bukti pencairan dikirim. */
-function realisasiPin(x,tg,cm){var P=x.d,v=ajuJml(x),no=P.no,a=MEM.filter(function(d){return d.no==no})[0];
+function realisasiPin(x,tg,cm){if(ajuKk(x)&&!isOwner())return {err:"Realisasi pinjaman Koperasi karyawan HS hanya bisa dilakukan Ketua."};var P=x.d,v=ajuJml(x),no=P.no,a=MEM.filter(function(d){return d.no==no})[0];
   if(!tg)return {err:"Isi tanggal realisasi."};
   var e=cekPin({no:no,model:P.model,v:v,n:P.n,jam:P.jam},tg);if(e)return {err:e};
   if(!cm)return {err:"Pilih pencairan diterimakan secara tunai atau transfer."};
