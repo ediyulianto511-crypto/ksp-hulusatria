@@ -396,9 +396,13 @@ var M=[["MENU UTAMA"],["dash","Dashboard"],
 ["PENGATURAN"],
 ["pmt","Data pemutihan",0,[["pmt1","Input angsuran pemutihan"],["pmt2","Rincian anggota pemutihan"]]],
 ["set","Pengaturan",0,[["set2","Regulasi Pendapatan & Bunga"],["set4","Kantor cabang"],["set3","Tema (pilihan warna tampilan)"]]]];
-var KAR=[],BU=[],MUT=[],CAB0=["Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
+/* Cabang utama Koperasi karyawan HS (Kopkar): selalu paling atas, khusus anggota yang juga karyawan. */
+var KOPKAR="Koperasi karyawan HS",KOPKAR_I={kode:"KK",al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""};
+var KAR=[],BU=[],MUT=[],CAB0=[KOPKAR,"Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Koperasi karyawan HS":JSON.parse(JSON.stringify(KOPKAR_I)),"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
 /* Kantor cabang: data lama tanpa cabang (atau "Kantor Pusat") dihitung sebagai Cabang 1. */
-function cabNorm(n){n=String(n||"").trim();return !n||n=="Kantor Pusat"?CAB[0]:n}
+/* Cabang bawaan untuk data lama tanpa cabang: Cabang 1 (bukan Kopkar). */
+function cabDef(){return CAB.indexOf("Cabang 1")>=0?"Cabang 1":(CAB.filter(function(c){return c!=KOPKAR})[0]||CAB[0])}
+function cabNorm(n){n=String(n||"").trim();return !n||n=="Kantor Pusat"?cabDef():n}
 function cabGabung(L){var o=CAB0.slice();(L||[]).forEach(function(c){c=cabNorm(c);if(o.indexOf(c)<0)o.push(c)});return o}
 function memCab(m){return cabNorm(m&&m.cab)}
 function loanCab(l){var m=MEM.filter(function(x){return x.no==l.no})[0];return memCab(m)}
@@ -472,8 +476,8 @@ function warnaBar(){var c=getComputedStyle(document.documentElement).getProperty
 function pilihTema(v,n){setPalette(v);berhasil("Tema diterapkan",n+" sekarang dipakai.");go(prevCur&&prevCur!="set3"?prevCur:"dash")}
 function setPalette(v){pal=v;var r=document.documentElement;if(v)r.setAttribute("data-palette",v);else r.removeAttribute("data-palette");warnaBar();page()}
 /* Nomor anggota berkode cabang: AG-01-00001 (Cabang 1), AG-02-00001 (Cabang 2), dst. Nomor lama (AG-00088) tidak diubah. */
-function kodeCab(c){c=cabNorm(c);var d=CABI[c]||{},m=/^Cabang\s+(\d+)$/i.exec(c),i=CAB.indexOf(c);return String(d.kode||(m?+m[1]:(i<0?0:i)+1)).padStart(2,"0")}
-function nomor(c){if(c==null){var e=document.getElementById("fmc");c=e&&e.value||myCab()||CAB[0]}var k="AG-"+kodeCab(c)+"-",n=0;
+function kodeCab(c){c=cabNorm(c);if(c==KOPKAR)return "KK";var d=CABI[c]||{},m=/^Cabang\s+(\d+)$/i.exec(c),i=CAB.indexOf(c);return String(d.kode||(m?+m[1]:(i<0?0:i)+1)).padStart(2,"0")}
+function nomor(c){if(c==null){var e=document.getElementById("fmc");c=e&&e.value||myCab()||cabDef()}var k="AG-"+kodeCab(c)+"-",n=0;
   MEM.forEach(function(m){if(String(m.no).indexOf(k)==0){var x=parseInt(String(m.no).slice(k.length),10)||0;if(x>n)n=x}});return k+String(n+1).padStart(5,"0")}
 var WIL={"Kabupaten Contoh A":{"Kecamatan Contoh 1":["Desa Contoh X","Desa Contoh Y"],"Kecamatan Contoh 2":["Desa Contoh Z"]},"Kabupaten Contoh B":{"Kecamatan Contoh 3":["Desa Contoh W"]}};
 function SEL(id,opts,ph){return '<select id="'+id+'">'+(ph?'<option value="">'+ph+"</option>":"")+opts.map(function(o){return "<option>"+o+"</option>"}).join("")+"</select>"}
@@ -515,7 +519,7 @@ function formHTML(){
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
   F("fno","Nomor anggota",'<input id="fno" type="text" value="'+nomor(myCab()||CAB[0])+'" readonly>')+
-  F("fmc","Kantor cabang",myCab()?'<select id="fmc" disabled><option>'+ex(myCab())+'</option></select>':SEL("fmc",CAB.map(function(c){return c}),"").replace("<option>"+viewCab()+"<","<option selected>"+viewCab()+"<"))+
+  F("fmc","Kantor cabang",myCab()?'<select id="fmc" disabled><option>'+ex(myCab())+'</option></select>':SEL("fmc",CAB.map(function(c){return c}),"").replace("<option>"+(viewCab()||cabDef())+"<","<option selected>"+(viewCab()||cabDef())+"<"))+
   F("fk","NIK",'<input id="fk" type="text" inputmode="numeric" maxlength="16" placeholder="16 digit NIK" autocomplete="off">')+
   F("ft","Tempat lahir",'<input id="ft" type="text" placeholder="Contoh: Jakarta" autocomplete="off">')+
   F("fg","Tanggal lahir",'<input id="fg" type="date">')+
@@ -1479,7 +1483,7 @@ function bindForm(kar){
     o.appendChild(document.createTextNode("Foto dipilih: "+x.name+" ("+Math.round(x.size/1024)+" KB)"));o.appendChild(im)};
   $("#ktp2").onchange=fl.onchange;
   var KS=function(){
-    var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:"",rw:"",kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,jab:$("#fjab").value,cab:$("#fcab")?$("#fcab").value:CAB[0],tm:today()},m="",o=$("#fmsg"),rr=$("#frr").value.split("/").map(function(x){return x.trim()});d.rt=rr[0]||"";d.rw=rr[1]||"";
+    var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:"",rw:"",kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,jab:$("#fjab").value,cab:$("#fcab")?$("#fcab").value:cabDef(),tm:today()},m="",o=$("#fmsg"),rr=$("#frr").value.split("/").map(function(x){return x.trim()});d.rt=rr[0]||"";d.rw=rr[1]||"";
     var rkb=$("#krb").value.trim(),rkn=$("#krn").value.trim(),rka=$("#kra").value.trim();d.rk=rkb||rkn?{b:rkb,n:rkn,a:rka||d.nama}:null;
     if(d.rk&&!(rkb&&rkn)){o.className="err";o.textContent="Rekening penghasilan: isi bank dan nomor rekening, atau kosongkan keduanya.";return}
     if(karEd){karSimpanEdit(d,ktpFile);if(ktpFile){ktpFile=null;showOcr()}return}
@@ -1503,11 +1507,11 @@ function bindForm(kar){
     else if(($("#fpass").value||"").length<8)m="Isi password login minimal 8 karakter.";
     if(m){o.className="err";o.textContent=m;return}
     if(!d.rk)delete d.rk;d.hp=hpNorm(d.hp);d.no=nomorKar();d.dt=Date.now();d.aktif=true;d.user=d.hp;d.foto=1;var btn=f.querySelector('[type=submit]');btn.disabled=true;o.className="mutp";o.textContent="Membuat akun login...";
-    buatAkun(d.hp,$("#fpass").value,d.nama,d.jab,d.no).then(function(){btn.disabled=false;simpanFoto(d.no,ktpFile);KAR.push(d);flash="Karyawan "+d.nama+" ("+d.jab+") tersimpan. Username login: "+d.user+". Sampaikan kata sandinya langsung ke yang bersangkutan.";berhasil("Karyawan berhasil disimpan",flash);page();var o2=$("#fmsg");if(o2){o2.className="ok";o2.textContent=flash;flash=""}},function(e){btn.disabled=false;o.className="err";o.textContent="Akun login gagal dibuat: "+sbErr(e)})
+    buatAkun(d.hp,$("#fpass").value,d.nama,d.jab,d.no).then(function(){btn.disabled=false;simpanFoto(d.no,ktpFile);KAR.push(d);var ma=karAng(d,ktpFile);saveSoon();flash="Karyawan "+d.nama+" ("+d.jab+") tersimpan"+(ma?" dan otomatis terdaftar sebagai anggota "+ma.no+" ("+memCab(ma)+")":"")+". Username login: "+d.user+". Sampaikan kata sandinya langsung ke yang bersangkutan.";berhasil("Karyawan berhasil disimpan",flash);page();var o2=$("#fmsg");if(o2){o2.className="ok";o2.textContent=flash;flash=""}},function(e){btn.disabled=false;o.className="err";o.textContent="Akun login gagal dibuat: "+sbErr(e)})
   };
   var fmc=$("#fmc");if(!kar&&fmc)fmc.onchange=function(){if(!angEdit&&$("#fno"))$("#fno").value=nomor(this.value)};
   f.onsubmit=function(e){e.preventDefault();if(kar){KS();return}
-    var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:$("#frt").value.trim(),rw:$("#frw").value.trim(),kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,cab:$("#fmc")?$("#fmc").value:CAB[0]},m="",o=$("#fmsg"),rkb=$("#frb")?$("#frb").value.trim():"",rkn=$("#frn")?$("#frn").value.trim():"",rka=$("#fra")?$("#fra").value.trim():"";if(rkb||rkn)d.rk={b:rkb,n:rkn,a:rka||d.nama};if(d.rk&&!(rkb&&rkn))m="Rekening pencairan: isi bank dan nomor rekening, atau kosongkan keduanya.";
+    var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:$("#frt").value.trim(),rw:$("#frw").value.trim(),kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,cab:$("#fmc")?$("#fmc").value:cabDef()},m="",o=$("#fmsg"),rkb=$("#frb")?$("#frb").value.trim():"",rkn=$("#frn")?$("#frn").value.trim():"",rka=$("#fra")?$("#fra").value.trim():"";if(rkb||rkn)d.rk={b:rkb,n:rkn,a:rka||d.nama};if(d.rk&&!(rkb&&rkn))m="Rekening pencairan: isi bank dan nomor rekening, atau kosongkan keduanya.";
     if(!d.nama)m="Isi nama sesuai KTP.";
     else if(!/^(\+62|0)[0-9]{8,13}$/.test(d.hp))m="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";
     else if(!/^[0-9]{16}$/.test(d.nik))m="NIK harus 16 angka.";
@@ -1554,7 +1558,7 @@ function applyState(o){
   if(o.AJU){AJU.length=0;o.AJU.forEach(function(x){AJU.push(x)})}
   if(o.WIL)WIL=o.WIL;
   if(o.MUT){MUT.length=0;o.MUT.forEach(function(x){MUT.push(x)})}
-  if(o.CAB&&o.CAB.length)CAB=cabGabung(o.CAB);if(o.CABI&&typeof o.CABI=="object")CABI=o.CABI;
+  if(o.CAB&&o.CAB.length)CAB=cabGabung(o.CAB);if(o.CABI&&typeof o.CABI=="object")CABI=o.CABI;if(!CABI[KOPKAR])CABI[KOPKAR]=JSON.parse(JSON.stringify(KOPKAR_I));
   if(typeof o.pal=="string"){pal=o.pal;if(pal)document.documentElement.setAttribute("data-palette",pal);else document.documentElement.removeAttribute("data-palette");warnaBar()}
 }
 /* ===== Penyimpanan per data (v2) ===== */
@@ -1636,7 +1640,7 @@ function imporData(inp){var f=inp.files[0],m=$("#impmsg");if(!f)return;m.classNa
     function next(){if(i>=rows.length)return Promise.resolve();var b=rows.slice(i,i+40);i+=40;m.textContent="Mengimpor "+Math.min(i,rows.length)+" dari "+rows.length+" data...";return SB.from("docs").upsert(b,{onConflict:"col,id"}).then(sbCek).then(next)}
     return next().then(function(){m.className="ok";m.textContent=rows.length+" data berhasil diimpor. Memuat ulang...";setTimeout(function(){location.reload()},1200)})})
   .catch(function(e){m.className="err";m.textContent="Impor gagal: "+(e&&e.message?sbErr(e):e)+". Pastikan file yang dipilih data_awal.json."})}
-function afterLoad(){nav();if(!$("#app").hidden)page()}
+function afterLoad(){karSyncAng();nav();if(!$("#app").hidden)page()}
 function jpegKtp(file){return new Promise(function(res){
   var im=new Image(),u=URL.createObjectURL(file);
   im.onload=function(){var m=1600,r=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
@@ -1693,7 +1697,7 @@ function karForm(){
   F("fa","Alamat",'<input id="fa" type="text" placeholder="Alamat sesuai KTP" autocomplete="off">')+
   F("frr","RT / RW",'<input id="frr" type="text" inputmode="numeric" maxlength="9" placeholder="000 / 000" autocomplete="off">')+
   F("fkb","Kabupaten",'<select id="fkb"></select>')+F("fkc","Kecamatan",'<select id="fkc"></select>')+F("fkl","Kelurahan / Desa",'<select id="fkl"></select>')+
-  F("fcab","Penempatan cabang",SEL("fcab",CAB.map(ex),""))+
+  F("fcab","Penempatan cabang",SEL("fcab",CAB.map(ex),"").replace("<option>"+ex(cabDef())+"<","<option selected>"+ex(cabDef())+"<"))+
   F("fmk","Masa kerja",'<input id="fmk" type="text" value="0 Bulan" readonly>')+
   '</div><p class="lsec" style="margin:18px 0 4px;font-weight:700">Rekening penerimaan penghasilan</p><p class="mutp" style="margin:0 0 6px">Rekening untuk transfer gaji / penghasilan. Boleh dikosongkan.</p><div class="fg">'+
   F("krb","Bank",'<input id="krb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
@@ -1716,12 +1720,24 @@ function karEditMulai(i){var k=KAR[i];if(!k)return;if(!isOwner()){berhasil("Khus
   $("#kttl").textContent="Edit karyawan · "+k.nama;$("#ksub").textContent="Ubah data lalu tekan Simpan perubahan. Foto KTP tidak perlu diunggah ulang. Penempatan cabang diganti lewat Mutasi karyawan."+(pf?" Nomor HP terkunci karena dipakai sebagai username login.":"");
   $("#ksv").textContent="Simpan perubahan";$("#kbatal").hidden=false;var o=$("#fmsg");o.className="ok";o.textContent="";$("#mform").closest(".panel").scrollIntoView({behavior:"smooth"})}
 function karEditSelesai(){karEd="";page()}
+/* Setiap karyawan otomatis menjadi anggota KSP di cabang Koperasi karyawan HS (Kopkar).
+   Bila NIK karyawan sudah terdaftar sebagai anggota, data anggota itu yang dihubungkan (tidak dibuat ganda). */
+var KAR_ANG_F=["nama","hp","nik","tl","tg","jk","al","rt","rw","kb","kc","kl","ag","st","pk","wn"];
+function karAng(k,file){if(!k||!/^[0-9]{16}$/.test(String(k.nik||"")))return null;
+  var m=MEM.filter(function(x){return x.no==k.ang})[0]||MEM.filter(function(x){return x.nik==k.nik})[0],baru=!m;
+  if(baru){m={};KAR_ANG_F.forEach(function(f){if(k[f]!=null)m[f]=k[f]});m.cab=KOPKAR;m.no=nomor(KOPKAR);m.dt=Date.now();if(file){m.foto=1;simpanFoto(m.no,file)}MEM.push(m)}
+  m.kar=k.no;k.ang=m.no;return m}
+function karAngOf(k){return MEM.filter(function(x){return x.no==k.ang})[0]||null}
+/* Dijalankan sekali setelah data dimuat (Ketua): karyawan lama yang belum punya data anggota langsung dibuatkan. */
+function karSyncAng(){if(!isOwner())return;var ub=0;KAR.forEach(function(k){var m=karAngOf(k);if(m&&m.kar==k.no)return;karAng(k);ub++});if(ub)saveSoon()}
 function karSimpanEdit(d,foto){var k=KAR.filter(function(x){return x.no==karEd})[0],o=$("#fmsg"),m="";if(!k)return;
   if(!d.jab)m="Pilih jabatan.";else if(!d.nama)m="Isi nama sesuai KTP.";else if(!/^(\+62|0)[0-9]{8,13}$/.test(d.hp))m="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";else if(!/^[0-9]{16}$/.test(d.nik))m="NIK harus 16 angka.";
   else if(KAR.some(function(x){return x.no!=k.no&&x.nik==d.nik}))m="NIK ini sudah terdaftar sebagai karyawan lain.";else if(KAR.some(function(x){return x.no!=k.no&&hpNorm(x.hp)==hpNorm(d.hp)}))m="Nomor HP ini sudah dipakai karyawan lain.";
+  else if(MEM.some(function(x){return x.nik==d.nik&&x.no!=k.ang}))m="NIK ini sudah terdaftar sebagai anggota lain.";
   if(m){o.className="err";o.textContent=m;return}
   var pf=profilHp(k.hp||k.user),jabLama=k.jab;["nama","hp","nik","tl","tg","jk","al","rt","rw","kb","kc","kl","ag","st","pk","wn","jab"].forEach(function(f){k[f]=d[f]});k.hp=hpNorm(k.hp);if(!pf)k.user=k.hp;
-  if(d.rk)k.rk=d.rk;else delete k.rk;if(foto){k.foto=1;simpanFoto(k.no,foto)}saveSoon();
+  if(d.rk)k.rk=d.rk;else delete k.rk;if(foto){k.foto=1;simpanFoto(k.no,foto)}
+  var ma=karAngOf(k);if(ma&&memCab(ma)==KOPKAR){KAR_ANG_F.forEach(function(f){ma[f]=k[f]});if(foto){ma.foto=1;simpanFoto(ma.no,foto)}}else if(!ma)karAng(k,foto);saveSoon();
   var done=function(){karEd="";flash="";berhasil("Data karyawan diperbarui",k.nama+" · "+k.jab);page()};
   if(pf&&(jabLama!=k.jab||pf.nama!=k.nama))SB.rpc("set_profile",{p_uid:pf.user_id,p_hp:pf.hp,p_nama:k.nama,p_jab:k.jab,p_kar_no:k.no,p_aktif:!!k.aktif}).then(sbCek).then(muatProfil).then(done,function(e){done();berhasil("Data tersimpan, akun login belum ikut berubah",sbErr(e))});else done()}
 function karHTML(){karEd="";
@@ -1946,19 +1962,20 @@ function bindCab(){cabFlash="";
   var bt=$("#cbbt");if(bt)bt.onclick=function(){cabEd="";cabAdd=false;page()};
   var ad=$("#cbadd");if(ad)ad.onclick=function(){cabEd="";cabAdd=true;page();var f=$("#cbform");if(f){f.scrollIntoView({behavior:"smooth"});$("#cbn").focus()}};
   var dl=$("#cbdl");if(dl)dl.onclick=function(){var c=cabEd,o=$("#cbfm"),na=MEM.filter(function(m){return memCab(m)==c}).length,nk=KAR.filter(function(k){return cabOf(k)==c}).length;
-    if(CAB.length<2||c==CAB[0]){o.className="err";o.textContent="Cabang pertama tidak bisa dihapus.";return}
+    if(CAB.length<2||c==KOPKAR||c==cabDef()){o.className="err";o.textContent=c+" tidak bisa dihapus.";return}
     if(na||nk){o.className="err";o.textContent=c+" masih dipakai "+na+" anggota dan "+nk+" karyawan. Pindahkan dulu sebelum dihapus.";return}
     if(!confirm("Hapus "+c+"?"))return;CAB.splice(CAB.indexOf(c),1);delete CABI[c];cabEd="";cabAdd=false;saveSoon();cabFlash=c+" dihapus.";berhasil("Cabang dihapus",c);page()};
   var sv=$("#cbsv");if(!sv)return;sv.onclick=function(){if(!isOwner())return;var o=$("#cbfm"),n=$("#cbn").value.trim(),hp=$("#cbh").value.replace(/[\s-]/g,"");
     var d={al:$("#cba").value.trim(),kep:$("#cbk").value.trim(),hp:hp,jam:$("#cbj").value.trim()};if($("#cbp").checked)d.pusat=1;
     if(!n){o.className="err";o.textContent="Isi nama cabang.";return}
+    if(cabEd==KOPKAR&&n!=KOPKAR){o.className="err";o.textContent="Nama "+KOPKAR+" tidak bisa diganti.";return}
     if(CAB.some(function(x){return x!=cabEd&&x.toLowerCase()==n.toLowerCase()})){o.className="err";o.textContent="Nama "+n+" sudah dipakai cabang lain.";return}
     if(hp&&!/^(\+62|0)[0-9]{8,13}$/.test(hp)){o.className="err";o.textContent="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";return}
     if(d.pusat)CAB.forEach(function(x){if(CABI[x])delete CABI[x].pusat});
-    if(cabEd){var lama=cabEd,i=CAB.indexOf(lama),kd=+kodeCab(lama);if(n!=lama){CAB[i]=n;delete CABI[lama];
+    if(cabEd){var lama=cabEd,i=CAB.indexOf(lama),kd=lama==KOPKAR?"KK":+kodeCab(lama);if(n!=lama){CAB[i]=n;delete CABI[lama];
         MEM.forEach(function(m){if(memCab(m)==lama)m.cab=n});KAR.forEach(function(k){if(cabOf(k)==lama)k.cab=n});if(gCab==lama)setGCab(n)}
       d.kode=kd;CABI[n]=d;cabFlash="Data "+n+" tersimpan.";berhasil("Kantor cabang diperbarui",n)}
-    else{d.kode=CAB.reduce(function(a,x){return Math.max(a,+kodeCab(x))},0)+1;CAB.push(n);CABI[n]=d;cabFlash=n+" ditambahkan.";berhasil("Kantor cabang ditambahkan",n)}
+    else{d.kode=CAB.reduce(function(a,x){return Math.max(a,+kodeCab(x)||0)},0)+1;CAB.push(n);CABI[n]=d;cabFlash=n+" ditambahkan.";berhasil("Kantor cabang ditambahkan",n)}
     cabEd="";cabAdd=false;saveSoon();page()}}
 /* ===== Penghasilan karyawan (gaji) ===== */
 var gajiBln="",gajiNo="",gajiFlash="";
@@ -1968,6 +1985,27 @@ function tahunKerja(iso){if(!iso)return 0;var a=new Date(iso+"T00:00:00"),n=new 
 function gajiAsOf(bln){var t=today(),e=blnAkhir(bln);return e<t?e:t}
 function setoranMkt(no,bln){return PAY.filter(function(p){if(String(p.tg||"").slice(0,7)!=bln||!kasPay(p))return false;var l=LOAN.filter(function(x){return x.id==p.id})[0];return l&&l.mkt==no}).reduce(function(a,p){return a+p.jml},0)}
 function macetMkt(no,bln,kmin){var asOf=gajiAsOf(bln);return LOAN.filter(function(l){return l.mkt==no&&sisaP(l)>0}).reduce(function(a,l){var q=kolOf(l,asOf);return a+(q&&q.n>=kmin?q.kurang:0)},0)}
+/* ===== Auto debit angsuran Kopkar dari penghasilan karyawan =====
+   Aturan Ketua (3-11-2026): penggajian pertama setelah realisasi langsung terpotong angsuran pertama.
+   Setiap bulan gaji: satu angsuran per pinjaman aktif milik anggota yang terhubung ke karyawan.
+   Saat penghasilan disimpan, potongan langsung dicatat sebagai setoran angsuran (metode "Potong gaji"). */
+function kkCut(){var t=+(REG&&REG.kopkar&&REG.kopkar.tgl);return t>=1&&t<=31?t:25}
+function blnPlus(b,n){var d=new Date(b+"-01T00:00:00");d.setMonth(d.getMonth()+n);return isoD(d).slice(0,7)}
+/* Bulan gaji pertama yang memotong: bulan realisasi bila realisasi sampai tanggal tutup gaji, selain itu bulan berikutnya. */
+function kkMulai(l){var t=String(l.tg||"");if(!t)return "9999-99";var b=t.slice(0,7);return +t.slice(8,10)>kkCut()?blnPlus(b,1):b}
+function kkTag(k,bln){return bln+"|"+k.no}
+function kkSudah(l,k,bln){return PAY.filter(function(p){return p.id==l.id&&p.gj==kkTag(k,bln)}).reduce(function(a,p){return a+(+p.jml||0)},0)}
+function kkPin(k,bln){var m=karAngOf(k);if(!m)return [];
+  return LOAN.filter(function(l){if(l.no!=m.no||l.pt||kkMulai(l)>bln)return false;return sisaP(l)+kkSudah(l,k,bln)>0}).map(function(l){var sd=kkSudah(l,k,bln);return {l:l,v:Math.max(0,Math.min(+l.ang||0,sisaP(l)+sd)),sd:sd}}).filter(function(x){return x.v>0})}
+function kkTot(k,bln){return kkPin(k,bln).reduce(function(a,x){return a+x.v},0)}
+function kkKet(k,bln){var L=kkPin(k,bln);if(!L.length)return karAngOf(k)?"otomatis dari pinjaman karyawan · tidak ada angsuran bulan ini":"karyawan belum terhubung ke data anggota";
+  return "otomatis potong gaji · "+L.map(function(x){return x.l.id+" "+rp(x.v)}).join(", ")}
+/* Catat potongan ke setoran angsuran. Disimpan ulang = catatan lama bulan itu diganti, tidak dobel. */
+function kkHapus(k,bln){var tg=kkTag(k,bln);for(var i=PAY.length-1;i>=0;i--)if(PAY[i].gj==tg)PAY.splice(i,1)}
+function kkCatat(k,bln,jml,tgBayar){var L=kkPin(k,bln);kkHapus(k,bln);var sisa=Math.max(0,+jml||0),n=0;
+  L.forEach(function(x,i){if(sisa<=0)return;var maks=sisaP(x.l),v=Math.min(maks,i==L.length-1?sisa:Math.min(sisa,x.v));if(v<=0)return;
+    var ke=(ringkas(x.l).next||{}).ke;PAY.push(strukMeta({id:x.l.id,tg:tgBayar,jml:v,denda:0,met:"Potong gaji",gj:kkTag(k,bln),ket:"Angsuran"+(ke?" ke-"+ke:"")+" · potong gaji "+gajiNmBln(bln)}));sisa-=v;n++});
+  return n}
 /* Hitung otomatis dari Regulasi penghasilan. Hasil: daftar pendapatan dan potongan [kunci, label, jumlah, keterangan rumus] */
 function gajiHitung(k,bln){var R=gajiR(),th=tahunKerja(k.tm),gp=+R.gp[k.jab]||0,mkt=k.jab=="Marketing Lapangan";
   var kawin=/^kawin$/i.test(String(k.st||"").trim()),an=Math.min(+k.anak||0,R.anakMax||+k.anak||0);
@@ -1979,7 +2017,7 @@ function gajiHitung(k,bln){var R=gajiR(),th=tahunKerja(k.tm),gp=+R.gp[k.jab]||0,
     ["bt","Bonus tahunan",0,"diisi Ketua saat dibagikan"]];
   var rk=Math.round(mc*R.rk/100),cap=R.rkMax?Math.round(gp*R.rkMax/100):0,kena=cap&&rk>cap;if(kena)rk=cap;
   var Q=[["rk","Risiko kemacetan",rk,mkt?pctTx(R.rk)+"% × tunggakan "+(R.rkKol<5?"Kol "+R.rkKol+"–5":"Kol 5")+" "+rp(mc)+(kena?", dibatasi "+pctTx(R.rkMax)+"% gaji pokok":""):"khusus Marketing Lapangan"],
-    ["kk","Angsuran Kopkar",+k.kopkar||0,"angsuran tetap per bulan"]];
+    ["kk","Angsuran Kopkar",kkTot(k,bln),kkKet(k,bln)]];
   return {P:P,Q:Q}}
 function gajiData(k,bln){var s=k.gaji&&k.gaji[bln];if(s)return {P:s.P,Q:s.Q,simpan:true,tg:s.tg};var h=gajiHitung(k,bln);
   return {P:h.P.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""]]),Q:h.Q.map(function(x){return [x[1],x[2],x[3]]}).concat([["",0,""],["",0,""],["",0,""]]),simpan:false}}
@@ -1998,13 +2036,15 @@ function gajiForm(k,bln,ed){var d=gajiData(k,bln),t=gajiTot(d),dis=ed?"":" disab
   var line=function(g,i,x,fix){var c=String.fromCharCode(97+i);return '<tr><td style="width:28px">'+c+'.</td><td>'+(fix?ex(x[0]):'<div class="field"><input data-gn="'+g+i+'" type="text" placeholder="Komponen lain (opsional)" value="'+ex(x[0])+'"'+dis+'></div>')+(x[2]?'<br><small class="mutp">'+ex(x[2])+'</small>':'')+'</td><td style="width:170px"><div class="field"><input data-gj="'+g+i+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(x[1]||0)+'"'+dis+' style="text-align:right"></div></td></tr>'};
   return '<div class="panel" id="gform" style="margin-top:14px"><div class="phead"><div><h3>Rincian penghasilan</h3><p>'+gajiNmBln(bln)+(d.simpan?" · tersimpan "+tgl(d.tg):" · belum disimpan")+'</p></div></div>'+
     '<table class="tbl" style="margin-bottom:12px"><tbody><tr><td style="width:38%">Nama karyawan</td><td><b>'+ex(k.nama)+'</b></td></tr><tr><td>Jabatan</td><td>'+ex(k.jab)+'</td></tr><tr><td>Masa kerja</td><td>'+(k.tm?masaKerja(k.tm):"-")+'</td></tr></tbody></table>'+
-    '<div class="fg"><div><label for="gan">Jumlah anak tanggungan</label><div class="field"><input id="gan" type="text" inputmode="numeric" value="'+(+k.anak||0)+'"'+dis+'></div></div><div><label for="gkp">Angsuran Kopkar per bulan (Rp)</label><div class="field"><input id="gkp" data-rpf type="text" inputmode="numeric" value="'+fmtRp(+k.kopkar||0)+'"'+dis+'></div></div></div>'+
+    '<div class="fg"><div><label for="gan">Jumlah anak tanggungan</label><div class="field"><input id="gan" type="text" inputmode="numeric" value="'+(+k.anak||0)+'"'+dis+'></div></div></div>'+kkInfo(k,bln)+
     '<p class="mutp">Status perkawinan diambil dari data KTP karyawan: '+ex(k.st||"belum diisi")+'.</p>'+
     '<div class="lsec">1. Pendapatan</div><table class="tbl"><tbody>'+d.P.map(function(x,i){return line("p",i,x,i<5)}).join("")+'<tr style="font-weight:700"><td></td><td>Gaji kotor</td><td class="num" id="gtk">'+rp(t.kotor)+'</td></tr></tbody></table>'+
     '<div class="lsec">2. Potongan</div><table class="tbl"><tbody>'+d.Q.map(function(x,i){return line("q",i,x,i<2)}).join("")+'<tr style="font-weight:700"><td></td><td>Jumlah potongan</td><td class="num" id="gtp">'+rp(t.pot)+'</td></tr></tbody></table>'+
     '<div class="tup"><div class="tb"><small>Terima bersih</small><strong id="gtb">'+rp(t.bersih)+'</strong><p>Gaji kotor dikurangi jumlah potongan.</p></div></div>'+
     '<div id="gmsg" class="ok" role="status">'+gajiFlash+'</div>'+
     (ed?'<div class="acts"><button class="btn" type="button" id="gsv" style="max-width:260px;margin-top:8px">Simpan penghasilan</button>'+(d.simpan?'<button class="lnk" type="button" id="grs">Hitung ulang dari regulasi</button>':'<button class="lnk" type="button" id="ghu">Hitung ulang dengan data di atas</button>')+'</div>':'<p class="mutp">Hanya Ketua (owner) dan Akuntan yang bisa mengubah penghasilan.</p>')+'</div>'}
+function kkInfo(k,bln){var m=karAngOf(k),L=kkPin(k,bln);
+  return '<p class="mutp">Anggota KSP: '+(m?"<b>"+ex(m.no)+"</b> · "+ex(memCab(m)):"belum terhubung")+'. Angsuran Kopkar dipotong otomatis dari pinjaman karyawan'+(L.length?": "+L.map(function(x){return ex(x.l.id)+" "+rp(x.v)}).join(", "):" (bulan ini tidak ada)")+'. Saat penghasilan disimpan, potongan ini langsung tercatat sebagai setoran angsuran.</p>'}
 function gajiBaca(base){var rd=function(g,B){return B.map(function(x,i){var nm=document.querySelector('[data-gn="'+g+i+'"]'),j=document.querySelector('[data-gj="'+g+i+'"]');return [nm?nm.value.trim():x[0],dig(j?j.value:0),x[2]||""]})};
   return {P:rd("p",base.P),Q:rd("q",base.Q)}}
 function gajiSlip(k,bln){var d=gajiData(k,bln),t=gajiTot(d),kv=function(a,b){return "<tr><td>"+a+'</td><td class="num">'+b+"</td></tr>"},L=function(A){return A.filter(function(x){return x[0]||x[1]}).map(function(x,i){return kv(String.fromCharCode(97+i)+". "+ex(x[0]||"Lainnya"),rp(+x[1]||0))}).join("")};
@@ -2018,12 +2058,12 @@ function bindGaji(){var gb=$("#gbl");if(gb)gb.onchange=function(){gajiBln=this.v
   var upd=function(){var d=gajiBaca(base),t=gajiTot(d);$("#gtk").textContent=rp(t.kotor);$("#gtp").textContent=rp(t.pot);$("#gtb").textContent=rp(t.bersih)};
   document.querySelectorAll("#gform [data-rpf]").forEach(function(i){i.oninput=function(){this.value=fmtRp(this.value);if(this.dataset.gj)upd()}});
   var k=KAR.filter(function(x){return x.no==gajiNo})[0],bln=gajiBln||today().slice(0,7);if(!k)return;
-  var simpanK=function(){k.anak=Math.max(0,parseInt($("#gan").value,10)||0);k.kopkar=dig($("#gkp").value)};
-  var saved=!!(k.gaji&&k.gaji[bln]);["#gan","#gkp"].forEach(function(id){var e=$(id);if(e)e.onchange=function(){simpanK();saveSoon();if(!saved)page()}});
+  var simpanK=function(){k.anak=Math.max(0,parseInt($("#gan").value,10)||0)};
+  var saved=!!(k.gaji&&k.gaji[bln]);["#gan"].forEach(function(id){var e=$(id);if(e)e.onchange=function(){simpanK();saveSoon();if(!saved)page()}});
   var hu=$("#ghu");if(hu)hu.onclick=function(){simpanK();gajiFlash="";saveSoon();page()};
-  var rs=$("#grs");if(rs)rs.onclick=function(){if(k.gaji)delete k.gaji[bln];simpanK();gajiFlash="Angka bulan ini dihitung ulang dari regulasi. Tekan Simpan untuk mengunci lagi.";saveSoon();page()};
+  var rs=$("#grs");if(rs)rs.onclick=function(){if(k.gaji)delete k.gaji[bln];kkHapus(k,bln);simpanK();gajiFlash="Angka bulan ini dihitung ulang dari regulasi. Tekan Simpan untuk mengunci lagi.";saveSoon();page()};
   var sv=$("#gsv");if(sv)sv.onclick=function(){if(!gajiBoleh())return;var d=gajiBaca(base),t=gajiTot(d);if(t.bersih<0){var m=$("#gmsg");m.className="err";m.textContent="Jumlah potongan melebihi gaji kotor.";return}
-    simpanK();k.gaji=k.gaji||{};k.gaji[bln]={P:d.P,Q:d.Q,tg:today(),oleh:ROLE};gajiFlash="Penghasilan "+k.nama+" "+gajiNmBln(bln)+" tersimpan. Terima bersih "+rp(t.bersih)+".";saveSoon();berhasil("Penghasilan berhasil disimpan",k.nama+" · "+rp(t.bersih));page()}}
+    simpanK();k.gaji=k.gaji||{};k.gaji[bln]={P:d.P,Q:d.Q,tg:today(),oleh:ROLE};var kkj=+(d.Q[1]&&d.Q[1][1])||0,kkn=kkCatat(k,bln,kkj,today());gajiFlash="Penghasilan "+k.nama+" "+gajiNmBln(bln)+" tersimpan. Terima bersih "+rp(t.bersih)+"."+(kkn?" Angsuran Kopkar "+rp(kkj)+" otomatis tercatat sebagai setoran.":"");saveSoon();berhasil("Penghasilan berhasil disimpan",k.nama+" · "+rp(t.bersih));page()}}
 /* Regulasi penghasilan (di halaman Regulasi bunga) */
 function gajiRegHTML(){var R=gajiR(),own=ROLE=="Ketua (owner)",dis=own?"":" disabled",J=JAB;
   var inp=function(id,v,ph,mode){return '<div class="field"><input id="'+id+'" type="text" inputmode="'+(mode||"numeric")+'" placeholder="'+ph+'" value="'+v+'"'+dis+(mode=="decimal"?"":' data-rpf')+'></div>'};
