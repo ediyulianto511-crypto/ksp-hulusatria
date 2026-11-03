@@ -848,13 +848,13 @@ function ktpKey(no){var m=MEM.filter(function(x){return x.no==no})[0];return m&&
 function ambilFoto(no,cb){var ls=null;
   if(DB)DB.doc("ktp/"+ktpKey(no)).get().then(function(sn){var d=sn&&sn.data?sn.data():null;cb(d&&d.img?d.img:ls)}).catch(function(){cb(ls)});else cb(ls)}
 function cetakHtml(h){var c=document.getElementById("cetak");if(!c){c=document.createElement("div");c.id="cetak";document.body.appendChild(c)}
-  c.innerHTML=h;document.body.classList.add("pc");var done=function(){document.body.classList.remove("pc");window.removeEventListener("afterprint",done)};
+  c.innerHTML=h;document.body.classList.add("pc");var done=function(){document.body.classList.remove("pc");c.innerHTML="";window.removeEventListener("afterprint",done)};
   window.addEventListener("afterprint",done);setTimeout(function(){window.print();setTimeout(done,1500)},150)}
 function kopHtml(j){return '<div class="kh"><img src="'+LOGO+'" alt=""><div><h1>'+j+'</h1><p>KSP Hulusatria Madani · HS GROUP</p></div></div>'}
 function cetakPinjaman(id){var l=LOAN.filter(function(x){return x.id==id})[0];if(!l)return;var a=MEM.filter(function(d){return d.no==l.no})[0]||{},m=mdl(l),J=jadL(l);
   var kv=function(k,v){return "<tr><td>"+k+"</td><td>"+v+"</td></tr>"};
   var pot=(l.prov||0)+(l.asr||0)+(l.wj||0)+(l.bm||0);
-  var h='<div class="kc">'+kopHtml("SPK Pinjaman · Surat Perjanjian Kontrak")+'<table class="kv">'+kv("Nomor pinjaman",l.id)+kv("Anggota",l.no+" · "+ex(l.nama))+kv("Alamat",ex([a.al,a.rt?"RT "+a.rt:"",a.rw?"RW "+a.rw:"",a.kl,a.kc].filter(Boolean).join(", ")))+kv("No HP",ex(a.hp||"-"))+
+  var h='<style>@page{size:A4 portrait;margin:15mm}</style><div class="kc">'+kopHtml("SPK Pinjaman · Surat Perjanjian Kontrak")+'<table class="kv">'+kv("Nomor pinjaman",l.id)+kv("Anggota",l.no+" · "+ex(l.nama))+kv("Alamat",ex([a.al,a.rt?"RT "+a.rt:"",a.rw?"RW "+a.rw:"",a.kl,a.kc].filter(Boolean).join(", ")))+kv("No HP",ex(a.hp||"-"))+
   kv("Model pinjaman",m.n+(l.kat?" (kategori "+l.kat+")":""))+kv("Tanggal realisasi",tgl(l.tg))+kv("Realisasi pinjaman",rp(l.pokok))+kv("Potongan (provisi, asuransi, dll.)",rp(pot))+(l.lalu?kv("Pelunasan saldo pinjaman lalu",rp(l.lalu)+(l.laluDenda?" (sisa tagihan "+rp(l.lalu-l.laluDenda)+" + denda berjalan "+rp(l.laluDenda)+")":"")+(l.lunasi&&l.lunasi.length?" · "+l.lunasi.join(", "):"")):"")+
   kv("Terima bersih","<b>"+rp(terimaOf(l))+"</b>")+(l.cm?kv("Diterimakan secara",l.cm+(l.cm=="Transfer"&&l.rk?" ke "+ex(l.rk.b+" "+l.rk.n+" a.n. "+l.rk.a):"")):"")+kv("Total pengembalian",(function(){var b=bdInfo(l,l.tg);return b&&b.pb?rp(tagih(l)-b.pb)+" (pokok + bunga diakui "+b.n+" kali; bertambah tiap bulan berjalan, paling banyak "+rp(tagih(l))+")":rp(tagih(l))})())+kv("Angsuran","<b>"+rp(l.ang)+"</b> × "+l.tenor+" kali, tiap "+m.per)+kv("Denda keterlambatan",dendaPct(l)+"% per hari")+(l.jam?kv("Jaminan",ex(l.jam.jenis)+" · taksiran "+rp(l.jam.nilai)):"")+'</table>'+
   '<table><thead><tr><th>Ke</th><th>Jatuh tempo</th><th class="num">Angsuran</th><th>Tanggal bayar</th><th class="num">Jumlah bayar</th><th>Paraf petugas</th></tr></thead><tbody>'+
