@@ -1418,8 +1418,16 @@ function ptgOld(n){return /^AG-IMP-\d+$/.test(n)||/^AG-\d+$/.test(n)}
 function ptgRencana(rows){var dL={},dM={};LOAN.forEach(function(l){if(l.imp)dL[l.id]=1});
   MEM.forEach(function(m){if(ptgOld(m.no)&&(m.imp||!m.dt||LOAN.some(function(l){return l.no==m.no&&l.imp}))&&!LOAN.some(function(l){return l.no==m.no&&!l.imp}))dM[m.no]=1});
   var P=PAY.filter(function(p){return dL[p.id]||p.imp}),T=TX.filter(function(t){return dM[t.no]}),sisa=MEM.filter(function(m){return ptgOld(m.no)&&!dM[m.no]});
-  var bentrok=rows.filter(function(r){return MEM.some(function(m){return m.no==r.no&&!dM[m.no]})||LOAN.some(function(l){return l.id==r.pj&&!dL[l.id]})}).map(function(r){return r.no});
-  return {dL:dL,dM:dM,nL:Object.keys(dL).length,nM:Object.keys(dM).length,nP:P.length,nT:T.length,sisa:sisa,bentrok:bentrok,rows:rows,tot:rows.reduce(function(a,r){return a+(+r.pel||0)},0)}}
+  // Nomor di file yang sudah dipakai anggota/pinjaman yang tetap ada (mis. anggota lama yang punya pinjaman berjalan) diberi nomor baru berikutnya.
+  var pakai={},mx=0,pk={},px=0,ganti=[];MEM.forEach(function(m){if(!dM[m.no])pakai[m.no]=1});LOAN.forEach(function(l){if(!dL[l.id])pk[l.id]=1});
+  rows.forEach(function(r){var a=/^AG-IMP-(\d+)$/.exec(r.no);if(a)mx=Math.max(mx,+a[1]);var b=/(\d+)$/.exec(r.pj);if(b)px=Math.max(px,+b[1])});
+  MEM.forEach(function(m){var a=/^AG-IMP-(\d+)$/.exec(m.no);if(a)mx=Math.max(mx,+a[1])});
+  rows=rows.map(function(r){var o={};for(var k in r)o[k]=r[k];
+    if(pakai[o.no]){var lama=o.no;do{mx++;o.no="AG-IMP-"+String(mx).padStart(5,"0")}while(pakai[o.no]);ganti.push(lama+" → "+o.no+" ("+o.nama+")")}
+    if(pk[o.pj]){do{px++;o.pj="PJ-IMP"+String(px).padStart(5,"0")}while(pk[o.pj])}
+    pakai[o.no]=1;pk[o.pj]=1;return o});
+  var bentrok=[];
+  return {ganti:ganti,dL:dL,dM:dM,nL:Object.keys(dL).length,nM:Object.keys(dM).length,nP:P.length,nT:T.length,sisa:sisa,bentrok:bentrok,rows:rows,tot:rows.reduce(function(a,r){return a+(+r.pel||0)},0)}}
 /* Baca langsung file Excel pemutihan (format "Impor Claude": NOMOR anggota | pinjaman, NAMA ANGGOTA, ..., SALDO PELUNASAN (P+B+DENDA)).
    Baris dengan nama dan saldo pelunasan yang sama dianggap ketumpuk dan hanya diambil satu (aturan Ketua 3 Nov 2026). */
 function ptgXlsx(buf){return pakaiXlsx().then(function(X){var wb=X.read(buf,{type:"array"}),A=X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
@@ -1440,7 +1448,7 @@ function ptgHTML(){if(!PTG)return "";var p=PTG;
   return '<div style="margin-top:12px"><p style="margin:0 0 8px"><b>Yang dihapus (data impor lama):</b> '+p.nM+' anggota, '+p.nL+' pinjaman, '+p.nP+' setoran angsuran, '+p.nT+' transaksi simpanan.</p>'+
   '<p style="margin:0 0 8px"><b>Yang dipasang ke Data pemutihan:</b> '+p.rows.length+' SPK · saldo beku '+rp(p.tot)+'.'+(p.dob?' ('+p.dob+' baris ketumpuk, nama dan saldo sama, tidak dimasukkan.)':'')+'</p>'+
   (p.sisa.length?'<p class="mutp" style="margin:0 0 8px">Tidak dihapus: '+p.sisa.length+' anggota bernomor lama yang punya pinjaman non-impor atau tanpa pinjaman impor ('+p.sisa.slice(0,5).map(function(m){return ex(m.no+" "+m.nama)}).join(", ")+(p.sisa.length>5?", …":"")+').</p>':'')+
-  (p.bentrok.length?'<p class="err" style="margin:0 0 8px">Tidak bisa dilanjutkan: nomor '+p.bentrok.slice(0,5).join(", ")+' sudah dipakai data yang tidak dihapus.</p>':'<button class="pbtn" type="button" id="ptgok" style="background:#C0392B;color:#fff">Unduh cadangan, lalu ganti data</button>')+'</div>'}
+  (p.ganti.length?'<p class="mutp" style="margin:0 0 8px">Nomor di file sudah dipakai anggota yang tetap ada, jadi diberi nomor baru: '+ex(p.ganti.join("; "))+'.</p>':'')+(p.bentrok.length?'<p class="err" style="margin:0 0 8px">Tidak bisa dilanjutkan: nomor '+p.bentrok.slice(0,5).join(", ")+' sudah dipakai data yang tidak dihapus.</p>':'<button class="pbtn" type="button" id="ptgok" style="background:#C0392B;color:#fff">Unduh cadangan, lalu ganti data</button>')+'</div>'}
 function ptgJalan(){var p=PTG;if(!p||p.bentrok.length)return;
   if(!confirm("Hapus "+p.nM+" anggota, "+p.nL+" pinjaman, "+p.nP+" setoran dan "+p.nT+" transaksi simpanan dari data impor lama, lalu pasang "+p.rows.length+" SPK pemutihan baru?\n\nFile cadangan semua data diunduh dulu ke HP/PC. Lanjutkan?"))return;
   var t=new Date(),z=function(n){return String(n).padStart(2,"0")},fn="cadangan-ksp-sebelum-ganti-impor-"+today()+"-"+z(t.getHours())+z(t.getMinutes())+".json";
