@@ -1778,7 +1778,7 @@ function simpanFoto(no,file){
   });
 }
 /* Foto KTP: di HP pakai kamera HP (bawaan), di PC buka webcam langsung */
-function diHp(){return /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia("(pointer:coarse)").matches&&!matchMedia("(pointer:fine)").matches)}
+function diHp(){var u=navigator.userAgent;return /Android|iPhone|iPad|iPod|Mobi/i.test(u)||(/Macintosh/.test(u)&&navigator.maxTouchPoints>1)}
 function webcamKtp(onFile,onGagal){
   var md=navigator.mediaDevices;if(!md||!md.getUserMedia){onGagal("Browser ini tidak bisa membuka webcam.");return}
   var ov=document.createElement("div");ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Ambil foto KTP dengan webcam");
