@@ -2380,7 +2380,7 @@ function kartuGambar(l){
   var W=720,RH=40,kq=sisaP(l)>0?kolOf(l):null,
     info=[["Nama anggota",l.nama||a.nama||""],["No. anggota",l.no||""],["No. pinjaman",l.id],["Kualitas pinjaman",kq?kq.kode+" · "+kq.nama:pinStatus(l)],
       ["Tipe pinjaman","Pinjaman "+m.n],["Tanggal realisasi",tgl(l.tg)],["Realisasi pinjaman",rp(+l.pokok||0)],["Jangka waktu",l.tenor+(m.hari==7?" minggu":m.hari==14?" × 2 minggu":" bulan")],["Jumlah angsuran",rp(+l.ang||0)+" / "+per],["Jumlah pengembalian",rp(tagih(l)-pbK),pbK?"pokok + bunga diakui "+bd.n+" kali, bertambah tiap bulan sampai "+rp(tagih(l)):"bila tidak pernah melewati jatuh bayar, tanpa denda"]];
-  var H=212+84+42+info.length*40+92+30+30+78+Math.ceil(I.length/2)*RH+30+8*44+4*30+150+(lunas?0:50)+(pbK?2*44+60:0);
+  var H=212+84+42+info.length*40+92+30+30+78+I.length*RH+30+8*44+4*30+150+(lunas?0:50)+(pbK?2*44+60:0);
   var c=document.createElement("canvas"),x=c.getContext("2d");c.width=W*STRUK_S;c.height=H*STRUK_S;x.setTransform(STRUK_S,0,0,STRUK_S,0,0);x.fillStyle="#fff";x.fillRect(0,0,W,H);
   var U="#7A3E4B",B="#F3E6E9",ada=STRUK_LOGO.complete&&STRUK_LOGO.naturalWidth>0;
   x.fillStyle=U;x.fillRect(0,0,W,212);
@@ -2398,22 +2398,23 @@ function kartuGambar(l){
     x.textAlign="left";x.fillStyle="#666";x.font="22px "+SERIF;x.fillText(r[0],50,y);x.textAlign="right";x.fillStyle="#222";x.font="23px "+SERIF;x.fillText(String(r[1]),W-50,y);
     if(r[2]){x.fillStyle="#999";x.font="italic 17px "+SERIF;x.fillText("("+r[2]+")",W-50,y+28);y+=30}y+=40});
   // Tabel angsuran dua lajur berjejar (kiri: ke-1 s/d separuh, kanan: sisanya).
-  y+=10;var hN=Math.ceil(I.length/2),GW=(W-70)/2,b5=[0,24,93,166,240,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
-  [0,1].forEach(function(g){var X=30+g*(GW+10),yy=y;if(g&&I.length<2)return;
+  y+=10;// Tabel satu kolom memanjang ke bawah (user 3 Nov 2026), tidak lagi dua lajur.
+  var hN=I.length,GW=W-60,b5=[0,60,200,340,510,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
+  [0].forEach(function(g){var X=30,yy=y;
     // Kepala tabel 78 px: "Tanggal" di atas, dipecah jadi Jatuh bayar | Pembayaran.
     var cm=function(k){return X+(b5[k]+b5[k+1])/2};
-    x.fillStyle=U;x.fillRect(X,yy,GW,78);x.fillStyle="#fff";x.textAlign="center";x.font="bold 13px "+SERIF;
+    x.fillStyle=U;x.fillRect(X,yy,GW,78);x.fillStyle="#fff";x.textAlign="center";x.font="bold 15px "+SERIF;
     x.fillText("Ke",cm(0),yy+44);x.fillText("Tanggal",X+(b5[1]+b5[3])/2,yy+26);
     x.fillStyle="rgba(255,255,255,.5)";x.fillRect(X+b5[1]+6,yy+38,b5[3]-b5[1]-12,1);x.fillStyle="#fff";
-    x.font="bold 11px "+SERIF;x.fillText("Jatuh bayar",cm(1),yy+60);x.fillText("Pembayaran",cm(2),yy+60);
-    x.font="bold 13px "+SERIF;x.fillText("Setoran",cm(3),yy+28);x.fillText("angsuran",cm(3),yy+46);x.font="12px "+SERIF;x.fillText("(Rp)",cm(3),yy+64);
-    x.font="bold 12px "+SERIF;x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+54);yy+=78;
+    x.font="bold 13px "+SERIF;x.fillText("Jatuh bayar",cm(1),yy+62);x.fillText("Pembayaran",cm(2),yy+62);
+    x.font="bold 15px "+SERIF;x.fillText("Setoran angsuran",cm(3),yy+36);x.font="13px "+SERIF;x.fillText("(Rp)",cm(3),yy+58);
+    x.font="bold 15px "+SERIF;x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+56);yy+=78;
     var L=I.slice(g*hN,g*hN+hN);
     L.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(X,yy,GW,RH)}
-      x.font="14px "+SERIF;x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),X+12,yy+26);
+      x.font="16px "+SERIF;x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),cm(0),yy+26);
       if(r.pd>0){x.fillText(tgP(r.tg),X+(b5[1]+b5[2])/2,yy+26);x.fillText(tgP(r.tb),X+(b5[2]+b5[3])/2,yy+26);
-        x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-8,yy+26);
-        x.textAlign="center";x.fillStyle="#222";x.font="bold 13px "+SERIF;x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
+        x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-30,yy+26);
+        x.textAlign="center";x.fillStyle="#222";x.font="bold 15px "+SERIF;x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
       yy+=RH});
     x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(X,y,GW,78+hN*RH)});
   y+=78+hN*RH+40;
