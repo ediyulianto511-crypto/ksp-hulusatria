@@ -2356,7 +2356,7 @@ function strukUnduh(b,n){var u=URL.createObjectURL(b),a=document.createElement("
 document.getElementById("strukCetak").onclick=function(){if(!STRUK_LIHAT)return;var bk=/^Buku-/.test(STRUK_LIHAT.d.no||""),w=bk?(typeof BUKU_CM=="number"?BUKU_CM:15):10;
   var f=document.createElement("iframe");f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0";document.body.appendChild(f);
   var dc=f.contentWindow.document;dc.open();dc.write('<!doctype html><html><head><title>'+(STRUK_LIHAT.d.no||"Cetak")+'</title><style>@page{margin:8mm}body{margin:0}img{display:block;width:'+w+'cm;margin:0 auto}</style></head><body><img id="i"></body></html>');dc.close();
-  var im=dc.getElementById("i");im.onload=function(){setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){window.print()}setTimeout(function(){f.remove()},60000)},200)};im.src=STRUK_LIHAT.url};
+  var im=dc.getElementById("i");im.onload=function(){setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){window.print()}setTimeout(function(){f.remove()},60000)},200)};im.src=STRUK_LIHAT.cetak||STRUK_LIHAT.url};
 document.getElementById("strukTutup").onclick=function(){document.getElementById("strukBg").hidden=true};
 document.getElementById("strukSimpan").onclick=function(){if(!STRUK_LIHAT)return;var n="Struk-"+STRUK_LIHAT.d.no+".png";strukBlob().then(function(b){strukUnduh(b,n)})};
 document.getElementById("strukBagi").onclick=function(){if(!STRUK_LIHAT)return;var d=STRUK_LIHAT.d,n="Struk-"+d.no+".png";
@@ -2374,7 +2374,7 @@ function kartuData(l){
   return I}
 var SERIF='"Noto Serif","Droid Serif",Georgia,serif';
 function fontSiap(){try{return Promise.race([Promise.all(['16px "Noto Serif"','bold 16px "Noto Serif"','italic 16px "Noto Serif"'].map(function(f){return document.fonts.load(f)})),new Promise(function(r){setTimeout(r,2500)})]).catch(function(){})}catch(e){return Promise.resolve()}}
-function kartuGambar(l){
+function kartuGambar(l,cetak){
   var a=MEM.filter(function(d){return d.no==l.no})[0]||{},I=kartuData(l),m=mdl(l),per=m.hari==7?"minggu":m.hari==14?"2 minggu":"bulan";
   var dend=dendaB(l,today()),bd=sisaP(l)>0?bdInfo(l,today()):null,pbK=bd?bd.pb:0,sisa=Math.max(0,sisaP(l)-pbK),lunas=sisaP(l)<=0;
   var W=720,RH=40,kq=sisaP(l)>0?kolOf(l):null,
@@ -2420,6 +2420,8 @@ function kartuGambar(l){
     // Kolom petugas lapangan (stempel/paraf petugas yang menerima setoran tunai).
     x.beginPath();x.moveTo(X+b5[5],y+78);x.lineTo(X+b5[5],y+78+hN*RH);x.stroke()});
   y+=78+hN*RH+40;
+  // Versi cetak buku fisik (user 3 Nov 2026): hanya data atas + tabel. Rincian denda/saldo berubah terus, jadi hanya di sistem & WA.
+  if(cetak){var hc=Math.ceil(y-10),c2=document.createElement("canvas");c2.width=c.width;c2.height=Math.round(hc*STRUK_S);c2.getContext("2d").drawImage(c,0,0);return c2}
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
     // Hari yang benar-benar dikenai denda = (denda terbayar + sisa denda) ÷ denda per hari,
@@ -2448,7 +2450,7 @@ function kartuGambar(l){
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-kartu]");if(!b)return;
   var l=LOAN.filter(function(q){return q.id==b.dataset.kartu})[0];if(!l)return;
   if(l.pt&&b.dataset.kp==null){pmtBuka=l.id;pmtQ="";go(boleh("pmt2")?"pmt2":"pmt1");return}
-  fontSiap().then(function(){try{var c=kartuGambar(l);strukLihat({no:"Buku-Pinjaman-Anggota-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku pinjaman "+l.id+". Bisa dibagikan ke WA anggota atau disimpan.");
+  fontSiap().then(function(){try{var c=kartuGambar(l);strukLihat({no:"Buku-Pinjaman-Anggota-"+l.id,nama:l.nama,total:sisaP(l)},pngCm(c.toDataURL("image/png"),BUKU_CM),"Buku pinjaman "+l.id+". Bisa dibagikan ke WA anggota atau disimpan. Saat dicetak, hanya data dan tabel angsuran yang tercetak.");STRUK_LIHAT.cetak=pngCm(kartuGambar(l,1).toDataURL("image/png"),BUKU_CM);
     document.getElementById("strukJ").textContent="Buku pinjaman · "+l.nama}catch(err){console.error(err)}})});
 // Tunggu huruf Noto Serif siap dulu supaya struk tidak tergambar dengan huruf cadangan.
 function strukWA(l,p){(typeof fontSiap=="function"?fontSiap():Promise.resolve()).then(function(){strukWA0(l,p)})}
