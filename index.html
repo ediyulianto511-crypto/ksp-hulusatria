@@ -200,7 +200,7 @@ main{margin-left:248px;min-height:100vh}
 .mgrid .pbtn small{display:block;font-size:12.5px;font-weight:500;opacity:.9;margin-top:2px}
 /* Tombol jenis pinjaman: warna dari kotak Dashboard */
 .mgrid .pbtn[data-model],.mgrid .pbtn[data-ck]{background:var(--mc);color:#fff;outline-color:var(--md)}
-.mgrid .pbtn[data-model="kk"],.mgrid .pbtn[data-ck="kk"]{--mc:#7A3E4B;--md:#5E2F3A}.mgrid .pbtn[data-model="mg"],.mgrid .pbtn[data-ck="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"],.mgrid .pbtn[data-ck="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"],.mgrid .pbtn[data-ck="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"],.mgrid .pbtn[data-ck="pg"]{--mc:#1F9FD0;--md:#1A89B4}
+.mgrid .pbtn[data-model="kk"],.mgrid .pbtn[data-ck="kk"]{--mc:#E08D1D;--md:#C67A17;grid-column:1/-1}.mgrid .pbtn[data-model="mg"],.mgrid .pbtn[data-ck="mg"]{--mc:#D04B3B;--md:#B73F31}.mgrid .pbtn[data-model="dm"],.mgrid .pbtn[data-ck="dm"]{--mc:#3F9C55;--md:#33854A}.mgrid .pbtn[data-model="bl"],.mgrid .pbtn[data-ck="bl"]{--mc:#E08D1D;--md:#C67A17}.mgrid .pbtn[data-model="pg"],.mgrid .pbtn[data-ck="pg"]{--mc:#1F9FD0;--md:#1A89B4}
 .mgrid .pbtn[data-model][aria-pressed="true"],.mgrid .pbtn[data-ck][aria-pressed="true"]{background:var(--md);outline-width:4px}
 @media (max-width:640px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .pact{display:grid;grid-template-columns:1fr 1fr 1.4fr;gap:10px;margin-top:22px}
@@ -502,6 +502,9 @@ function pilihTema(v,n){setPalette(v);berhasil("Tema diterapkan",n+" sekarang di
 function setPalette(v){pal=v;var r=document.documentElement;if(v)r.setAttribute("data-palette",v);else r.removeAttribute("data-palette");warnaBar();page()}
 /* Nomor anggota berkode cabang: AG-01-00001 (Cabang 1), AG-02-00001 (Cabang 2), dst. Nomor lama (AG-00088) tidak diubah. */
 function kodeCab(c){c=cabNorm(c);if(c==KOPKAR)return "KP";var d=CABI[c]||{},m=/^Cabang\s+(\d+)$/i.exec(c),i=CAB.indexOf(c);return String(d.kode||(m?+m[1]:(i<0?0:i)+1)).padStart(2,"0")}
+/* Nomor pinjaman berkode cabang (user 3-11-2026): PJ-KP-00001 (Karyawan HS (Kopkar)), PJ-01-00001 (Cabang 1), dst.
+   Urutan per cabang. Pinjaman lama (PJ-0001) tidak diubah supaya setoran dan buku angsurannya tetap tersambung. */
+function nomorPin(c){var k="PJ-"+kodeCab(c)+"-",n=0;LOAN.forEach(function(l){var id=String(l.id||"");if(id.indexOf(k)==0){var x=parseInt(id.slice(k.length),10)||0;if(x>n)n=x}});return k+String(n+1).padStart(5,"0")}
 function nomor(c){if(c==null){var e=document.getElementById("fmc");c=e&&e.value||myCab()||cabDef()}var k="AG-"+kodeCab(c)+"-",n=0;
   MEM.forEach(function(m){if(String(m.no).indexOf(k)==0){var x=parseInt(String(m.no).slice(k.length),10)||0;if(x>n)n=x}});return k+String(n+1).padStart(5,"0")}
 var WIL={"Kabupaten Contoh A":{"Kecamatan Contoh 1":["Desa Contoh X","Desa Contoh Y"],"Kecamatan Contoh 2":["Desa Contoh Z"]},"Kabupaten Contoh B":{"Kecamatan Contoh 3":["Desa Contoh W"]}};
@@ -1188,7 +1191,7 @@ function realisasiPin(x,tg,cm){if(ajuKk(x)&&!isOwner())return {err:"Realisasi pi
   if(!cm)return {err:"Pilih pencairan diterimakan secara tunai atau transfer."};
   if(cm=="Transfer"&&!rekOk(a.rk))return {err:"Rekening pencairan "+a.nama+" belum ada. Isi dulu di panel Anggota, lalu pilih Transfer lagi."};
   var r=hitung(P.model,v,P.n),LA=aktifPin(no),ld=LA.reduce(function(s,l){return s+dendaB(l,tg)},0),lalu=LA.reduce(function(s,l){return s+lunasNet(l,tg)},0);
-  var id="PJ-"+String(LOAN.reduce(function(s,y){var m=/^PJ-(\d+)$/.exec(y.id||"");return m?Math.max(s,+m[1]):s},0)+1).padStart(4,"0");
+  var id=nomorPin(P.model=="kk"?KOPKAR:memCab(a));
   var nL={nik:a.nik||"",mkt:P.mkt||"",kat:r.t.i,model:P.model,jam:P.jam||null,id:id,no:no,nama:a.nama,tg:tg,pokok:v,tenor:r.n,bunga:r.r.bunga,basis:r.r.basis,prov:r.prov,asr:r.asr,wj:r.wj,bm:r.bm,bt:r.bt,tot:r.tot,bersih:r.bersih,lalu:lalu,laluDenda:ld,lunasi:LA.map(function(l){return l.id}),ang:r.ang,denda:r.r.denda,cm:cm,rk:cm=="Transfer"?{b:a.rk.b,n:a.rk.n,a:a.rk.a}:null,aju:x.id,dref:x.id,docs:P.docs||[]};
   var dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});PFOTO.forEach(function(q,j){simpanDoc(id+"_f"+(j+1),q.f)});
   if(dk.length||PFOTO.length){nL.docs=dk;delete nL.dref;if(PFOTO.length)nL.ff=PFOTO.length}else if(P.ff)nL.ff=P.ff;PDOC={};PFOTO=[];LOAN.push(nL);
