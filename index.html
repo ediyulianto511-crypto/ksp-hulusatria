@@ -536,7 +536,7 @@ function formHTML(){
   '</div><div id="fmsg" class="ok" role="status"></div><div class="acts" style="margin:0"><button class="btn" id="fsv" type="submit" style="max-width:260px">Simpan anggota</button><button class="lnk" id="fbatal" type="button" hidden onclick="angEditSelesai()">Batal edit</button></div><p class="mutp">Periksa data sesuai KTP sebelum menyimpan. Foto KTP ikut disimpan.</p></form></div>';
 }
 var TX=[],fSim="",simArah="masuk",simJns="Simpanan pokok",simPer="1b";
-var JNS=["Simpanan pokok","Simpanan wajib","Simpanan sukarela"];
+var JNS=["Simpanan pokok","Simpanan wajib","Simpanan berjangka","Simpanan sukarela"];
 function saldo(no,j){return TX.filter(function(t){return t.no==no&&(!j||t.jenis==j)}).reduce(function(a,t){return a+(t.tipe=="masuk"?t.jml:-t.jml)},0)}
 function saldoSim(no){return saldo(no)}
 function today(){var n=new Date(),p=function(x){return String(x).padStart(2,"0")};return n.getFullYear()+"-"+p(n.getMonth()+1)+"-"+p(n.getDate())}
@@ -607,10 +607,10 @@ function bindSim(m){
 // Panel Simpanan: Transaksi simpanan (masuk/keluar) dan Riwayat simpanan.
 function simTrans(){
   var B=function(on,k,v,t){return '<button type="button" class="pbtn" '+k+'="'+v+'" aria-pressed="'+on+'">'+t+'</button>'};
-  var J=["Simpanan pokok","Simpanan wajib"].concat(isOwner()?["Modal KSP","Tambah modal KSP"]:[]);if(J.indexOf(simJns)<0)simJns=J[0];
+  var J=["Simpanan pokok","Simpanan wajib","Simpanan berjangka"].concat(isOwner()?["Modal awal KSP","Tambah modal KSP"]:[]);if(J.indexOf(simJns)<0)simJns=J[0];
   var h='<div class="panel" style="margin-bottom:14px"><div class="kq" id="sarah" style="margin:0">'+B(simArah=="masuk","data-ar","masuk","Simpanan masuk")+B(simArah=="keluar","data-ar","keluar","Simpanan keluar")+'</div>'+
     (simArah=="masuk"?'<label style="margin-top:12px">Jenis simpanan masuk</label><div class="kq" id="sjns" style="margin:0">'+J.map(function(j){return B(simJns==j,"data-sj",j,j)}).join("")+'</div>':"")+'</div>';
-  if(simArah=="masuk"&&/modal/i.test(simJns))return h+modalPage(simJns=="Modal KSP"?"Modal awal":"Tambah modal");
+  if(simArah=="masuk"&&/modal/i.test(simJns))return h+modalPage(simJns=="Modal awal KSP"?"Modal awal":"Tambah modal");
   return h+simForm(simArah=="masuk",simArah=="masuk"?simJns:"");
 }
 function bindSimTrans(){
@@ -640,7 +640,7 @@ function modalPage(tr){
   var cards='<div class="grid" style="margin-bottom:16px">'+K.map(function(k,i){var n=[1,2,4][i];return '<div class="k" style="--bg-c:var(--c'+n+');--tx-c:var(--t'+n+')"><div><h4>'+k[0]+"</h4><p>"+k[1]+"</p></div><strong>"+k[2]+"</strong></div>"}).join("")+"</div>";
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   var form=isOwner()?
-    '<div class="panel" style="margin-bottom:16px"><div class="phead"><div><h3>'+(tr=="Tambah modal"?"Tambah modal KSP":"Modal KSP")+'</h3><p>'+(tr=="Tambah modal"?"Catat tambahan modal dari Ketua (owner).":tr?"Modal awal KSP dari Ketua (owner).":"Modal awal dan tambah modal dari Ketua (owner).")+'</p></div></div><form id="mdform" novalidate><div class="fg">'+
+    '<div class="panel" style="margin-bottom:16px"><div class="phead"><div><h3>'+(tr=="Tambah modal"?"Tambah modal KSP":tr?"Modal awal KSP":"Modal KSP")+'</h3><p>'+(tr=="Tambah modal"?"Catat tambahan modal dari Ketua (owner).":tr?"Modal awal KSP dari Ketua (owner).":"Modal awal dan tambah modal dari Ketua (owner).")+'</p></div></div><form id="mdform" novalidate><div class="fg">'+
     F("mow","Pemilik modal",'<input id="mow" type="text" value="Ketua (owner)" readonly>')+
     (tr?'<input id="mj" type="hidden" value="'+tr+'">':F("mj","Jenis",SEL("mj",["Modal awal","Tambah modal"],"")))+
     F("mt","Tanggal",'<input id="mt" type="date">')+
@@ -849,7 +849,7 @@ function cetakAnggota(no){var a=MEM.filter(function(d){return d.no==no})[0];if(!
     cetakHtml('<div class="kc">'+card+'<p style="font-size:11px;color:#666">Gunting sesuai garis kartu. Bawa kartu ini setiap transaksi.</p></div>')})}
 /* ===== Laporan ===== */
 var lapM="";
-var AKUN=[["Kas","A"],["Piutang pinjaman anggota","A"],["Simpanan sukarela","L"],["Titipan asuransi","L"],["Modal disetor","E"],["Simpanan pokok","E"],["Simpanan wajib","E"]];
+var AKUN=[["Kas","A"],["Piutang pinjaman anggota","A"],["Simpanan berjangka","L"],["Simpanan sukarela","L"],["Titipan asuransi","L"],["Modal disetor","E"],["Simpanan pokok","E"],["Simpanan wajib","E"]];
 function tipeAkun(a){for(var i=0;i<AKUN.length;i++)if(AKUN[i][0]==a)return AKUN[i][1];return /^Pendapatan/.test(a)?"R":/^Beban/.test(a)?"X":"A"}
 function bebanNm(j){var n=String(j).replace(/^Biaya /i,"");return /^[A-Z][a-z]/.test(n)?n[0].toLowerCase()+n.slice(1):n}
 function pad3(n){return String(n).padStart(3,"0")}
@@ -896,7 +896,7 @@ function lapNeraca(){var m=lapM||today().slice(0,7),z=blnAkhir(m),J=jurnal(),S=f
   var pend=Object.keys(akun).filter(function(a){return tipeAkun(a)=="R"}).reduce(function(s,a){return s+S(a)},0),beb=Object.keys(akun).filter(function(a){return tipeAkun(a)=="X"}).reduce(function(s,a){return s+S(a)},0),shu=pend-beb;
   var row=function(a,v){return '<tr class="ind"><td>'+a+'</td><td class="num">'+rp(v)+'</td></tr>'};
   var kas=S("Kas"),pi=S("Piutang pinjaman anggota"),ta=kas+pi;
-  var L1=[["Simpanan sukarela",S("Simpanan sukarela")],["Titipan asuransi",S("Titipan asuransi")]],tl=L1.reduce(function(s,x){return s+x[1]},0);
+  var L1=[["Simpanan berjangka",S("Simpanan berjangka")],["Simpanan sukarela",S("Simpanan sukarela")],["Titipan asuransi",S("Titipan asuransi")]],tl=L1.reduce(function(s,x){return s+x[1]},0);
   var E1=[["Modal disetor",S("Modal disetor")],["Simpanan pokok",S("Simpanan pokok")],["Simpanan wajib",S("Simpanan wajib")],["SHU tahun berjalan",shu]],te=E1.reduce(function(s,x){return s+x[1]},0);
   var ok=Math.abs(ta-(tl+te))<1;
   var kiri='<div class="nbox"><table class="tbl ntbl"><tbody><tr class="grp"><td colspan="2">ASET</td></tr>'+row("Kas",kas)+row("Piutang pinjaman anggota",pi)+'<tr class="tot"><td>Total aset</td><td class="num">'+rp(ta)+'</td></tr></tbody></table></div>';
@@ -905,7 +905,7 @@ function lapNeraca(){var m=lapM||today().slice(0,7),z=blnAkhir(m),J=jurnal(),S=f
   var shuT='<div class="lsec">Rincian SHU tahun berjalan</div><div class="tblw"><table class="tbl ntbl"><tbody><tr class="grp"><td colspan="2">PENDAPATAN</td></tr>'+rl.filter(function(a){return tipeAkun(a)=="R"}).map(function(a){return row(a,S(a))}).join("")+'<tr class="tot"><td>Total pendapatan</td><td class="num">'+rp(pend)+'</td></tr><tr class="grp"><td colspan="2">BEBAN</td></tr>'+(rl.filter(function(a){return tipeAkun(a)=="X"}).map(function(a){return row(a,S(a))}).join("")||'<tr class="ind"><td>Belum ada beban</td><td class="num">'+rp(0)+'</td></tr>')+'<tr class="tot"><td>Total beban</td><td class="num">'+rp(beb)+'</td></tr><tr class="tot"><td>SHU tahun berjalan</td><td class="num">'+rp(shu)+'</td></tr></tbody></table></div>';
   return '<div class="panel"><div class="phead"><div><h3>Laporan neraca</h3><p>KSP Hulusatria Madani · per '+tgl(z)+'</p></div><button class="pbtn" onclick="window.print()">Cetak neraca</button></div>'+lapPilih()+
   '<div class="ngrid">'+kiri+kanan+'</div><div class="nbal '+(ok?"ok2":"no")+'">'+(ok?"✓ Neraca seimbang: total aset sama dengan total kewajiban + ekuitas.":"Neraca belum seimbang, selisih "+rp(ta-tl-te)+".")+'</div>'+shuT+
-  '<p class="mutp">Simpanan pokok dan wajib dicatat sebagai ekuitas anggota, simpanan sukarela sebagai kewajiban. Potongan asuransi dicatat sebagai titipan yang diteruskan ke pihak asuransi.</p></div>'}
+  '<p class="mutp">Simpanan pokok dan wajib dicatat sebagai ekuitas anggota, simpanan berjangka dan sukarela sebagai kewajiban. Potongan asuransi dicatat sebagai titipan yang diteruskan ke pihak asuransi.</p></div>'}
 function lapJurnal(){var m=lapM||today().slice(0,7),a=m+"-01",z=blnAkhir(m),J=jurnal().filter(function(e){return e.tg>=a&&e.tg<=z}),td=0,tk=0;
   var rows=J.map(function(e){var h='<tr class="jh"><td colspan="3">'+tgl(e.tg)+' · '+e.ref+'<br><span>'+ex(e.ket)+'</span></td></tr>';
     var L=e.L.slice().sort(function(x,y){return (y[1]>0)-(x[1]>0)});
@@ -1822,7 +1822,7 @@ function bindBu(){
     else{flash=j+" "+rp(v)+" diajukan ("+x.id+") dan menunggu persetujuan. Kas belum berkurang.";berhasil("Pengeluaran diajukan",flash)}nav();page()};
 }
 function page(){
-  if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal KSP";cur="sim1"}
+  if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal awal KSP";cur="sim1"}
   saveSoon();var f=find(cur),t=f[0];
   $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":cur=="pmt1"||cur=="pmt2"?"Data pemutihan":f[1]?f[1]+" / "+t:t;
   if(cur=="dash"){
