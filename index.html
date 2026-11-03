@@ -2399,7 +2399,7 @@ function kartuGambar(l){
     if(r[2]){x.fillStyle="#999";x.font="italic 17px "+SERIF;x.fillText("("+r[2]+")",W-50,y+28);y+=30}y+=40});
   // Tabel angsuran dua lajur berjejar (kiri: ke-1 s/d separuh, kanan: sisanya).
   y+=10;// Tabel satu kolom memanjang ke bawah (user 3 Nov 2026), tidak lagi dua lajur.
-  var hN=I.length,GW=W-60,b5=[0,60,200,340,510,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
+  var hN=I.length,GW=W-60,b5=[0,46,160,274,410,530,GW],tgP=function(t){return new Date(t+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"short",year:"2-digit"})};
   [0].forEach(function(g){var X=30,yy=y;
     // Kepala tabel 78 px: "Tanggal" di atas, dipecah jadi Jatuh bayar | Pembayaran.
     var cm=function(k){return X+(b5[k]+b5[k+1])/2};
@@ -2408,15 +2408,17 @@ function kartuGambar(l){
     x.fillStyle="rgba(255,255,255,.5)";x.fillRect(X+b5[1]+6,yy+38,b5[3]-b5[1]-12,1);x.fillStyle="#fff";
     x.font="bold 13px "+SERIF;x.fillText("Jatuh bayar",cm(1),yy+62);x.fillText("Pembayaran",cm(2),yy+62);
     x.font="bold 15px "+SERIF;x.fillText("Setoran angsuran",cm(3),yy+36);x.font="13px "+SERIF;x.fillText("(Rp)",cm(3),yy+58);
-    x.font="bold 15px "+SERIF;x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+56);yy+=78;
+    x.font="bold 15px "+SERIF;x.fillText("Metode",cm(4),yy+36);x.fillText("pembayaran",cm(4),yy+56);x.fillText("Petugas",cm(5),yy+36);x.fillText("lapangan",cm(5),yy+56);yy+=78;
     var L=I.slice(g*hN,g*hN+hN);
     L.forEach(function(r,i){if(i%2){x.fillStyle="#FAF6F4";x.fillRect(X,yy,GW,RH)}
       x.font="16px "+SERIF;x.fillStyle="#222";x.textAlign="center";x.fillText(String(r.ke),cm(0),yy+26);
       if(r.pd>0){x.fillText(tgP(r.tg),X+(b5[1]+b5[2])/2,yy+26);x.fillText(tgP(r.tb),X+(b5[2]+b5[3])/2,yy+26);
-        x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-30,yy+26);
+        x.textAlign="right";x.fillStyle=r.pd<r.amt?"#C0392B":"#222";x.fillText(rp(r.pd).replace("Rp ",""),X+b5[4]-24,yy+26);
         x.textAlign="center";x.fillStyle="#222";x.font="bold 15px "+SERIF;x.fillText(r.mt.length?(r.mt.length>1?"Campuran":r.mt[0]):"-",X+(b5[4]+b5[5])/2,yy+26)}
       yy+=RH});
-    x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(X,y,GW,78+hN*RH)});
+    x.strokeStyle="#ddd";x.lineWidth=1;x.strokeRect(X,y,GW,78+hN*RH);
+    // Kolom petugas lapangan (stempel/paraf petugas yang menerima setoran tunai).
+    x.beginPath();x.moveTo(X+b5[5],y+78);x.lineTo(X+b5[5],y+78+hN*RH);x.stroke()});
   y+=78+hN*RH+40;
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
