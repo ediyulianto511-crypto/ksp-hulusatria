@@ -2421,7 +2421,9 @@ function kartuGambar(l,cetak){
     x.beginPath();x.moveTo(X+b5[5],y+78);x.lineTo(X+b5[5],y+78+hN*RH);x.stroke()});
   y+=78+hN*RH+40;
   // Versi cetak buku fisik (user 3 Nov 2026): hanya data atas + tabel. Rincian denda/saldo berubah terus, jadi hanya di sistem & WA.
-  if(cetak){var hc=Math.ceil(y-10),c2=document.createElement("canvas");c2.width=c.width;c2.height=Math.round(hc*STRUK_S);c2.getContext("2d").drawImage(c,0,0);return c2}
+  if(cetak){x.textAlign="center";x.fillStyle=U;x.font="italic 19px "+SERIF;x.fillText("Simpan buku ini dan tunjukkan setiap membayar angsuran.",W/2,y+4);x.fillText("Terima kasih atas kepercayaan Anda kepada KSP Hulusatria Madani.",W/2,y+30);
+    x.font="bold 22px "+SERIF;x.fillText("Konfirmasi: 0822-3484-1989 (WA/telepon)",W/2,y+78);x.fillStyle="#999";x.font="18px "+SERIF;x.fillText("Dibuat otomatis oleh aplikasi KSP Hulusatria",W/2,y+112);y+=140;
+    var hc=Math.ceil(y),c2=document.createElement("canvas");c2.width=c.width;c2.height=Math.round(hc*STRUK_S);c2.getContext("2d").drawImage(c,0,0);return c2}
   var TL=I.filter(function(r){return r.sisa>0&&r.telat>0}),hk=TL.reduce(function(s,r){return s+r.telat},0),pct=String(dendaPct(l)).replace(".",","),
     dbyr=PAY.filter(function(q){return q.id==l.id}).reduce(function(s,q){return s+(+q.denda||0)},0),
     // Hari yang benar-benar dikenai denda = (denda terbayar + sisa denda) ÷ denda per hari,
