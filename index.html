@@ -1566,6 +1566,11 @@ function bindForm(kar){
   var smpReady=null,busy=false;
   function showOcr(){$("#ocr").hidden=!(ktpFile&&smpReady)}
   if(window.claude&&claude.use){smpReady=claude.use("sample").then(function(sm){if(!sm)return null;return sm.limits().then(function(l){if(l&&l.images){smp=sm;lim=l}return smp}).catch(function(){return null})}).catch(function(){return null})}
+  else if(/^https?:/.test(location.protocol)){lim={images:{maxInputBytes:3500000}};smp={json:function(q,o){var img=o.images[0];
+    return new Promise(function(ok,no){var fr=new FileReader();fr.onload=function(){ok(String(fr.result).split(",")[1])};fr.onerror=no;fr.readAsDataURL(img)}).then(function(b64){
+      var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
+      return sesi.then(function(tok){return fetch("/api/baca-ktp",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},body:JSON.stringify({image:b64})})})
+    }).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok){var e=new Error(j.error||("HTTP "+r.status));e.pesan=j.error;throw e}return j.data})})}};smpReady=Promise.resolve(smp)}
   function bacaKtp(){
     var b=$("#ocr"),m=$("#ocrmsg");if(!ktpFile||busy)return;
     if(!smpReady){m.className="err";m.textContent="Baca KTP otomatis belum tersedia di tampilan ini. Isi data secara manual; foto KTP tetap tersimpan.";return}
@@ -1578,7 +1583,7 @@ function bindForm(kar){
         m.textContent="Membaca KTP... (bisa 10–30 detik)";
         return sm.json(KTPQ,{images:[img],cache:false}).then(function(r){isiKtp(r);m.className="ok";m.textContent="Data KTP terbaca. Periksa dan koreksi sebelum menyimpan, lalu isi nomor HP."});
       });
-    }).catch(function(e){m.className="err";m.textContent=(e&&e.code=="not_granted")?"Izin Claude untuk membaca KTP ditolak. Isi data secara manual, atau izinkan lewat menu Izin artifact.":(e&&e.code=="rate_limited")?"Terlalu banyak permintaan. Tunggu sebentar lalu tekan Baca data dari KTP lagi.":"Gagal membaca KTP. Coba foto yang lebih jelas dan terang, atau isi manual."}).then(function(){busy=false;b.disabled=false});
+    }).catch(function(e){m.className="err";m.textContent=(e&&e.code=="not_granted")?"Izin Claude untuk membaca KTP ditolak. Isi data secara manual, atau izinkan lewat menu Izin artifact.":(e&&e.code=="rate_limited")?"Terlalu banyak permintaan. Tunggu sebentar lalu tekan Baca data dari KTP lagi.":(e&&e.pesan?e.pesan+". Isi manual dulu bila perlu.":"Gagal membaca KTP. Coba foto yang lebih jelas dan terang, atau isi manual.")}).then(function(){busy=false;b.disabled=false});
   }
   $("#ocr").onclick=bacaKtp;
   fl.onchange=function(){var x=this.files[0],o=$("#ktpinfo");o.textContent="";o.style.color="";ktpFile=null;showOcr();if(!x)return;
