@@ -1454,11 +1454,12 @@ function bindForm(kar){
     }).catch(function(e){m.className="err";m.textContent=(e&&e.code=="not_granted")?"Izin Claude untuk membaca KTP ditolak. Isi data secara manual, atau izinkan lewat menu Izin artifact.":(e&&e.code=="rate_limited")?"Terlalu banyak permintaan. Tunggu sebentar lalu tekan Baca data dari KTP lagi.":"Gagal membaca KTP. Coba foto yang lebih jelas dan terang, atau isi manual."}).then(function(){busy=false;b.disabled=false});
   }
   $("#ocr").onclick=bacaKtp;
-  fl.onchange=function(){var x=this.files[0],o=$("#ktpinfo");o.textContent="";ktpFile=null;showOcr();if(!x)return;
+  fl.onchange=function(){var x=this.files[0],o=$("#ktpinfo");o.textContent="";o.style.color="";ktpFile=null;showOcr();if(!x)return;
     if(x.type&&!/^image\//.test(x.type)){o.textContent="File harus berupa foto (JPG atau PNG).";this.value="";return}
     ktpFile=x;showOcr();if(smpReady)setTimeout(bacaKtp,50);var im=document.createElement("img");im.src=URL.createObjectURL(x);im.alt="Pratinjau KTP";im.style.cssText="max-width:100%;max-height:160px;border-radius:10px;display:block;margin-top:8px";
     o.appendChild(document.createTextNode("Foto dipilih: "+x.name+" ("+Math.round(x.size/1024)+" KB)"));o.appendChild(im)};
   $("#ktp2").onchange=fl.onchange;
+  bindWebcamKtp(fl.onchange);
   var KS=function(){
     var d={nama:$("#fn").value.trim(),hp:$("#fh").value.replace(/[\s-]/g,""),nik:$("#fk").value.trim(),tl:$("#ft").value.trim(),tg:$("#fg").value,jk:$("#fj").value,al:$("#fa").value.trim(),rt:"",rw:"",kb:$("#fkb").value,kc:$("#fkc").value,kl:$("#fkl").value,ag:$("#fag").value,st:$("#fst").value,pk:$("#fpk").value.trim(),wn:$("#fwn").value,jab:$("#fjab").value,cab:$("#fcab")?$("#fcab").value:CAB[0],tm:today()},m="",o=$("#fmsg"),rr=$("#frr").value.split("/").map(function(x){return x.trim()});d.rt=rr[0]||"";d.rw=rr[1]||"";
     var rkb=$("#krb").value.trim(),rkn=$("#krn").value.trim(),rka=$("#kra").value.trim();d.rk=rkb||rkn?{b:rkb,n:rkn,a:rka||d.nama}:null;
@@ -1638,6 +1639,43 @@ function simpanFoto(no,file){
     if(DB)DB.doc("ktp/"+no).set({img:img}).catch(function(){});
   });
 }
+/* Foto KTP: di HP pakai kamera HP (bawaan), di PC buka webcam langsung */
+function diHp(){return /Android|iPhone|iPad|iPod|Mobi/i.test(navigator.userAgent)||(window.matchMedia&&matchMedia("(pointer:coarse)").matches&&!matchMedia("(pointer:fine)").matches)}
+function webcamKtp(onFile,onGagal){
+  var md=navigator.mediaDevices;if(!md||!md.getUserMedia){onGagal("Browser ini tidak bisa membuka webcam.");return}
+  var ov=document.createElement("div");ov.setAttribute("role","dialog");ov.setAttribute("aria-label","Ambil foto KTP dengan webcam");
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:16px;gap:12px";
+  ov.innerHTML='<div style="color:#fff;font:600 16px sans-serif;text-align:center">Arahkan KTP ke webcam, pas di dalam kotak, lalu tekan Ambil foto</div>'+
+    '<div style="position:relative;width:min(100%,900px,calc(65vh * 1.6))"><video autoplay playsinline muted style="width:100%;border-radius:12px;background:#000;display:block"></video>'+
+    '<div style="position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%);aspect-ratio:85.6/54;border:3px dashed rgba(255,255,255,.85);border-radius:14px;pointer-events:none"></div></div>'+
+    '<div class="wcmsg" style="color:#fff;font:14px sans-serif;min-height:18px">Membuka webcam...</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="pbtn wcamb" disabled style="background:#3F9C55;color:#fff;font-size:16px;padding:12px 22px">Ambil foto</button><button type="button" class="pbtn wcgnt" hidden>Ganti kamera</button><button type="button" class="pbtn wcbtl">Batal</button></div>';
+  document.body.appendChild(ov);
+  var v=ov.querySelector("video"),msg=ov.querySelector(".wcmsg"),bA=ov.querySelector(".wcamb"),bG=ov.querySelector(".wcgnt"),st=null,cams=[],ci=0;
+  function stop(){if(st)st.getTracks().forEach(function(t){t.stop()});st=null}
+  function tutup(){stop();document.removeEventListener("keydown",esc);if(ov.parentNode)ov.parentNode.removeChild(ov)}
+  function esc(e){if(e.key=="Escape")tutup()}document.addEventListener("keydown",esc);
+  function buka(id){stop();bA.disabled=true;msg.textContent="Membuka webcam...";
+    var c={width:{ideal:1920},height:{ideal:1080}};if(id)c.deviceId={exact:id};
+    md.getUserMedia({video:c,audio:false}).then(function(s){st=s;v.srcObject=s;msg.textContent="";bA.disabled=false;
+      if(!cams.length&&md.enumerateDevices)md.enumerateDevices().then(function(d){cams=d.filter(function(x){return x.kind=="videoinput"});bG.hidden=cams.length<2}).catch(function(){})
+    }).catch(function(e){var n=e&&e.name;
+      if(n=="NotAllowedError"||n=="SecurityError"){tutup();onGagal("Izin kamera ditolak. Klik ikon gembok di sebelah alamat web, izinkan Kamera, lalu coba lagi.")}
+      else if(n=="NotFoundError"||n=="OverconstrainedError"){tutup();onGagal("Webcam tidak ditemukan. Pastikan webcam terpasang, atau pakai Unggah foto KTP.")}
+      else if(n=="NotReadableError"){tutup();onGagal("Webcam sedang dipakai aplikasi lain (misalnya Zoom/WA). Tutup dulu aplikasi itu, lalu coba lagi.")}
+      else{tutup();onGagal("Webcam tidak bisa dibuka. Pakai Unggah foto KTP.")}})}
+  bG.onclick=function(){if(cams.length<2)return;ci=(ci+1)%cams.length;buka(cams[ci].deviceId)};
+  ov.querySelector(".wcbtl").onclick=tutup;
+  bA.onclick=function(){var w=v.videoWidth,h=v.videoHeight;if(!w||!h){msg.textContent="Gambar webcam belum siap, tunggu sebentar.";return}
+    var cv=document.createElement("canvas");cv.width=w;cv.height=h;cv.getContext("2d").drawImage(v,0,0,w,h);bA.disabled=true;
+    cv.toBlob(function(b){if(!b){bA.disabled=false;msg.textContent="Gagal mengambil foto, coba lagi.";return}
+      var nm="ktp-webcam-"+Date.now()+".jpg",f;try{f=new File([b],nm,{type:"image/jpeg"})}catch(e){f=b;f.name=nm}
+      tutup();onFile(f)},"image/jpeg",0.92)};
+  buka();
+}
+function bindWebcamKtp(handler){var lb=document.querySelector('label[for="ktp2"]'),inp=document.getElementById("ktp2");if(!lb||!inp)return;
+  lb.onclick=function(e){if(diHp())return;e.preventDefault();
+    webcamKtp(function(f){handler.call({files:[f],value:""})},function(m){var o=document.getElementById("ktpinfo");if(o){o.textContent=m;o.style.color="#A12B3C"}})}}
 function lihatKtp(no){
   var ov=document.createElement("div");ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:99;display:flex;align-items:center;justify-content:center;padding:16px";
   ov.onclick=function(){ov.remove()};
