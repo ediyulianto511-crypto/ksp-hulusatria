@@ -2180,7 +2180,7 @@ var STRUK_REK="BRI · No. Rek 0004-01-002422-30-7 · a.n. KSP Hulusatria Madani"
 // Model kepala struk: 9 = abu gelap + oranye, 4 = merah marun + pita judul.
 var STRUK_MODEL=4;
 // Kirim struk otomatis ke WA lewat Fonnte. Ubah ke true setelah Fonnte & nomor WA kantor siap.
-var STRUK_AUTO=false;
+var STRUK_AUTO=true; // Fonnte + FONNTE_TOKEN sudah dipasang (3 Nov 2026)
 // Skala gambar: 1,75 x 720 = 1260 piksel, cukup tajam dicetak selebar 15-17 cm.
 var STRUK_S=1.75;
 // Lebar cetak Buku angsuran dipatenkan 15 cm (tinggi mengikuti isi).
@@ -2362,7 +2362,7 @@ function strukWA0(l,p){
       body:JSON.stringify({target:hp,caption:cap,nama:"Struk-"+d.no+".png",image:img})}).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok)throw new Error(j.error||("HTTP "+r.status));return j})})};
     var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
     sesi.then(go).then(function(){strukInfo("Struk terkirim ke WA "+d.nama+" ("+d.hp+").")})
-      .catch(function(e){console.warn("Kirim struk:",e.message);strukLihat(d,url,"Struk belum terkirim otomatis ke WA. Silakan bagikan secara manual.")});
+      .catch(function(e){console.warn("Kirim struk:",e.message);strukLihat(d,url,"Struk belum terkirim otomatis ke WA ("+e.message+"). Silakan bagikan secara manual.")});
   }catch(e){console.error(e)}
 }
 </script>
