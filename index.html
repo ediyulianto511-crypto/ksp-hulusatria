@@ -397,7 +397,7 @@ var M=[["MENU UTAMA"],["dash","Dashboard"],
 ["pmt","Data pemutihan",0,[["pmt1","Input angsuran pemutihan"],["pmt2","Rincian anggota pemutihan"]]],
 ["set","Pengaturan",0,[["set2","Regulasi Pendapatan & Bunga"],["set4","Kantor cabang"],["set3","Tema (pilihan warna tampilan)"]]]];
 /* Cabang utama Karyawan HS (Kopkar) (Kopkar): selalu paling atas, khusus anggota yang juga karyawan. */
-var KOPKAR="Karyawan HS (Kopkar)",KOPKAR_I={kode:"KK",al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""};
+var KOPKAR="Karyawan HS (Kopkar)",KOPKAR_I={kode:"KP",al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""};
 var KAR=[],BU=[],MUT=[],CAB0=[KOPKAR,"Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Karyawan HS (Kopkar)":JSON.parse(JSON.stringify(KOPKAR_I)),"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
 /* Kantor cabang: data lama tanpa cabang (atau "Kantor Pusat") dihitung sebagai Cabang 1. */
 /* Cabang bawaan untuk data lama tanpa cabang: Cabang 1 (bukan Kopkar). */
@@ -476,7 +476,7 @@ function warnaBar(){var c=getComputedStyle(document.documentElement).getProperty
 function pilihTema(v,n){setPalette(v);berhasil("Tema diterapkan",n+" sekarang dipakai.");go(prevCur&&prevCur!="set3"?prevCur:"dash")}
 function setPalette(v){pal=v;var r=document.documentElement;if(v)r.setAttribute("data-palette",v);else r.removeAttribute("data-palette");warnaBar();page()}
 /* Nomor anggota berkode cabang: AG-01-00001 (Cabang 1), AG-02-00001 (Cabang 2), dst. Nomor lama (AG-00088) tidak diubah. */
-function kodeCab(c){c=cabNorm(c);if(c==KOPKAR)return "KK";var d=CABI[c]||{},m=/^Cabang\s+(\d+)$/i.exec(c),i=CAB.indexOf(c);return String(d.kode||(m?+m[1]:(i<0?0:i)+1)).padStart(2,"0")}
+function kodeCab(c){c=cabNorm(c);if(c==KOPKAR)return "KP";var d=CABI[c]||{},m=/^Cabang\s+(\d+)$/i.exec(c),i=CAB.indexOf(c);return String(d.kode||(m?+m[1]:(i<0?0:i)+1)).padStart(2,"0")}
 function nomor(c){if(c==null){var e=document.getElementById("fmc");c=e&&e.value||myCab()||cabDef()}var k="AG-"+kodeCab(c)+"-",n=0;
   MEM.forEach(function(m){if(String(m.no).indexOf(k)==0){var x=parseInt(String(m.no).slice(k.length),10)||0;if(x>n)n=x}});return k+String(n+1).padStart(5,"0")}
 var WIL={"Kabupaten Contoh A":{"Kecamatan Contoh 1":["Desa Contoh X","Desa Contoh Y"],"Kecamatan Contoh 2":["Desa Contoh Z"]},"Kabupaten Contoh B":{"Kecamatan Contoh 3":["Desa Contoh W"]}};
@@ -1998,7 +1998,7 @@ function bindCab(){cabFlash="";
     if(CAB.some(function(x){return x!=cabEd&&x.toLowerCase()==n.toLowerCase()})){o.className="err";o.textContent="Nama "+n+" sudah dipakai cabang lain.";return}
     if(hp&&!/^(\+62|0)[0-9]{8,13}$/.test(hp)){o.className="err";o.textContent="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";return}
     if(d.pusat)CAB.forEach(function(x){if(CABI[x])delete CABI[x].pusat});
-    if(cabEd){var lama=cabEd,i=CAB.indexOf(lama),kd=lama==KOPKAR?"KK":+kodeCab(lama);if(n!=lama){CAB[i]=n;delete CABI[lama];
+    if(cabEd){var lama=cabEd,i=CAB.indexOf(lama),kd=lama==KOPKAR?"KP":+kodeCab(lama);if(n!=lama){CAB[i]=n;delete CABI[lama];
         MEM.forEach(function(m){if(memCab(m)==lama)m.cab=n});KAR.forEach(function(k){if(cabOf(k)==lama)k.cab=n});if(gCab==lama)setGCab(n)}
       d.kode=kd;CABI[n]=d;cabFlash="Data "+n+" tersimpan.";berhasil("Kantor cabang diperbarui",n)}
     else{d.kode=CAB.reduce(function(a,x){return Math.max(a,+kodeCab(x)||0)},0)+1;CAB.push(n);CABI[n]=d;cabFlash=n+" ditambahkan.";berhasil("Kantor cabang ditambahkan",n)}
