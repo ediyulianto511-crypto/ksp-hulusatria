@@ -1420,9 +1420,25 @@ function ptgRencana(rows){var dL={},dM={};LOAN.forEach(function(l){if(l.imp)dL[l
   var P=PAY.filter(function(p){return dL[p.id]||p.imp}),T=TX.filter(function(t){return dM[t.no]}),sisa=MEM.filter(function(m){return ptgOld(m.no)&&!dM[m.no]});
   var bentrok=rows.filter(function(r){return MEM.some(function(m){return m.no==r.no&&!dM[m.no]})||LOAN.some(function(l){return l.id==r.pj&&!dL[l.id]})}).map(function(r){return r.no});
   return {dL:dL,dM:dM,nL:Object.keys(dL).length,nM:Object.keys(dM).length,nP:P.length,nT:T.length,sisa:sisa,bentrok:bentrok,rows:rows,tot:rows.reduce(function(a,r){return a+(+r.pel||0)},0)}}
+/* Baca langsung file Excel pemutihan (format "Impor Claude": NOMOR anggota | pinjaman, NAMA ANGGOTA, ..., SALDO PELUNASAN (P+B+DENDA)).
+   Baris dengan nama dan saldo pelunasan yang sama dianggap ketumpuk dan hanya diambil satu (aturan Ketua 3 Nov 2026). */
+function ptgXlsx(buf){return pakaiXlsx().then(function(X){var wb=X.read(buf,{type:"array"}),A=X.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:""});
+  var up=function(v){return String(v==null?"":v).trim().toUpperCase()},hi=-1;for(var i=0;i<Math.min(A.length,30);i++){if(A[i].some(function(c){return up(c)=="NAMA ANGGOTA"})){hi=i;break}}
+  if(hi<0)throw new Error("kolom NAMA ANGGOTA tidak ditemukan");
+  var H=A[hi].map(up),col=function(){for(var k=0;k<arguments.length;k++){var j=H.indexOf(arguments[k]);if(j>=0)return j}return -1};
+  var cN=col("NOMOR"),cNm=col("NAMA ANGGOTA"),cNik=col("NIK KTP","NIK"),cHp=col("NO HP"),cJ=col("JENIS PINJAMAN"),cT=col("TGL REALISASI","TANGGAL REALISASI"),cP=col("REALISASI PINJAMAN"),cW=col("JANGKA WAKTU"),cA=col("ANGS PER BULAN","ANGSURAN"),cS=col("SALDO (POKOK+BUNGA)"),cL=col("SALDO PELUNASAN (P+B+DENDA)","SALDO BEKU");
+  if(cN<0||cL<0||cT<0||cP<0)throw new Error("kolom NOMOR / TGL REALISASI / REALISASI PINJAMAN / SALDO PELUNASAN tidak lengkap");
+  var num=function(v){return typeof v=="number"?v:+String(v).replace(/[^0-9,-]/g,"").replace(",",".")||0},
+    tg=function(v){if(typeof v=="number")return new Date(Date.UTC(1899,11,30)+Math.round(v)*864e5).toISOString().slice(0,10);var m=/(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/.exec(String(v));return m?m[3]+"-"+m[2].padStart(2,"0")+"-"+m[1].padStart(2,"0"):""},
+    hp=function(v){var d=String(typeof v=="number"?Math.round(v):v||"").replace(/[^0-9]/g,"");return d&&d[0]!="0"?(d.indexOf("62")==0?"0"+d.slice(2):"0"+d):d},
+    jn=function(v){v=up(v);return /MINGGU/.test(v)?(/DUA/.test(v)?"dm":"mg"):/GADAI/.test(v)?"pg":"bl"};
+  var R=[],seen={},dob=0;A.slice(hi+1).forEach(function(r){var no=String(r[cN]||"").trim(),nm=String(r[cNm]||"").trim();if(!/^AG-/i.test(no)||!nm)return;
+    var o={no:no,pj:String(r[cN+1]||"").trim()||no.replace(/^AG/i,"PJ"),nama:nm,nik:cNik>=0?String(r[cNik]||"").trim():"",hp:cHp>=0?hp(r[cHp]):"",model:cJ>=0?jn(r[cJ]):"bl",tg:tg(r[cT]),pokok:Math.round(num(r[cP])),tenor:cW>=0?Math.round(num(r[cW])):0,ang:cA>=0?Math.round(num(r[cA])):0,saldo:cS>=0?Math.round(num(r[cS])):0,pel:Math.round(num(r[cL]))};
+    var k=up(nm)+"|"+o.pel;if(seen[k]){dob++;return}seen[k]=1;R.push(o)});
+  if(!R.length)throw new Error("tidak ada baris data");R.dob=dob;return R})}
 function ptgHTML(){if(!PTG)return "";var p=PTG;
   return '<div style="margin-top:12px"><p style="margin:0 0 8px"><b>Yang dihapus (data impor lama):</b> '+p.nM+' anggota, '+p.nL+' pinjaman, '+p.nP+' setoran angsuran, '+p.nT+' transaksi simpanan.</p>'+
-  '<p style="margin:0 0 8px"><b>Yang dipasang ke Data pemutihan:</b> '+p.rows.length+' SPK · saldo beku '+rp(p.tot)+'.</p>'+
+  '<p style="margin:0 0 8px"><b>Yang dipasang ke Data pemutihan:</b> '+p.rows.length+' SPK · saldo beku '+rp(p.tot)+'.'+(p.dob?' ('+p.dob+' baris ketumpuk, nama dan saldo sama, tidak dimasukkan.)':'')+'</p>'+
   (p.sisa.length?'<p class="mutp" style="margin:0 0 8px">Tidak dihapus: '+p.sisa.length+' anggota bernomor lama yang punya pinjaman non-impor atau tanpa pinjaman impor ('+p.sisa.slice(0,5).map(function(m){return ex(m.no+" "+m.nama)}).join(", ")+(p.sisa.length>5?", …":"")+').</p>':'')+
   (p.bentrok.length?'<p class="err" style="margin:0 0 8px">Tidak bisa dilanjutkan: nomor '+p.bentrok.slice(0,5).join(", ")+' sudah dipakai data yang tidak dihapus.</p>':'<button class="pbtn" type="button" id="ptgok" style="background:#C0392B;color:#fff">Unduh cadangan, lalu ganti data</button>')+'</div>'}
 function ptgJalan(){var p=PTG;if(!p||p.bentrok.length)return;
@@ -1434,13 +1450,13 @@ function ptgJalan(){var p=PTG;if(!p||p.bentrok.length)return;
   var tg=today(),oleh=(PROF&&PROF.nama)||ROLE,now=Date.now();
   p.rows.forEach(function(r,i){MEM.push({no:r.no,nama:r.nama,nik:r.nik||"",hp:r.hp||"",dt:now+i,imp:1});
     var bg=r.pokok&&r.tenor?Math.round((r.ang-r.pokok/r.tenor)/r.pokok*1e6)/1e4:0;
-    LOAN.push({id:r.pj,no:r.no,nama:r.nama,model:"bl",tg:r.tg,pokok:+r.pokok||0,tenor:+r.tenor||0,ang:+r.ang||0,bunga:Math.max(0,bg),basis:"periode",tot:(+r.ang||0)*(+r.tenor||0),imp:true,saldoAwal:+r.saldo||0,mkt:"",pt:{tg:tg,s:+r.pel||0,pk:0,oleh:oleh}})});
+    LOAN.push({id:r.pj,no:r.no,nama:r.nama,model:r.model||"bl",tg:r.tg,pokok:+r.pokok||0,tenor:+r.tenor||0,ang:+r.ang||0,bunga:Math.max(0,bg),basis:"periode",tot:(+r.ang||0)*(+r.tenor||0),imp:true,saldoAwal:+r.saldo||0,mkt:"",pt:{tg:tg,s:+r.pel||0,pk:0,oleh:oleh}})});
   PTG=null;saveSoon();berhasil("Data impor diganti",p.rows.length+" SPK masuk Data pemutihan · cadangan: "+fn);nav();page()}
 function pmtPage(){var f=boleh("pmt1"),r=boleh("pmt2"),own=ROLE=="Ketua (owner)",L=ptList(),A=L.filter(function(l){return sisaP(l)>0}),h='<h2>Data pemutihan</h2><p class="sub">'+A.length+' pinjaman pemutihan berjalan · tanpa bunga dan denda</p>';
   var IM=ptImpor();
   if(own&&IM.length){var tot=IM.reduce(function(a,l){var k=ptSaldoKini(l);return a+k.sp+k.dn},0);
     h+='<div class="panel noprint" style="margin-bottom:14px;border:2px dashed var(--ma)"><div class="phead" style="margin-bottom:10px;padding-bottom:10px"><div><h3>Pindahkan data impor ke pemutihan</h3><p>Ada '+IM.length+' pinjaman hasil impor yang masih berjalan. Saldo akhir tiap pinjaman = saldo pokok + bunga + sisa denda hari ini. Total '+rp(tot)+'.</p></div></div><button class="pbtn" type="button" id="ptimp">Pindahkan '+IM.length+' pinjaman ke pemutihan</button></div>'}
-  if(own)h+='<div class="panel noprint" style="margin-bottom:14px;border:2px dashed #C0392B"><div class="phead" style="margin-bottom:10px;padding-bottom:10px"><div><h3>Ganti data impor dengan file baru</h3><p>Khusus Ketua, sekali pakai. Semua data impor lama dihapus, lalu SPK dari file dipasang langsung ke Data pemutihan. Cadangan semua data diunduh dulu.</p></div></div><label class="pbtn" for="ptgf" style="display:inline-block;cursor:pointer">Pilih file <span class="nocap">pemutihan_*.json</span></label><input class="sr" id="ptgf" type="file" accept=".json,application/json"><div id="ptgv" role="status">'+ptgHTML()+'</div></div>';
+  if(own)h+='<div class="panel noprint" style="margin-bottom:14px;border:2px dashed #C0392B"><div class="phead" style="margin-bottom:10px;padding-bottom:10px"><div><h3>Ganti data impor dengan file baru</h3><p>Khusus Ketua, sekali pakai. Semua data impor lama dihapus, lalu SPK dari file dipasang langsung ke Data pemutihan. Cadangan semua data diunduh dulu.</p></div></div><label class="pbtn" for="ptgf" style="display:inline-block;cursor:pointer">Pilih file Excel pemutihan</label><input class="sr" id="ptgf" type="file" accept=".xlsx,.xls,.json,application/json,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel"><div id="ptgv" role="status">'+ptgHTML()+'</div></div>';
   if(f){var opt=A.filter(function(l){return seeNo(l.no)}).map(function(l){return '<option value="'+l.id+'"'+(pmtPil==l.id?" selected":"")+'>'+ex(l.nama)+' · '+ex(l.no)+' · '+l.id+'</option>'}).join(""),pl=A.filter(function(l){return l.id==pmtPil})[0];
     h+='<div class="panel noprint"><div class="phead"><div><h3>Input angsuran pemutihan</h3><p>Catat angsuran yang masuk. Tanpa bunga dan denda: uang langsung mengurangi saldo akhir.</p></div></div>'+
     (A.length?'<form id="ptf" novalidate><label for="pt_l" style="margin-top:0">Anggota pemutihan</label><div class="field"><select id="pt_l"><option value="">Pilih anggota pemutihan</option>'+opt+'</select></div>'+
@@ -1466,8 +1482,8 @@ function pmtSegar(){var w=$("#ptlist");if(w){w.innerHTML=pmtListHTML();bindPmtLi
 function bindPmtList(){var q=$("#ptq");if(q)q.oninput=function(){pmtQ=this.value;var p=this.selectionStart;pmtSegar();var n=$("#ptq");if(n){n.focus();try{n.setSelectionRange(p,p)}catch(e){}}}}
 function bindPmt(){bindPmtList();bindRpf();
   var gf=$("#ptgf");if(gf)gf.onchange=function(){var fl=this.files[0],v=$("#ptgv");if(!fl)return;v.textContent="Membaca file...";
-    fl.text().then(function(t){var o=JSON.parse(t);if(!o||o.jenis!="pemutihan-ksp"||!Array.isArray(o.baris)||!o.baris.length)throw new Error("bukan file pemutihan");
-      PTG=ptgRencana(o.baris);v.innerHTML=ptgHTML();var b=$("#ptgok");if(b)b.onclick=ptgJalan}).catch(function(e){PTG=null;v.innerHTML='<p class="err">File tidak bisa dibaca ('+ex(e.message||e)+'). Pilih file pemutihan_*.json dari Claude.</p>'})};
+    (/\.xlsx?$/i.test(fl.name)?fl.arrayBuffer().then(ptgXlsx):fl.text().then(function(t){var o=JSON.parse(t);if(!o||o.jenis!="pemutihan-ksp"||!Array.isArray(o.baris)||!o.baris.length)throw new Error("bukan file pemutihan");return o.baris})).then(function(rows){
+      PTG=ptgRencana(rows);PTG.dob=rows.dob||0;v.innerHTML=ptgHTML();var b=$("#ptgok");if(b)b.onclick=ptgJalan}).catch(function(e){PTG=null;v.innerHTML='<p class="err">File tidak bisa dibaca ('+ex(e.message||e)+'). Pilih file Excel pemutihan atau file pemutihan_*.json dari Claude.</p>'})};
   var gk=$("#ptgok");if(gk)gk.onclick=ptgJalan;
   var bi=$("#ptimp");if(bi)bi.onclick=function(){var IM=ptImpor();if(!IM.length)return;
     if(!confirm("Pindahkan "+IM.length+" pinjaman hasil impor ke pemutihan?\n\nSaldo akhir = saldo pokok + bunga + sisa denda hari ini. Sesudahnya bunga dan denda berhenti, dan pinjaman ini tidak muncul lagi di Tagihan.\n\nLanjutkan?"))return;
