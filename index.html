@@ -2276,7 +2276,7 @@ var STRUK_AUTO=true; // Fonnte + FONNTE_TOKEN sudah dipasang (3 Nov 2026)
 // Skala gambar: 1,75 x 720 = 1260 piksel, cukup tajam dicetak selebar 15-17 cm.
 var STRUK_S=1.75;
 // Lebar cetak Buku angsuran dipatenkan 15 cm (tinggi mengikuti isi).
-var BUKU_CM=15;
+var BUKU_CM=20; // user 3 Nov 2026: buku lipat lebar 20 cm, tiap lipatan tinggi 15 cm
 // Tulis ukuran cetak (DPI) ke file PNG supaya dicetak tepat selebar "cm".
 function pngCm(url,cm){try{var b=atob(url.split(",")[1]),w=(b.charCodeAt(16)<<24|b.charCodeAt(17)<<16|b.charCodeAt(18)<<8|b.charCodeAt(19))>>>0,ppm=Math.round(w/(cm/100));
   var u32=function(n){return String.fromCharCode(n>>>24&255,n>>>16&255,n>>>8&255,n&255)},d="pHYs"+u32(ppm)+u32(ppm)+"\x01",c=-1;
