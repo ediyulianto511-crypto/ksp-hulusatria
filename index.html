@@ -2248,6 +2248,7 @@ mulaiSB();
 #strukBox p{margin:0 0 12px;color:var(--mut);font-size:13.5px}
 #strukImg{display:block;width:100%;border:1px solid var(--line);border-radius:12px;margin-bottom:12px}
 #strukBox button{display:block;width:100%;border:0;border-radius:12px;padding:13px;font-size:15.5px;font-weight:700;margin-bottom:8px;cursor:pointer}
+#strukCetak{background:#4A4446;color:#fff}
 #strukBagi{background:#6CC28F;color:#fff}
 #strukSimpan{background:var(--ma);color:#fff}
 #strukTutup{background:none;color:var(--mut)}
@@ -2255,7 +2256,8 @@ mulaiSB();
 <div id="strukBg" hidden><div id="strukBox" role="dialog" aria-modal="true" aria-labelledby="strukJ">
   <h3 id="strukJ">Struk pembayaran</h3><p id="strukP"></p>
   <img id="strukImg" alt="Struk pembayaran">
-  <button type="button" id="strukBagi">Bagikan ke WA (manual)</button>
+  <button type="button" id="strukCetak">Cetak</button>
+  <button type="button" id="strukBagi">Kirim WA (manual)</button>
   <button type="button" id="strukSimpan">Simpan gambar</button>
   <button type="button" id="strukTutup">Tutup</button>
 </div></div>
@@ -2345,6 +2347,11 @@ function strukLihat(d,url,ket){STRUK_LIHAT={d:d,url:url};
   document.getElementById("strukImg").src=url;document.getElementById("strukBg").hidden=false}
 function strukBlob(){return fetch(STRUK_LIHAT.url).then(function(r){return r.blob()})}
 function strukUnduh(b,n){var u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=n;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},5000)}
+// Cetak: Buku pinjaman selebar 15 cm, struk selebar 10 cm.
+document.getElementById("strukCetak").onclick=function(){if(!STRUK_LIHAT)return;var bk=/^Buku-/.test(STRUK_LIHAT.d.no||""),w=bk?(typeof BUKU_CM=="number"?BUKU_CM:15):10;
+  var f=document.createElement("iframe");f.style.cssText="position:fixed;right:0;bottom:0;width:0;height:0;border:0";document.body.appendChild(f);
+  var dc=f.contentWindow.document;dc.open();dc.write('<!doctype html><html><head><title>'+(STRUK_LIHAT.d.no||"Cetak")+'</title><style>@page{margin:8mm}body{margin:0}img{display:block;width:'+w+'cm;margin:0 auto}</style></head><body><img id="i"></body></html>');dc.close();
+  var im=dc.getElementById("i");im.onload=function(){setTimeout(function(){try{f.contentWindow.focus();f.contentWindow.print()}catch(e){window.print()}setTimeout(function(){f.remove()},60000)},200)};im.src=STRUK_LIHAT.url};
 document.getElementById("strukTutup").onclick=function(){document.getElementById("strukBg").hidden=true};
 document.getElementById("strukSimpan").onclick=function(){if(!STRUK_LIHAT)return;var n="Struk-"+STRUK_LIHAT.d.no+".png";strukBlob().then(function(b){strukUnduh(b,n)})};
 document.getElementById("strukBagi").onclick=function(){if(!STRUK_LIHAT)return;var d=STRUK_LIHAT.d,n="Struk-"+d.no+".png";
