@@ -2438,6 +2438,8 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
 // Tunggu huruf Noto Serif siap dulu supaya struk tidak tergambar dengan huruf cadangan.
 function strukWA(l,p){(typeof fontSiap=="function"?fontSiap():Promise.resolve()).then(function(){strukWA0(l,p)})}
 function strukWA0(l,p){
+  // Pelunasan lewat top up tidak dibuatkan kwitansi: sudah tercatat di Rincian pencairan pinjaman (user 3 Nov 2026).
+  if(p&&/^Pelunasan top up/.test(p.ket||""))return;
   try{
     var d=strukData(l,p),hp=d.hp.replace(/[^0-9]/g,"").replace(/^0/,"62").replace(/^8/,"628");
     var cv=strukGambar(d),url=cv.toDataURL("image/png"),img=url.split(",")[1];
