@@ -1590,7 +1590,7 @@ function bindForm(kar){
     $("#fmk").value="0 Bulan";
     $("#fk").maxLength=16;var q=$("#kq");if(q){q.value=karQ;q.oninput=function(){karQ=this.value;var b=$("#karbody");if(b)b.innerHTML=karRows()}}}
   var smpReady=null,busy=false;
-  function showOcr(){$("#ocr").hidden=!(ktpFile&&smpReady)}
+  function showOcr(){$("#ocr").hidden=true}
   if(window.claude&&claude.use){smpReady=claude.use("sample").then(function(sm){if(!sm)return null;return sm.limits().then(function(l){if(l&&l.images){smp=sm;lim=l}return smp}).catch(function(){return null})}).catch(function(){return null})}
   else if(/^https?:/.test(location.protocol)){lim={images:{maxInputBytes:3500000}};smp={json:function(q,o){var img=o.images[0];
     return new Promise(function(ok,no){var fr=new FileReader();fr.onload=function(){ok(String(fr.result).split(",")[1])};fr.onerror=no;fr.readAsDataURL(img)}).then(function(b64){
