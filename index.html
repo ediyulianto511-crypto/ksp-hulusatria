@@ -2076,8 +2076,8 @@ function grafik6(cOk){var B=[],d=new Date(today()+"T00:00:00");d.setDate(1);
     return '<div class="panel g6p"><div class="phead"><div><h3>'+jd+' 6 bulan terakhir</h3><p>Total '+rp(tot)+'</p></div></div><div class="dnb"><svg viewBox="0 0 100 100" role="img" aria-label="'+jd+' 6 bulan, total '+rp(tot)+'">'+(tot?"":'<circle cx="50" cy="50" r="36.5" fill="none" stroke="var(--line)" stroke-width="25"/>')+sl+
       '<text x="50" y="47" text-anchor="middle" class="dnt1">Total</text><text x="50" y="58" text-anchor="middle" class="dnt2">'+rpS(tot)+'</text></svg>'+
       '<ul class="dnl">'+D.map(function(o,i){var v=o[k];return '<li><i style="background:'+W[i]+'"></i><span>'+lb(o,i)+'</span><b>'+rp(v)+'</b><small>'+(tot?Math.round(v/tot*100):0)+'%</small></li>'}).join("")+'</ul></div></div>'};
-  return donat("r","Realisasi pinjaman",["#F6D3A3","#F0B866","#E89D3A","#E08D1D","#B86F10","#8A520A"])+
-    donat("s","Setoran angsuran",["#BFD9EC","#93BFDF","#64A2CF","#2A7FB8","#1F6595","#164B70"])}
+  return donat("r","Realisasi pinjaman",["#F2C4BE","#E8A097","#DE7D71","#D65F51","#D04B3B","#B73F31"])+
+    donat("s","Setoran angsuran",["#CBD5E7","#A9B8D5","#8799C1","#6B80AE","#566FA0","#496594"])}
 /* Peringkat marketing: disembunyikan dari Dashboard atas permintaan Ketua (2026-11-02), disimpan untuk revisi nanti. */
 function rankMkt(cOk,cab){var bl=today().slice(0,7),M={},LC={};LOAN.forEach(function(l){LC[l.id]=l});
   var g=function(k){return M[k]=M[k]||{s:0,sn:{},r:0,rn:0}};mktList().forEach(function(k){if(!cab||cabOf(k)==cab)g(k.no)});
