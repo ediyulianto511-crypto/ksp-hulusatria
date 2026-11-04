@@ -7,7 +7,8 @@ const PERINTAH = "Baca foto KTP Indonesia ini. Jawab HANYA dengan satu objek JSO
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Metode tidak didukung" });
-  const key = process.env.ANTHROPIC_API_KEY, gkey = process.env.GEMINI_API_KEY;
+  const bersih = (v) => String(v || "").trim().replace(/^["']|["']$/g, "");
+  const key = bersih(process.env.ANTHROPIC_API_KEY), gkey = bersih(process.env.GEMINI_API_KEY);
   if (!key && !gkey) return res.status(500).json({ ok: false, error: "Kunci pembaca KTP (GEMINI_API_KEY) belum dipasang di Vercel" });
 
   // Hanya pengguna yang sudah login di aplikasi yang boleh memakai.
@@ -71,7 +72,7 @@ async function gemini(gkey, image, mime, res) {
     const j = await r.json().catch(() => ({}));
     if (!r.ok) {
       const m = (j.error && j.error.message) || ("HTTP " + r.status);
-      return res.status(502).json({ ok: false, error: r.status == 429 ? "Batas gratis pembaca KTP hari ini habis, coba lagi nanti" : /API key/i.test(m) ? "Kunci GEMINI_API_KEY salah" : "Layanan pembaca KTP menolak: " + m });
+      return res.status(502).json({ ok: false, error: r.status == 429 ? "Batas gratis pembaca KTP hari ini habis, coba lagi nanti" : /API key/i.test(m) ? "Kunci GEMINI_API_KEY ditolak Google (" + m.slice(0, 120) + ")" : "Layanan pembaca KTP menolak: " + m });
     }
     const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
     return kirimData(res, parts.map((p) => p.text || "").join(""));
