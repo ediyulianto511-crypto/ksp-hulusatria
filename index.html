@@ -559,7 +559,7 @@ function isiKtp(r){
 function formHTML(){
   var F=function(id,lb,inp){return '<div><label for="'+id+'">'+lb+'</label><div class="field">'+inp+"</div></div>"};
   return '<div class="panel"><div class="phead"><div><h3 id="fttl">Input anggota baru</h3><p id="fsub">Masukkan data utama sesuai identitas KTP.</p></div></div><form id="mform" novalidate>'+
-  '<label class="drop" for="ktp">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>'+'<b>Unggah foto KTP</b><span>Format JPG atau PNG · Wilayah dibaca dari KTP</span></label><input class="sr" id="ktp" type="file" accept="image/*" aria-label="Unggah foto KTP"><label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
+  '<label class="drop" for="ktp">'+'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"/><path d="M12 12v9"/><path d="m16 16-4-4-4 4"/></svg>'+'<b>Unggah foto KTP</b><span>Format JPG atau PNG · Wilayah dibaca dari KTP</span></label><input class="sr" id="ktp" type="file" accept="image/*,.heic,.heif,application/pdf" aria-label="Unggah foto KTP"><label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
   '<div class="fg">'+
   F("fn","Nama sesuai KTP",'<input id="fn" type="text" placeholder="Contoh: Andi Saputra" autocomplete="off">')+
   F("fno","Nomor anggota",'<input id="fno" type="text" value="'+nomor(myCab()||cabDef())+'" readonly>')+
@@ -1613,10 +1613,12 @@ function bindForm(kar){
     }).catch(function(e){m.className="err";m.textContent=(e&&e.code=="not_granted")?"Izin Claude untuk membaca KTP ditolak. Isi data secara manual, atau izinkan lewat menu Izin artifact.":(e&&e.code=="rate_limited")?"Terlalu banyak permintaan. Tunggu sebentar lalu tekan Baca data dari KTP lagi.":(e&&e.pesan?e.pesan+". Isi manual dulu bila perlu.":"Gagal membaca KTP. Coba foto yang lebih jelas dan terang, atau isi manual.")}).then(function(){busy=false;b.disabled=false});
   }
   $("#ocr").onclick=bacaKtp;
-  fl.onchange=function(){var x=this.files[0],o=$("#ktpinfo");o.textContent="";o.style.color="";ktpFile=null;showOcr();if(!x)return;
-    if(x.type&&!/^image\//.test(x.type)){o.textContent="File harus berupa foto (JPG atau PNG).";this.value="";return}
+  fl.onchange=function(){var x0=this.files[0],inp=this,o=$("#ktpinfo");o.textContent="";o.style.color="";ktpFile=null;showOcr();if(!x0)return;
+    o.textContent="Menyiapkan foto KTP...";
+    rapikanKtp(x0).then(function(x){o.textContent="";
+    if(!x){o.style.color="#A12B3C";o.textContent="File "+(x0.name||"")+" tidak bisa dibuka. Pakai foto (JPG, PNG, HEIC, WebP) atau PDF hasil scan.";inp.value="";return}
     ktpFile=x;showOcr();if(smpReady)setTimeout(bacaKtp,50);var im=document.createElement("img");im.src=URL.createObjectURL(x);im.alt="Pratinjau KTP";im.style.cssText="max-width:100%;max-height:160px;border-radius:10px;display:block;margin-top:8px";
-    o.appendChild(document.createTextNode("Foto dipilih: "+x.name+" ("+Math.round(x.size/1024)+" KB)"));o.appendChild(im)};
+    o.appendChild(document.createTextNode("Foto dipilih: "+x0.name+" ("+Math.round(x.size/1024)+" KB)"));o.appendChild(im)})};
   $("#ktp2").onchange=fl.onchange;
   bindWebcamKtp(fl.onchange);
   var KS=function(){
@@ -1788,6 +1790,22 @@ function impRenum(){if(!isOwner())return 0;var M={},n=0;
   AJU.forEach(function(x){if(x.d&&M[x.d.no])x.d.no=M[x.d.no]});KAR.forEach(function(k){if(M[k.ang])k.ang=M[k.ang]});
   return n}
 function afterLoad(){var rn=impRenum();karSyncAng();if(rn)saveSoon();nav();if(!$("#app").hidden)page()}
+/* Ubah foto KTP format apa pun (HEIC, PDF, dll.) menjadi JPG yang bisa dibuka browser */
+function muatSkrip(u){return new Promise(function(ok,no){var s=document.createElement("script");s.src=u;s.onload=ok;s.onerror=no;document.head.appendChild(s)})}
+function bisaDibuka(f){return new Promise(function(ok){var im=new Image(),u=URL.createObjectURL(f);im.onload=function(){URL.revokeObjectURL(u);ok(im.width>0)};im.onerror=function(){URL.revokeObjectURL(u);ok(false)};im.src=u})}
+function jadiFile(b,nama){var n=String(nama||"ktp").replace(/\.[^.]+$/,"")+".jpg";try{return new File([b],n,{type:"image/jpeg"})}catch(e){b.name=n;return b}}
+function rapikanKtp(f){var t=(f.type||"").toLowerCase(),n=(f.name||"").toLowerCase();
+  var heic=/hei[cf]/.test(t)||/\.hei[cf]$/.test(n),pdf=t=="application/pdf"||/\.pdf$/.test(n);
+  return (pdf?Promise.resolve(false):bisaDibuka(f)).then(function(ok){if(ok)return f;
+    if(heic)return (window.heic2any?Promise.resolve():muatSkrip("https://cdn.jsdelivr.net/npm/heic2any@0.0.4/dist/heic2any.min.js")).then(function(){
+      return heic2any({blob:f,toType:"image/jpeg",quality:0.9})}).then(function(b){return jadiFile(Array.isArray(b)?b[0]:b,f.name)});
+    if(pdf)return (window.pdfjsLib?Promise.resolve():muatSkrip("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js")).then(function(){
+      pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+      return f.arrayBuffer()}).then(function(buf){return pdfjsLib.getDocument({data:buf}).promise}).then(function(doc){return doc.getPage(1)}).then(function(pg){
+      var vp=pg.getViewport({scale:1}),sc=Math.min(3,2000/Math.max(vp.width,vp.height));vp=pg.getViewport({scale:sc});
+      var c=document.createElement("canvas");c.width=Math.round(vp.width);c.height=Math.round(vp.height);var g=c.getContext("2d");g.fillStyle="#fff";g.fillRect(0,0,c.width,c.height);
+      return pg.render({canvasContext:g,viewport:vp}).promise.then(function(){return new Promise(function(ok){c.toBlob(function(b){ok(b?jadiFile(b,f.name):null)},"image/jpeg",0.9)})})});
+    return null}).catch(function(e){console.warn("rapikanKtp",e);return null})}
 function jpegKtp(file){return new Promise(function(res){
   var im=new Image(),u=URL.createObjectURL(file);
   im.onload=function(){var m=1600,r=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
@@ -1865,7 +1883,7 @@ function karForm(){
   '<p style="margin:0 0 4px;font-size:12.5px;letter-spacing:.12em;font-weight:700;color:var(--ma)">AKSES &amp; DOKUMEN KARYAWAN</p><p class="mutp" style="margin:0 0 14px">Lengkapi akses login dan upload KTP sebelum data karyawan disimpan.</p>'+
   '<div class="fg">'+F("fuser","Username login",'<input id="fuser" type="text" placeholder="Dari nomor HP" readonly style="border-style:dashed">')+F("fpass","Password login",'<input id="fpass" type="text" placeholder="Minimal 8 karakter, dibuat Ketua" autocomplete="off">')+
   F("fjab","Jabatan",SEL("fjab",JAB,"Pilih jabatan"))+'</div>'+
-  '<label class="drop" for="ktp" style="margin-top:16px;padding:34px 8px;flex-direction:row;justify-content:center">'+cloud+'<b style="font-size:16px;margin:0">Unggah KTP</b></label><input class="sr" id="ktp" type="file" accept="image/*" aria-label="Unggah foto KTP">'+
+  '<label class="drop" for="ktp" style="margin-top:16px;padding:34px 8px;flex-direction:row;justify-content:center">'+cloud+'<b style="font-size:16px;margin:0">Unggah KTP</b></label><input class="sr" id="ktp" type="file" accept="image/*,.heic,.heif,application/pdf" aria-label="Unggah foto KTP">'+
   '<label class="pbtn" for="ktp2" style="display:inline-block;margin-top:10px;cursor:pointer">Ambil foto KTP dengan kamera</label><input class="sr" id="ktp2" type="file" accept="image/*" capture="environment" aria-label="Ambil foto KTP dengan kamera"><div id="ktpinfo" class="mutp"></div><button type="button" class="pbtn" id="ocr" hidden style="margin-top:10px">Baca data dari KTP</button><div id="ocrmsg" class="mutp" role="status"></div>'+
   '</div>'+
   '<div class="fg">'+
