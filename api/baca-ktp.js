@@ -19,7 +19,11 @@ module.exports = async (req, res) => {
   if (typeof b === "string") { try { b = JSON.parse(b); } catch (e) { b = {}; } }
   if (!b.image) return res.status(400).json({ ok: false, error: "Foto KTP tidak ada" });
 
-  if (!key) return gemini(gkey, String(b.image), res);
+  const mime = /^image\/(jpeg|png|webp|heic|heif)$/.test(b.mime) ? b.mime : "image/jpeg";
+  if (!key || /hei[cf]/.test(mime)) {
+    if (!gkey) return res.status(400).json({ ok: false, error: "Foto HEIC belum bisa dibaca, simpan ulang sebagai JPG" });
+    return gemini(gkey, String(b.image), mime, res);
+  }
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
@@ -28,7 +32,7 @@ module.exports = async (req, res) => {
         model: process.env.KTP_MODEL || "claude-haiku-4-5",
         max_tokens: 800,
         messages: [{ role: "user", content: [
-          { type: "image", source: { type: "base64", media_type: "image/jpeg", data: String(b.image) } },
+          { type: "image", source: { type: "base64", media_type: mime, data: String(b.image) } },
           { type: "text", text: PERINTAH }
         ] }]
       })
@@ -53,14 +57,14 @@ function kirimData(res, teks) {
   return res.status(200).json({ ok: true, data });
 }
 
-async function gemini(gkey, image, res) {
+async function gemini(gkey, image, mime, res) {
   const model = process.env.KTP_GEMINI_MODEL || "gemini-2.5-flash";
   try {
     const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
       method: "POST",
       headers: { "x-goog-api-key": gkey, "content-type": "application/json" },
       body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ inline_data: { mime_type: "image/jpeg", data: image } }, { text: PERINTAH }] }],
+        contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: PERINTAH }] }],
         generationConfig: { temperature: 0, responseMimeType: "application/json" }
       })
     });
