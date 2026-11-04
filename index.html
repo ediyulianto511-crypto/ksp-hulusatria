@@ -1595,7 +1595,7 @@ function bindForm(kar){
   else if(/^https?:/.test(location.protocol)){lim={images:{maxInputBytes:3500000}};smp={json:function(q,o){var img=o.images[0];
     return new Promise(function(ok,no){var fr=new FileReader();fr.onload=function(){ok(String(fr.result).split(",")[1])};fr.onerror=no;fr.readAsDataURL(img)}).then(function(b64){
       var sesi=(window.SB&&SB.auth)?SB.auth.getSession().then(function(r){return r.data&&r.data.session&&r.data.session.access_token}):Promise.resolve("");
-      return sesi.then(function(tok){return fetch("/api/baca-ktp",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},body:JSON.stringify({image:b64})})})
+      return sesi.then(function(tok){return fetch("/api/baca-ktp",{method:"POST",headers:{"Content-Type":"application/json","Authorization":"Bearer "+(tok||"")},body:JSON.stringify({image:b64,mime:img.type||(/hei[cf]$/i.test(img.name||"")?"image/heic":"image/jpeg")})})})
     }).then(function(r){return r.json().catch(function(){return{}}).then(function(j){if(!r.ok||!j.ok){var e=new Error(j.error||("HTTP "+r.status));e.pesan=j.error;throw e}return j.data})})}};smpReady=Promise.resolve(smp)}
   function bacaKtp(){
     var b=$("#ocr"),m=$("#ocrmsg");if(!ktpFile||busy)return;
@@ -1604,7 +1604,8 @@ function bindForm(kar){
     smpReady.then(function(sm){
       if(!sm){m.className="err";m.textContent="Baca KTP otomatis belum tersedia di tampilan ini (izin Claude belum aktif atau aplikasi belum mendukung). Isi data secara manual; foto KTP tetap tersimpan.";return}
       return jpegKtp(ktpFile).then(function(img){
-        if(!img){m.className="err";m.textContent="Format foto tidak bisa dibuka. Gunakan foto JPG atau PNG.";return}
+        if(!img&&/hei[cf]/i.test((ktpFile.type||"")+ktpFile.name)&&!window.claude&&ktpFile.size<=lim.images.maxInputBytes)img=ktpFile;
+        if(!img){m.className="err";m.textContent="Format foto ("+(ktpFile.type||ktpFile.name.split(".").pop()||"tidak dikenal")+") tidak bisa dibuka di browser ini. Pakai tombol kamera, atau simpan ulang fotonya sebagai JPG.";return}
         if(img.size>lim.images.maxInputBytes){m.className="err";m.textContent="Ukuran foto masih terlalu besar. Coba foto ulang lebih dekat.";return}
         m.textContent="Membaca KTP... (bisa 10–30 detik)";
         return sm.json(KTPQ,{images:[img],cache:false}).then(function(r){isiKtp(r);m.className="ok";m.textContent="Data KTP terbaca. Periksa dan koreksi sebelum menyimpan, lalu isi nomor HP."});
