@@ -1385,46 +1385,44 @@ function pinList(){var LOAN=loanV(),own=ROLE=="Ketua (owner)";
   return edPanel()+'<div class="panel"><div class="phead"><div><h3>Rincian pinjaman</h3><p>'+LOAN.length+' pinjaman · sisa tagihan '+rp(ts)+'</p></div><button class="pbtn" onclick="window.print()">Cetak daftar pinjaman</button></div>'+
   (LOAN.length?'<p class="mutp" style="margin:0 0 10px">Geser tabel ke samping untuk melihat semua kolom. Ketuk nomor pinjaman untuk membuka buku pinjaman.</p><div class="tblw"><table class="rpt"><thead><tr><th rowspan="2">No Pinjaman</th><th rowspan="2">Nama Anggota</th><th rowspan="2">Tgl Realisasi</th><th rowspan="2">Model<br>Pinjaman</th><th rowspan="2">Realisasi<br>Pinjaman</th><th rowspan="2">Jangka<br>Waktu</th><th colspan="3">Jumlah</th><th rowspan="2">Jaminan</th><th colspan="3" class="noprint">Tindakan Pada Pinjaman</th></tr><tr><th>Angsuran</th><th>Potongan</th><th>Penerimaan</th><th class="noprint">Edit</th><th class="noprint">Cancel</th><th class="noprint">Pemutihan</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty"><b>Belum ada pinjaman</b>Catat lewat menu Realisasi pinjaman.</div>')+"</div>";
 }
-/* Surat peminjaman BPKB untuk perpanjangan STNK (11 Nov 2026).
+/* Surat keterangan BPKB dalam jaminan KSP, untuk perpanjangan STNK di SAMSAT (11 Nov 2026; revisi Ketua: bukan peminjaman BPKB).
+   Syarat di SAMSAT: STNK asli + surat keterangan ini + fotokopi BPKB.
    Tombol "Surat STNK" muncul di kolom Jaminan Rincian pinjaman untuk pinjaman berjalan dengan jaminan BPKB
    (dan pinjaman non-Gadai yang jaminannya belum dicatat). Data kendaraan diisi sekali, tersimpan di pinjaman (l.stnk). */
 function stnkBoleh(l){if(l.pt)return false;if(l.jam)return /bpkb/i.test((l.jam.jenis||"")+" "+(l.jam.ket||""));return (l.model||"bl")!="pg"}
 var STNK_F=[["np","Nomor polisi","Contoh: R 1234 AB",1],["mk","Merek / tipe kendaraan","Contoh: Honda Beat 2019",1],["nb","Nomor BPKB","Contoh: M-12345678",1],["an","BPKB atas nama","Nama di BPKB",1],["th","Tahun pembuatan",""],["wr","Warna",""],["rg","Nomor rangka",""],["ms","Nomor mesin",""]];
 function stnkNomor(tg){var th=String(tg).slice(0,4),bl=+String(tg).slice(5,7),R=["I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"];
-  var n=LOAN.filter(function(x){return x.stnk&&x.stnk.no&&String(x.stnk.tg).slice(0,4)==th}).length+1;return String(n).padStart(3,"0")+"/SP-BPKB/KSP-HSM/"+R[bl-1]+"/"+th}
+  var n=LOAN.filter(function(x){return x.stnk&&x.stnk.no&&String(x.stnk.tg).slice(0,4)==th}).length+1;return String(n).padStart(3,"0")+"/SKET-BPKB/KSP-HSM/"+R[bl-1]+"/"+th}
 function stnkPop(id){var l=LOAN.filter(function(x){return x.id==id})[0];if(!l)return;var d=l.stnk||{};
   if(!d.an)d=Object.assign({an:l.nama},d);
-  var kb=d.kb||new Date(Date.now()+7*864e5).toISOString().slice(0,10);
   var w=document.createElement("div");w.className="tpop";
   w.innerHTML='<div class="tpb" style="max-width:560px;text-align:left;max-height:92vh;overflow:auto"><h3 style="margin:0 0 4px">Surat perpanjangan STNK</h3><p class="mutp" style="margin:0 0 10px">'+ex(l.id)+' · '+ex(l.nama)+'. Isi data kendaraan sesuai BPKB. Data tersimpan, jadi lain kali tidak perlu diisi ulang.</p><div class="fg">'+
-    STNK_F.map(function(f){return '<div><label for="st_'+f[0]+'">'+f[1]+(f[3]?" *":"")+'</label><div class="field"><input id="st_'+f[0]+'" type="text" autocomplete="off" placeholder="'+f[2]+'" value="'+ex(d[f[0]]||"")+'"></div></div>'}).join("")+
-    '<div><label for="st_kb">BPKB dikembalikan paling lambat</label><div class="field"><input id="st_kb" type="date" value="'+kb+'"></div></div></div>'+
+    STNK_F.map(function(f){return '<div><label for="st_'+f[0]+'">'+f[1]+(f[3]?" *":"")+'</label><div class="field"><input id="st_'+f[0]+'" type="text" autocomplete="off" placeholder="'+f[2]+'" value="'+ex(d[f[0]]||"")+'"></div></div>'}).join("")+'</div>'+
     '<div id="st_msg" class="err" role="status"></div><div class="acts" style="margin-top:12px"><button class="pbtn" type="button" data-st="c">Cetak surat</button><button class="pbtn" type="button" data-st="p">Kirim PDF</button><button class="lnk" type="button" data-st="x">Cancel</button></div></div>';
   document.body.appendChild(w);
   w.onclick=function(e){var b=e.target.closest("[data-st]");if(e.target==w||(b&&b.dataset.st=="x")){w.remove();return}if(!b)return;
-    var v={};STNK_F.forEach(function(f){v[f[0]]=document.getElementById("st_"+f[0]).value.trim()});v.kb=document.getElementById("st_kb").value;
+    var v={};STNK_F.forEach(function(f){v[f[0]]=document.getElementById("st_"+f[0]).value.trim()});
     var kurang=STNK_F.filter(function(f){return f[3]&&!v[f[0]]})[0];if(kurang){document.getElementById("st_msg").textContent="Isi "+kurang[1].toLowerCase()+".";return}
-    if(!v.kb){document.getElementById("st_msg").textContent="Isi tanggal BPKB dikembalikan.";return}
     var o=l.stnk||{};v.tg=o.no?o.tg:today();v.no=o.no||stnkNomor(v.tg);v.oleh=siapa();l.stnk=v;saveSoon();w.remove();
     if(b.dataset.st=="c")cetakHtml(stnkHtml(l));else kirimPdf(stnkHtml(l),"Surat STNK "+l.nama+" "+String(v.np).replace(/\s+/g,""))}}
 function stnkHtml(l){var d=l.stnk||{},a=MEM.filter(function(m){return m.no==l.no})[0]||{},cb=memCab(a)||loanCab(l),ci=(typeof CABI!="undefined"&&CABI[cb])||{};
-  var mo=(typeof KAR!="undefined"?KAR:[]).filter(function(k){return k.jab=="Manager Operasional"&&cabOf(k)==cb})[0];
+  var mo=(typeof KAR!="undefined"?KAR:[]).filter(function(k){return k.jab=="Manager Operasional"&&cabOf(k)==cb})[0],kep=ci.kep||(mo&&mo.nama)||"";
   var tglP=function(x){return x?new Date(x+"T00:00:00").toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"}):"-"};
   var r=function(k,v){return '<tr><td style="width:190px;padding:2px 0;vertical-align:top">'+k+'</td><td style="padding:2px 6px;vertical-align:top">:</td><td style="padding:2px 0">'+v+"</td></tr>"};
   var al=ex([a.al,a.rt?"RT "+a.rt:"",a.rw?"RW "+a.rw:"",a.kl,a.kc,a.kb].filter(Boolean).join(", ")||"-");
   return '<style>.sk table,.sk td,.sk tr{border:0!important;background:none!important}</style><div class="kc sk f4fit" style="font:13.5px/1.6 \'Noto Serif\',Georgia,serif;max-width:720px;margin:0 auto;color:#111">'+
   '<div style="display:flex;align-items:center;gap:14px;border-bottom:3px double '+getComputedStyle(document.documentElement).getPropertyValue("--ma")+';padding-bottom:10px">'+kopLogo(60)+'<div style="flex:1;text-align:center;padding-right:88px"><div style="font-size:21px;font-weight:700;letter-spacing:.06em">KSP HULUSATRIA MADANI</div><div style="font-size:11.5px">Badan hukum No. 007233/BH/M.KUKM.2/I/2018</div><div style="font-size:12px">'+ex(ci.al||"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara")+(ci.hp?" · HP "+ex(ci.hp):"")+'</div></div></div>'+
-  '<div style="text-align:center;margin:18px 0 14px"><div style="font-weight:700;text-decoration:underline">SURAT KETERANGAN PEMINJAMAN BPKB</div><div style="font-weight:700">UNTUK PERPANJANGAN STNK</div><div>Nomor: '+ex(d.no||"-")+'</div></div>'+
-  '<p style="margin:0 0 6px">Yang bertanda tangan di bawah ini, Manager Operasional KSP Hulusatria Madani '+ex(cb||"")+', menerangkan bahwa:</p>'+
+  '<div style="text-align:center;margin:18px 0 14px"><div style="font-weight:700;text-decoration:underline">SURAT KETERANGAN</div><div style="font-weight:700">BPKB DALAM JAMINAN KSP HULUSATRIA MADANI</div><div>Nomor: '+ex(d.no||"-")+'</div></div>'+
+  '<p style="margin:0 0 6px">Kepada Yth.<br><b>Kepala Kantor Bersama SAMSAT</b><br>di tempat</p><p style="margin:0 0 6px">Dengan hormat,<br>Yang bertanda tangan di bawah ini, Kepala Cabang KSP Hulusatria Madani ('+ex(cb||"-")+'), menerangkan bahwa:</p>'+
   '<table style="width:100%;border-collapse:collapse;margin:0 0 10px 20px">'+r("Nama",'<b>'+ex(l.nama)+'</b>')+r("No. anggota",ex(l.no))+r("Alamat",al)+r("No. HP",ex(a.hp||"-"))+r("No. pinjaman",ex(l.id)+" (realisasi "+tglP(l.tg)+")")+'</table>'+
-  '<p style="margin:0 0 6px">adalah anggota KSP Hulusatria Madani yang menjaminkan BPKB kendaraan bermotor berikut:</p>'+
+  '<p style="margin:0 0 6px">adalah anggota KSP Hulusatria Madani yang sedang mempunyai pinjaman, dengan jaminan BPKB kendaraan bermotor berikut:</p>'+
   '<table style="width:100%;border-collapse:collapse;margin:0 0 10px 20px">'+r("Nomor polisi",'<b>'+ex(d.np)+'</b>')+r("Merek / tipe",ex(d.mk))+r("Nomor BPKB",ex(d.nb))+r("BPKB atas nama",ex(d.an))+(d.th?r("Tahun pembuatan",ex(d.th)):"")+(d.wr?r("Warna",ex(d.wr)):"")+(d.rg?r("Nomor rangka",ex(d.rg)):"")+(d.ms?r("Nomor mesin",ex(d.ms)):"")+'</table>'+
-  '<p style="margin:0 0 8px;text-align:justify">BPKB tersebut di atas <b>dipinjamkan sementara</b> kepada yang bersangkutan untuk keperluan <b>perpanjangan STNK</b> di Kantor Bersama SAMSAT, dan bukan untuk keperluan lain. BPKB wajib dikembalikan ke kantor KSP Hulusatria Madani dalam keadaan utuh <b>paling lambat tanggal '+tglP(d.kb)+'</b>, bersama fotokopi STNK yang sudah diperpanjang.</p>'+
-  '<p style="margin:0 0 8px;text-align:justify">Selama BPKB dipinjam, kewajiban angsuran pinjaman tetap berjalan seperti biasa. Apabila BPKB tidak dikembalikan sesuai tanggal di atas, peminjam bersedia menerima tindakan sesuai ketentuan KSP Hulusatria Madani.</p>'+
-  '<p style="margin:0 0 4px">Demikian surat keterangan ini dibuat untuk dipergunakan sebagaimana mestinya.</p>'+
+  '<p style="margin:0 0 8px;text-align:justify">Dengan ini kami menerangkan bahwa <b>BPKB asli kendaraan tersebut di atas saat ini berada dan disimpan di KSP Hulusatria Madani</b> sebagai jaminan pinjaman atas nama anggota tersebut, sehingga tidak dapat dilampirkan dalam bentuk asli.</p>'+
+  '<p style="margin:0 0 8px;text-align:justify">Sehubungan dengan itu, kami mohon kiranya <b>permohonan perpanjangan STNK</b> kendaraan tersebut dapat ditindaklanjuti dengan persyaratan: <b>STNK asli</b>, <b>surat keterangan ini</b>, dan <b>fotokopi BPKB</b> yang kami lampirkan. Kebenaran keterangan ini menjadi tanggung jawab KSP Hulusatria Madani.</p>'+
+  '<p style="margin:0 0 4px">Demikian surat keterangan ini kami buat dengan sebenarnya, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>'+
   '<div style="text-align:right;margin-top:14px">Banjarnegara, '+tglP(d.tg)+'</div>'+
-  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:30px;text-align:center;margin-top:8px"><div>Peminjam BPKB (Anggota)<div style="height:80px"></div><b style="text-decoration:underline">'+ex(l.nama)+'</b></div><div>Manager Operasional<br>KSP Hulusatria Madani<div style="height:56px"></div><b style="text-decoration:underline">'+ex(mo?mo.nama:"............................................")+'</b></div></div>'+
-  '<table style="width:100%;border-collapse:collapse;margin-top:22px;font-size:12px" class="stb"><tr><td style="border:1px solid #888!important;padding:6px;width:50%">BPKB diserahkan tanggal: ....................<br>Paraf petugas: ....................</td><td style="border:1px solid #888!important;padding:6px">BPKB dikembalikan tanggal: ....................<br>Paraf petugas: ....................</td></tr></table></div>'}
+  '<div style="display:flex;justify-content:flex-end;margin-top:8px"><div style="min-width:260px;text-align:center">Kepala Cabang<br>KSP Hulusatria Madani<div style="height:72px;font-size:10px;color:#aaa;display:flex;align-items:center;justify-content:center">cap KSP</div><b style="text-decoration:underline">'+ex(kep||"............................................")+'</b></div></div>'+
+  '<div style="font-size:11.5px;margin-top:18px">Lampiran: fotokopi BPKB kendaraan nomor polisi '+ex(d.np)+'.</div></div>'}
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-stnk]");if(b)stnkPop(b.dataset.stnk)});
 /* Pinjaman Bulanan yang terlanjur direalisasi dengan bunga "total" (seharusnya per bulan). */
 function salahBunga(l){return (l.model||"bl")=="bl"&&l.basis=="total"&&!l.imp&&sisaP(l)>0}
