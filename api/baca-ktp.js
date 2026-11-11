@@ -7,7 +7,8 @@ const PERINTAH = "Baca foto KTP Indonesia ini. Jawab HANYA dengan satu objek JSO
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ ok: false, error: "Metode tidak didukung" });
-  const key = process.env.ANTHROPIC_API_KEY, gkey = process.env.GEMINI_API_KEY;
+  const bersih = (v) => String(v || "").trim().replace(/^["']|["']$/g, "");
+  const key = bersih(process.env.ANTHROPIC_API_KEY), gkey = bersih(process.env.GEMINI_API_KEY);
   if (!key && !gkey) return res.status(500).json({ ok: false, error: "Kunci pembaca KTP (GEMINI_API_KEY) belum dipasang di Vercel" });
 
   // Hanya pengguna yang sudah login di aplikasi yang boleh memakai.
@@ -58,26 +59,34 @@ function kirimData(res, teks) {
 }
 
 async function gemini(gkey, image, mime, res) {
-  const model = process.env.KTP_GEMINI_MODEL || "gemini-2.5-flash";
-  try {
-    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
-      method: "POST",
-      headers: { "x-goog-api-key": gkey, "content-type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: PERINTAH }] }],
-        generationConfig: { temperature: 0, responseMimeType: "application/json" }
-      })
-    });
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok) {
+  // Coba beberapa nama model: kalau satu sudah dipensiunkan Google (404), pakai berikutnya.
+  const daftar = [process.env.KTP_GEMINI_MODEL, "gemini-flash-latest", "gemini-2.5-flash", "gemini-2.0-flash"].filter(Boolean);
+  let pesan = "";
+  for (const model of daftar) {
+    try {
+      const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+        method: "POST",
+        headers: { "x-goog-api-key": gkey, "content-type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: PERINTAH }] }],
+          generationConfig: { temperature: 0, responseMimeType: "application/json" }
+        })
+      });
+      const j = await r.json().catch(() => ({}));
+      if (r.ok) {
+        const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
+        return kirimData(res, parts.map((p) => p.text || "").join(""));
+      }
       const m = (j.error && j.error.message) || ("HTTP " + r.status);
-      return res.status(502).json({ ok: false, error: r.status == 429 ? "Batas gratis pembaca KTP hari ini habis, coba lagi nanti" : /API key/i.test(m) ? "Kunci GEMINI_API_KEY salah" : "Layanan pembaca KTP menolak: " + m });
+      if (r.status == 404) { pesan = m; continue; }
+      if (r.status == 429) return res.status(502).json({ ok: false, error: "Batas gratis pembaca KTP habis untuk sementara, coba lagi beberapa menit lagi" });
+      if (/API key|API_KEY/i.test(m)) return res.status(502).json({ ok: false, error: "Kunci GEMINI_API_KEY ditolak Google (" + m.slice(0, 140) + ")" });
+      return res.status(502).json({ ok: false, error: "Layanan pembaca KTP menolak (" + r.status + "): " + m.slice(0, 160) });
+    } catch (e) {
+      pesan = "Tidak bisa menghubungi layanan pembaca KTP";
     }
-    const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
-    return kirimData(res, parts.map((p) => p.text || "").join(""));
-  } catch (e) {
-    return res.status(502).json({ ok: false, error: "Tidak bisa menghubungi layanan pembaca KTP" });
   }
+  return res.status(502).json({ ok: false, error: "Model pembaca KTP tidak tersedia: " + pesan.slice(0, 160) });
 }
 
 module.exports.config = { api: { bodyParser: { sizeLimit: "4mb" } } };
