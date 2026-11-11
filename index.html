@@ -1628,7 +1628,7 @@ function bindForm(kar){
         if(!img&&/hei[cf]/i.test((ktpFile.type||"")+ktpFile.name)&&!window.claude&&ktpFile.size<=lim.images.maxInputBytes)img=ktpFile;
         if(!img){m.className="err";m.textContent="Format foto ("+(ktpFile.type||ktpFile.name.split(".").pop()||"tidak dikenal")+") tidak bisa dibuka di browser ini. Pakai tombol kamera, atau simpan ulang fotonya sebagai JPG.";return}
         if(img.size>lim.images.maxInputBytes){m.className="err";m.textContent="Ukuran foto masih terlalu besar. Coba foto ulang lebih dekat.";return}
-        m.textContent="Membaca KTP... (bisa 10–30 detik)";
+        m.textContent="Membaca KTP... (biasanya 3–10 detik)";
         return sm.json(KTPQ,{images:[img],cache:false}).then(function(r){isiKtp(r);m.className="ok";m.textContent="Data KTP terbaca. Periksa dan koreksi sebelum menyimpan, lalu isi nomor HP."});
       });
     }).catch(function(e){m.className="err";m.textContent=(e&&e.code=="not_granted")?"Izin Claude untuk membaca KTP ditolak. Isi data secara manual, atau izinkan lewat menu Izin artifact.":(e&&e.code=="rate_limited")?"Terlalu banyak permintaan. Tunggu sebentar lalu tekan Baca data dari KTP lagi.":(e&&e.pesan?e.pesan+". Isi manual dulu bila perlu.":"Gagal membaca KTP. Coba foto yang lebih jelas dan terang, atau isi manual.")}).then(function(){busy=false;b.disabled=false});
@@ -1843,7 +1843,7 @@ function rapikanKtp(f){var t=(f.type||"").toLowerCase(),n=(f.name||"").toLowerCa
     return null}).catch(function(e){console.warn("rapikanKtp",e);return null})}
 function jpegKtp(file){return new Promise(function(res){
   var im=new Image(),u=URL.createObjectURL(file);
-  im.onload=function(){var m=1600,r=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
+  im.onload=function(){var m=1280,r=Math.min(1,m/Math.max(im.width,im.height)),c=document.createElement("canvas");
     c.width=Math.round(im.width*r);c.height=Math.round(im.height*r);c.getContext("2d").drawImage(im,0,0,c.width,c.height);URL.revokeObjectURL(u);
     c.toBlob(function(b){res(b)},"image/jpeg",0.85)};
   im.onerror=function(){URL.revokeObjectURL(u);res(null)};im.src=u})}

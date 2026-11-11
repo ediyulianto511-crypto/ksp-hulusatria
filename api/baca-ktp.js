@@ -64,15 +64,21 @@ async function gemini(gkey, image, mime, res) {
   let pesan = "";
   for (const model of daftar) {
     try {
-      const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
+      // Matikan mode "berpikir" supaya jawaban cepat; kalau model menolak opsi itu, ulangi tanpa opsi.
+      const kirim = (cepat) => fetch("https://generativelanguage.googleapis.com/v1beta/models/" + model + ":generateContent", {
         method: "POST",
         headers: { "x-goog-api-key": gkey, "content-type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ inline_data: { mime_type: mime, data: image } }, { text: PERINTAH }] }],
-          generationConfig: { temperature: 0, responseMimeType: "application/json" }
+          generationConfig: Object.assign({ temperature: 0, responseMimeType: "application/json", maxOutputTokens: 1024 }, cepat ? { thinkingConfig: { thinkingBudget: 0 } } : {})
         })
       });
-      const j = await r.json().catch(() => ({}));
+      let r = await kirim(true);
+      let j = await r.json().catch(() => ({}));
+      if (r.status == 400 && /thinking/i.test((j.error && j.error.message) || "")) {
+        r = await kirim(false);
+        j = await r.json().catch(() => ({}));
+      }
       if (r.ok) {
         const parts = (((j.candidates || [])[0] || {}).content || {}).parts || [];
         return kirimData(res, parts.map((p) => p.text || "").join(""));
