@@ -1005,6 +1005,8 @@ function ringkas(l){var I=inst(l),due=I.filter(function(x){return x.sisa>0&&x.te
   return {I:I,due:due,next:nx,tung:due.reduce(function(a,x){return a+x.sisa},0),denda:dendaB(l,today()),late:due.filter(function(x){return x.telat>0}).length}}
 function tagCount(){return loanV().filter(function(l){return sisaP(l)>0&&ringkas(l).due.length}).length}
 var KOL=[null,["Kol 1","Lancar"],["Kol 2","Dalam perhatian khusus"],["Kol 3","Kurang lancar"],["Kol 4","Diragukan"],["Kol 5","Macet"]],tagKol=0,tag2K=0;
+/* Pemutihan hanya untuk pinjaman yang sudah Kol 5 (aturan Ketua 11 Nov 2026). */
+function bisaPutih(l){var k=kolOf(l);return !!k&&k.n>=5}
 function kolOf(l,asOf){if(sisaP(l)<=0)return null;if(l.pt)return {n:5,kode:"Pemutihan",nama:"Pemutihan",telat:0,kali:0,kurang:0,dari:"",pt:1};var I=inst(l,asOf),late=I.filter(function(x){return x.sisa>0&&x.telat>0}),k=(l.model||"bl"),f=k=="mg"?30/7:k=="dm"?30/14:1;
   var tel=late.length?late[0].telat:0,eq=tel*f,c=late.length,kurang=late.reduce(function(a,x){return a+x.sisa},0);
   var a=!tel?1:eq<=90?2:eq<=120?3:eq<=180?4:5,b=!c?1:c<=3?2:c==4?3:c<=6?4:5,n=Math.max(a,b);
@@ -1308,7 +1310,7 @@ function pinList(){var LOAN=loanV(),own=ROLE=="Ketua (owner)";
     return '<tr><td><button class="lnk" type="button" data-kartu="'+l.id+'" title="Buka buku pinjaman">'+l.id+'</button></td><td class="rpn">'+ex(l.nama)+'<br><small>'+ex(l.no)+'</small></td><td class="c">'+String(l.tg).split("-").reverse().join("/")+'</td><td class="c">'+ex(m.n)+'</td><td class="num">'+fmtRp(Math.round(l.pokok))+'</td><td class="c">'+tenorTxt(l.model||"bl",l.tenor).split(" · ")[0]+'</td><td class="num">'+fmtRp(Math.round(l.ang||0))+'</td>'+(l.bersih==null?'<td class="c">-</td><td class="c">-</td>':'<td class="num">'+(fmtRp(Math.round(l.pokok-l.bersih+(l.lalu||0)))||"0")+'</td><td class="num">'+(fmtRp(Math.max(0,Math.round(l.bersih-(l.lalu||0))))||"0")+'</td>')+'<td>'+(l.jam?ex(l.jam.jenis):"-")+'</td>'+
       '<td class="rpa noprint">'+(ok?'<button type="button" class="rpb g" data-edpj="'+l.id+'">Edit</button>':'')+'</td>'+
       '<td class="rpa noprint">'+(ok?'<button type="button" class="rpb r" data-cxpj="'+l.id+'">Cancel</button>':'')+'</td>'+
-      '<td class="rpa noprint">'+(own&&!l.pt&&sp>0?'<button type="button" class="rpb b" data-ptpj="'+l.id+'">Putihkan</button>':l.pt?'<small>Sudah pemutihan</small>':'')+'</td></tr>'+
+      '<td class="rpa noprint">'+(l.pt?'<small>Sudah pemutihan</small>':own&&sp>0?(bisaPutih(l)?'<button type="button" class="rpb b" data-ptpj="'+l.id+'">Putihkan</button>':'<small title="Pemutihan hanya untuk pinjaman Kol 5">Belum Kol 5</small>'):'')+'</td></tr>'+
       (own&&salahBunga(l)?'<tr class="alrow"><td colspan="13" style="white-space:normal"><small style="color:#DD4B39;font-weight:700">'+l.id+': bunga masih "total", perlu Edit</small></td></tr>':'')}).join("");
   return edPanel()+'<div class="panel"><div class="phead"><div><h3>Rincian pinjaman</h3><p>'+LOAN.length+' pinjaman · sisa tagihan '+rp(ts)+'</p></div><button class="pbtn" onclick="window.print()">Cetak daftar pinjaman</button></div>'+
   (LOAN.length?'<p class="mutp" style="margin:0 0 10px">Geser tabel ke samping untuk melihat semua kolom. Ketuk nomor pinjaman untuk membuka buku pinjaman.</p><div class="tblw"><table class="rpt"><thead><tr><th rowspan="2">No Pinjaman</th><th rowspan="2">Nama Anggota</th><th rowspan="2">Tgl Realisasi</th><th rowspan="2">Model<br>Pinjaman</th><th rowspan="2">Realisasi<br>Pinjaman</th><th rowspan="2">Jangka<br>Waktu</th><th colspan="3">Jumlah</th><th rowspan="2">Jaminan</th><th colspan="3" class="noprint">Tindakan Pada Pinjaman</th></tr><tr><th>Angsuran</th><th>Potongan</th><th>Penerimaan</th><th class="noprint">Edit</th><th class="noprint">Cancel</th><th class="noprint">Pemutihan</th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<div class="empty"><b>Belum ada pinjaman</b>Catat lewat menu Realisasi pinjaman.</div>')+"</div>";
@@ -1552,7 +1554,7 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
   if(b.dataset.ptx){if(PAY.some(function(x){return x.id==id&&x.pt}))return alert("Batal pemutihan "+id+" tidak bisa: sudah ada angsuran pemutihan.");
     if(!confirm("Batalkan pemutihan "+id+" · "+l.nama+"?\n\nPinjaman kembali berjalan seperti biasa (bunga, denda, dan jadwal angsuran dihitung lagi)."))return;
     delete l.pt;berhasil("Pemutihan dibatalkan",l.nama+" · "+id+" kembali berjalan");nav();page();return}
-  if(l.pt||sisaP(l)<=0)return;var k=ptSaldoKini(l);
+  if(l.pt||sisaP(l)<=0)return;if(!bisaPutih(l)){var ko=kolOf(l);berhasil("Belum bisa diputihkan","Pemutihan hanya untuk pinjaman Kol 5. "+id+" sekarang Kol "+(ko?ko.n:1)+".");return}var k=ptSaldoKini(l);
   if(!confirm("Pindah ke pemutihan: "+id+" · "+l.nama+"\n\nSaldo pokok + bunga: "+rp(k.sp)+"\nSisa denda: "+rp(k.dn)+"\nSaldo akhir pemutihan: "+rp(k.sp+k.dn)+"\n\nSesudahnya bunga dan denda berhenti, dan setiap angsuran langsung mengurangi saldo akhir. Lanjutkan?"))return;
   ptPindah(l);berhasil("Masuk pemutihan",l.nama+" · "+id+" · saldo akhir "+rp(l.pt.s));nav();page()});
 function riwayatPin(no){var L=LOAN.filter(function(x){return x.no==no}).slice().sort(pinBaru);
