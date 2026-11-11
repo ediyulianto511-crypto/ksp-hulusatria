@@ -1142,7 +1142,7 @@ function bindPin(){
     var id=ajuBaruId(),dk=[];Object.keys(PDOC).forEach(function(i){simpanDoc(id+"_"+i,PDOC[i]);dk.push(+i)});PFOTO.forEach(function(x,j){simpanDoc(id+"_f"+(j+1),x.f)});
     var d={no:no,nama:a.nama,model:pinModel,v:v,n:n,mkt:$("#pmk")?$("#pmk").value:"",jam:jam,stat:naikPin(no,v)?"Top up (kenaikan pinjaman)":aktifPin(no).length?"Top up":"Pinjaman baru",naik:naikPin(no,v),tg:tg,cat:$("#pcat").value.trim(),docs:dk};if(PFOTO.length)d.ff=PFOTO.length;
     PDOC={};PFOTO=[];var x=ajuBuat("pin",pinModel=="kk"?KOPKAR:memCab(a),d);if(x.ap)x.st="setuju";
-    flash="Proposal "+x.id+" ("+MODEL[pinModel].n+", "+rp(v)+") untuk "+a.nama+(x.st=="setuju"?" langsung disetujui karena sesuai wewenang Anda, dan masuk ke menu Realisasi pinjaman.":" terkirim dan menunggu persetujuan "+(pinModel=="kk"?"Ketua":lvlTxt(pinLvl(v)))+".");
+    flash="Proposal "+x.id+" ("+MODEL[pinModel].n+", "+rp(v)+") untuk "+a.nama+(x.st=="setuju"?" langsung disetujui karena masih di bawah batas wewenang Marketing Lapangan, dan masuk ke menu Realisasi pinjaman.":" terkirim ke panel Persetujuan dan menunggu persetujuan "+(pinModel=="kk"?"Ketua":lvlTxt(pinLvl(v)))+".");
     berhasil("Proposal pinjaman terkirim",flash);nav();page()};
 }
 /* ===== Persetujuan uang keluar: proposal pinjaman, simpanan keluar, pengeluaran BU =====
@@ -1287,8 +1287,9 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
 /* Kenaikan pinjaman: top up dengan realisasi lebih besar dari realisasi pinjaman yang sedang berjalan. Selalu lewat persetujuan. */
 function naikPin(no,v){var A=aktifPin(no);return A.length>0&&v>A.reduce(function(m,l){return Math.max(m,l.pokok)},0)}
 function ajuBuat(t,cab,d){var x={id:ajuBaruId(),t:t,st:"tunggu",cab:cabNorm(cab),oleh:siapa(),jab:ROLE,at:jamNow(),d:d};
-  if(t=="pin"&&d.model=="kk"){x.lv=4;if(ROLE=="Ketua (owner)"){x.aps=[{lv:4,oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri"}];x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh Ketua"}}}
-  else if(t=="pin"){var L0=LVL[ROLE]||0,need=pinLvl(d.v);if(L0){x.aps=[];for(var k=1;k<=Math.min(L0,need);k++)x.aps.push({lv:k,oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri"});if(L0>=need)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};else x.lv=L0+1}}
+  /* Proposal pinjaman selalu masuk ke panel Persetujuan dulu (juga bila pengajunya pejabat berwenang), mulai dari jenjang pertama. */
+  if(t=="pin"&&d.model=="kk")x.lv=4;
+  else if(t=="pin"){}
   else if(bisaSetuju(x))x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Diajukan sendiri oleh pejabat berwenang"};
   if(!x.ap&&t=="pin"&&d.model!="kk"&&ROLE=="Marketing Lapangan"&&!d.naik&&d.v<=apvLim().m)x.ap={oleh:siapa(),jab:ROLE,at:x.at,ket:"Sesuai wewenang Marketing Lapangan"};AJU.push(x);saveSoon();return x}
 function regApvPanel(dis){var L=apvLim(),inp=function(id,lb,v){return '<label for="'+id+'" style="margin:10px 0 6px">'+lb+'</label><div class="field" style="max-width:260px"><input id="'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(v)+'"'+dis+'></div>'};
