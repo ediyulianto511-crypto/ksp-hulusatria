@@ -67,7 +67,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:14px 
 .sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 8px 22px;border-left:1px solid rgba(247,243,238,.3);padding-left:8px}
 .sub .nav{padding:8px 10px;font-size:14px}.nav .nl{display:flex;flex-direction:column;line-height:1.25}.menu .nav .nl small{font-size:12px;opacity:.75;font-weight:400;margin:1px 0 0}
 .chev{margin-left:auto;display:inline-block;transition:transform .15s}.chev.r{transform:rotate(90deg)}.badge+.chev{margin-left:8px}
-.tblw{overflow-x:auto}.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}.tbl th{color:var(--mut);font-weight:600;font-size:13px}
+.tblw{overflow-x:auto}.tgeser{overflow-x:auto;overflow-y:hidden;height:14px;margin:0 0 6px}.tgeser>div{height:1px}.tgeser::-webkit-scrollbar{height:12px}.tgeser::-webkit-scrollbar-thumb{background:#8A8F96;border-radius:6px}.tgeser::-webkit-scrollbar-track{background:rgba(0,0,0,.08);border-radius:6px}.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}.tbl th{color:var(--mut);font-weight:600;font-size:13px}
 .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:30px 8px;border:1.5px dashed var(--ma);border-radius:22px;background:var(--c5);color:var(--t5);cursor:pointer}
 .drop svg{width:46px;height:46px}.drop b{font-size:19px;font-weight:500;margin-top:8px}.drop span{font-size:12.5px}.drop:focus-within{outline:3px solid var(--ro)}
@@ -2165,6 +2165,14 @@ function trxHari(cab){var t=today(),R=[],LC={};LOAN.forEach(function(l){LC[l.id]
     (R.length?'<div class="trs"><div><small>Kas masuk</small><strong class="kin">'+rp(mi)+'</strong></div><div><small>Kas keluar</small><strong class="kout">'+rp(ko)+'</strong></div></div><div class="trl">'+rows+'</div>'+
       (R.length>10?'<button class="pbtn noprint trmore" type="button" id="trxbtn">'+(trxAll?"Tampilkan 10 terbaru":"Tampilkan semua ("+R.length+")")+'</button>':""):
       '<div class="empty"><b>Belum ada transaksi hari ini</b>Angsuran, simpanan, realisasi pinjaman, dan pengeluaran hari ini akan muncul di sini.</div>')+'</div>'}
+/* Batang geser kanan-kiri juga di ATAS tabel lebar (permintaan Ketua 11 Nov 2026), supaya kolom kanan langsung bisa dibuka. */
+function geserAtas(){document.querySelectorAll("#view .tblw").forEach(function(w){var g=w.previousElementSibling;
+  if(!g||!g.classList.contains("tgeser")){g=document.createElement("div");g.className="tgeser noprint";g.appendChild(document.createElement("div"));w.parentNode.insertBefore(g,w);
+    (function(g,w){g.addEventListener("scroll",function(){if(w.scrollLeft!==g.scrollLeft)w.scrollLeft=g.scrollLeft});w.addEventListener("scroll",function(){if(g.scrollLeft!==w.scrollLeft)g.scrollLeft=w.scrollLeft})})(g,w)}
+  g.firstChild.style.width=w.scrollWidth+"px";g.style.display=w.scrollWidth>w.clientWidth+2?"":"none"})}
+var geserT=0;function geserNanti(){cancelAnimationFrame(geserT);geserT=requestAnimationFrame(geserAtas)}
+window.addEventListener("resize",geserNanti);
+document.addEventListener("DOMContentLoaded",function(){var v=document.getElementById("view");if(v&&window.MutationObserver)new MutationObserver(geserNanti).observe(v,{childList:true,subtree:true})});
 function page(){
   if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal awal KSP";cur="sim1"}
   saveSoon();var f=find(cur),t=f[0];
