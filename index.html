@@ -67,7 +67,7 @@ label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:14px 
 .sub{display:flex;flex-direction:column;gap:2px;margin:2px 0 8px 22px;border-left:1px solid rgba(247,243,238,.3);padding-left:8px}
 .sub .nav{padding:8px 10px;font-size:14px}.nav .nl{display:flex;flex-direction:column;line-height:1.25}.menu .nav .nl small{font-size:12px;opacity:.75;font-weight:400;margin:1px 0 0}
 .chev{margin-left:auto;display:inline-block;transition:transform .15s}.chev.r{transform:rotate(90deg)}.badge+.chev{margin-left:8px}
-.tblw{overflow-x:auto}.tgeser{overflow-x:auto;overflow-y:hidden;height:14px;margin:0 0 6px}.tgeser>div{height:1px}.tgeser::-webkit-scrollbar{height:12px}.tgeser::-webkit-scrollbar-thumb{background:#8A8F96;border-radius:6px}.tgeser::-webkit-scrollbar-track{background:rgba(0,0,0,.08);border-radius:6px}.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}.tbl th{color:var(--mut);font-weight:600;font-size:13px}
+.tblw{overflow-x:auto}.tgeser{display:flex;align-items:center;gap:8px;margin:0 0 10px;user-select:none}.tgeser .tgp{cursor:pointer;color:var(--side);font-size:18px;line-height:1;padding:2px 4px}.tgeser .tgt{position:relative;flex:1;height:16px;border-radius:8px;background:var(--line);cursor:pointer;touch-action:none}.tgeser .tgk{position:absolute;top:0;height:16px;border-radius:8px;background:var(--side)}#view .tblw.geser1{scrollbar-width:none}#view .tblw.geser1::-webkit-scrollbar{display:none}.tbl{width:100%;border-collapse:collapse}.tbl th,.tbl td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--line)}.tbl th{color:var(--mut);font-weight:600;font-size:13px}
 .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
 .drop{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:30px 8px;border:1.5px dashed var(--ma);border-radius:22px;background:var(--c5);color:var(--t5);cursor:pointer}
 .drop svg{width:46px;height:46px}.drop b{font-size:19px;font-weight:500;margin-top:8px}.drop span{font-size:12.5px}.drop:focus-within{outline:3px solid var(--ro)}
@@ -323,21 +323,12 @@ h1,h2,h3,h4{font-weight:700;letter-spacing:0}
 /* Penulisan judul & label: Huruf Besar Di Awal Tiap Kata. Yang memang huruf besar semua tetap. Isi data tidak berubah. */
 h1,h2,h3,h4,label,th,.nav,.menu small,.pbtn,.btn,.kbtn,.lnk,.lsec,.empty b,.pdoc .ph b,.hgrp b,.tgsum small,.lsum small,.tgd small,.tup small,.st,.tga a,.drop b,#toast b{text-transform:capitalize}
 .nocap,input,select,textarea,option{text-transform:none}
-.angw{transform:rotateX(180deg)}.angw>table{transform:rotateX(180deg)}
 .angt th,.angt td{white-space:nowrap}.angt td:first-child{white-space:normal;min-width:120px;max-width:160px}
 .angt th:first-child,.angt td:first-child{position:sticky;left:0;z-index:2;background:var(--panel);box-shadow:1px 0 0 var(--line)}
 .angt .alrow>td:first-child{position:static;max-width:none;box-shadow:none}
 .angrp{position:sticky;left:12px;white-space:normal}
 .angact{display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}.angact .aa-l{display:flex;flex-wrap:wrap;gap:8px;flex:1}.angact .aa-r{margin-left:auto}.angact .pbtn{font-size:14px;padding:9px 14px;white-space:nowrap}
 .angcari{flex-wrap:wrap;align-items:center;gap:8px}.angcari .field{min-width:220px;flex:1;margin:0}
-.angsl{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:var(--mut);font-size:13px}.angsl input{flex:1;height:36px;-webkit-appearance:none;appearance:none;background:transparent;cursor:pointer}
-.angsl input::-webkit-slider-runnable-track{height:14px;border-radius:7px;background:var(--line)}
-.angsl input::-moz-range-track{height:14px;border-radius:7px;background:var(--line)}
-.angsl input::-webkit-slider-thumb{-webkit-appearance:none;width:34px;height:34px;margin-top:-10px;border-radius:50%;background:var(--ma);border:3px solid var(--panel);box-shadow:0 1px 3px rgba(0,0,0,.3)}
-.angsl input::-moz-range-thumb{width:28px;height:28px;border-radius:50%;background:var(--ma);border:3px solid var(--panel)}
-.angsl span{font-size:20px}
-.angw{scrollbar-width:auto;scrollbar-color:var(--ma) var(--line)}
-.angw::-webkit-scrollbar{height:20px}.angw::-webkit-scrollbar-track{background:var(--line);border-radius:10px}.angw::-webkit-scrollbar-thumb{background:var(--ma);border-radius:10px;border:3px solid var(--line)}
 @media print{.angw,.angw>table{transform:none}.angt th:first-child,.angt td:first-child{position:static;box-shadow:none}}
 /* Rincian pinjaman: gaya tabel seperti contoh Excel (kepala gelap dua tingkat, garis kisi, tombol tindakan berwarna). */
 .rpt{border-collapse:collapse;min-width:1100px;width:100%;background:#fff;color:#222;font-size:13px}
@@ -1575,7 +1566,7 @@ function riwayatPin(no){var L=LOAN.filter(function(x){return x.no==no}).slice().
 function listHTML(){var MEM=memA();
   var H=ANGH;
   return '<div class="panel"><div class="phead"><div><h3>Rincian anggota</h3><p>'+MEM.length+' anggota terdaftar · '+(viewCab()?ex(viewCab()):"Semua cabang")+'</p>'+'<p style="margin:2px 0 0">Saldo simpanan tercatat: <b>'+rp(MEM.reduce(function(t,d){return t+saldoSim(d.no)},0))+'</b></p><p style="margin:2px 0 0">Saldo pinjaman tercatat: <b>'+rp(MEM.reduce(function(t,d){return t+saldoPin(d.no)},0))+'</b></p></div><div class="acts noprint angcari" style="margin:0"><div class="field"><input id="aq" type="search" placeholder="Cari nama atau nomor anggota..." autocomplete="off" aria-label="Cari anggota"></div><button class="pbtn" onclick="window.print()">Cetak daftar anggota</button></div></div>'+
-  (MEM.length?'<p class="mutp noprint" style="margin:0 0 10px">Ketuk <b>nama anggota</b> untuk Cetak buku simpanan, Buku angsuran, atau Edit data (termasuk nomor rekening). Geser tabel ke kanan (penggeser ada di atas tabel) untuk melihat alamat lengkap dan kolom lainnya. Kolom Nama tetap terlihat. Saldo terisi otomatis dari modul Simpanan dan Pinjaman.</p><div class="angsl noprint"><span aria-hidden="true">◀</span><input id="angsl" type="range" min="0" max="1000" value="0" aria-label="Geser tabel ke kanan"><span aria-hidden="true">▶</span></div><div class="tblw angw" id="angw"><table class="tbl angt"><thead><tr>'+H.map(function(x,i){return "<th"+(i==2||i==3?' class="num"':i>=10?' class="noprint"':"")+">"+x+"</th>"}).join("")+'</tr></thead><tbody id="angbody">'+angRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada anggota</b>Isi formulir Input anggota baru di atas.</div>')+"</div>";
+  (MEM.length?'<p class="mutp noprint" style="margin:0 0 10px">Ketuk <b>nama anggota</b> untuk Cetak buku simpanan, Buku angsuran, atau Edit data (termasuk nomor rekening). Geser tabel ke kanan (penggeser ada di atas tabel) untuk melihat alamat lengkap dan kolom lainnya. Kolom Nama tetap terlihat. Saldo terisi otomatis dari modul Simpanan dan Pinjaman.</p><div class="tblw angw" id="angw"><table class="tbl angt"><thead><tr>'+H.map(function(x,i){return "<th"+(i==2||i==3?' class="num"':i>=10?' class="noprint"':"")+">"+x+"</th>"}).join("")+'</tr></thead><tbody id="angbody">'+angRows()+"</tbody></table></div>":'<div class="empty"><b>Belum ada anggota</b>Isi formulir Input anggota baru di atas.</div>')+"</div>";
 }
 // Panel Anggota satu halaman: Input anggota baru, lalu Rincian anggota (kolom cari di sebelah tombol Cetak daftar anggota).
 function angPage(){var MEM=memV();angEdit="";var f=boleh("ang1"),l=boleh("ang2");
@@ -2181,9 +2172,17 @@ function trxHari(cab){var t=today(),R=[],LC={};LOAN.forEach(function(l){LC[l.id]
       '<div class="empty"><b>Belum ada transaksi hari ini</b>Angsuran, simpanan, realisasi pinjaman, dan pengeluaran hari ini akan muncul di sini.</div>')+'</div>'}
 /* Batang geser kanan-kiri juga di ATAS tabel lebar (permintaan Ketua 11 Nov 2026), supaya kolom kanan langsung bisa dibuka. */
 function geserAtas(){document.querySelectorAll("#view .tblw").forEach(function(w){var g=w.previousElementSibling;
-  if(!g||!g.classList.contains("tgeser")){g=document.createElement("div");g.className="tgeser noprint";g.appendChild(document.createElement("div"));w.parentNode.insertBefore(g,w);
-    (function(g,w){g.addEventListener("scroll",function(){if(w.scrollLeft!==g.scrollLeft)w.scrollLeft=g.scrollLeft});w.addEventListener("scroll",function(){if(g.scrollLeft!==w.scrollLeft)g.scrollLeft=w.scrollLeft})})(g,w)}
-  g.firstChild.style.width=w.scrollWidth+"px";g.style.display=w.scrollWidth>w.clientWidth+2?"":"none"})}
+  if(!g||!g.classList.contains("tgeser")){g=document.createElement("div");g.className="tgeser noprint";g.setAttribute("aria-hidden","true");g.innerHTML='<span class="tgp">◀</span><div class="tgt"><div class="tgk"></div></div><span class="tgp">▶</span>';w.parentNode.insertBefore(g,w);
+    (function(g,w){var t=g.querySelector(".tgt"),k=g.querySelector(".tgk"),mx=function(){return Math.max(0,w.scrollWidth-w.clientWidth)};
+      var geser=function(x){var r=t.getBoundingClientRect(),kw=k.offsetWidth,f=(x-r.left-kw/2)/Math.max(1,r.width-kw);w.scrollLeft=Math.max(0,Math.min(1,f))*mx()};
+      var tarik=false;t.addEventListener("pointerdown",function(e){tarik=true;try{t.setPointerCapture(e.pointerId)}catch(x){}geser(e.clientX);e.preventDefault()});
+      t.addEventListener("pointermove",function(e){if(tarik)geser(e.clientX)});
+      ["pointerup","pointercancel"].forEach(function(n){t.addEventListener(n,function(){tarik=false})});
+      g.querySelectorAll(".tgp").forEach(function(b,i){b.addEventListener("click",function(){w.scrollBy({left:(i?1:-1)*w.clientWidth*.6,behavior:"smooth"})})});
+      w.addEventListener("scroll",function(){geserPos(g,w)})})(g,w)}
+  var lebar=w.scrollWidth>w.clientWidth+2;g.style.display=lebar?"":"none";w.classList.toggle("geser1",lebar);if(lebar)geserPos(g,w)})}
+function geserPos(g,w){var t=g.querySelector(".tgt"),k=g.querySelector(".tgk"),tw=t.clientWidth,kw=Math.max(40,tw*w.clientWidth/w.scrollWidth),m=Math.max(1,w.scrollWidth-w.clientWidth);
+  k.style.width=kw+"px";k.style.left=((tw-kw)*w.scrollLeft/m)+"px"}
 var geserT=0;function geserNanti(){cancelAnimationFrame(geserT);geserT=requestAnimationFrame(geserAtas)}
 window.addEventListener("resize",geserNanti);
 document.addEventListener("DOMContentLoaded",function(){var v=document.getElementById("view");if(v&&window.MutationObserver)new MutationObserver(geserNanti).observe(v,{childList:true,subtree:true})});
