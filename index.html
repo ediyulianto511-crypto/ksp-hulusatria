@@ -1710,7 +1710,7 @@ function applyState(o){
   if(typeof o.pal=="string"){pal=o.pal;if(pal)document.documentElement.setAttribute("data-palette",pal);else document.documentElement.removeAttribute("data-palette");warnaBar()}
 }
 /* ===== Penyimpanan per data (v2) ===== */
-var MIGAT=0,STORE={},SEQ=0,saving=0,dirty=false,lastLoad=0,COLS=["mem","loan","pay","tx","bu","kar","aju"],FORMS={ang1:1,sim0:1,sim1:1,sim2:1,pin1:1,pin3:1,apv:1,kar1:1,kel1:1,set2:1,kar3:1};
+var MIGAT=0,STORE={},SEQ=0,saving=0,dirty=false,lastLoad=0,VER=0,COLS=["mem","loan","pay","tx","bu","kar","aju"],FORMS={ang1:1,sim0:1,sim1:1,sim2:1,pin1:1,pin3:1,apv:1,kar1:1,kel1:1,set2:1,kar3:1};
 function canon(v){if(v===null||typeof v!="object")return JSON.stringify(v===undefined?null:v);if(Array.isArray(v))return "["+v.map(canon).join(",")+"]";return "{"+Object.keys(v).filter(function(k){return v[k]!==undefined}).sort().map(function(k){return JSON.stringify(k)+":"+canon(v[k])}).join(",")+"}"}
 function qOf(x){if(x.q==null)x.q=Date.now()*1000+(SEQ++%1000);return x}
 function docsOf(){var D={},g=function(o,k,x){(o[k]=o[k]||[]).push(x)};
@@ -1733,16 +1733,20 @@ function flush(){
   if(!W.length)return Promise.resolve();
   saving++;var i=0,gagal=0,cf=W.filter(function(w){return w[0]=="cfg/main"});W=W.filter(function(w){return w[0]!="cfg/main"});
   function next(){if(i>=W.length)return Promise.resolve();var w=W[i++];return tulis(w[0],w[1]).then(function(){if(w[2]===null)delete STORE[w[0]];else STORE[w[0]]=w[2]}).catch(function(e){gagal++;if(e&&e.code=="quota_exceeded")berhasil("Penyimpanan penuh","Kapasitas database aplikasi penuh. Hubungi pengelola aplikasi.")}).then(next)}
-  return Promise.all([next(),next(),next(),next()]).then(function(){if(cf.length&&!gagal){W=cf;i=0;return next()}}).then(function(){saving--;if(gagal){dirty=true;setTimeout(saveSoon,3000)}})}
+  return Promise.all([next(),next(),next(),next()]).then(function(){if(cf.length&&!gagal){W=cf;i=0;return next()}}).then(function(){saving--;lastLoad=Date.now();if(gagal){dirty=true;setTimeout(saveSoon,3000)}})}
 function saveSoon(){
-  clearTimeout(saveT);dirty=true;
+  clearTimeout(saveT);dirty=true;VER++;
   saveT=setTimeout(function(){dirty=false;flush()},400);
 }
-function ambil(c){var out=[];function step(last){var q=last==null?DB.collection(c).orderBy("k").limit(1000):DB.collection(c).where("k",">",last).orderBy("k").limit(1000);
-  return q.get().then(function(s){s.docs.forEach(function(d){var x=d.data();if(x){out.push(x);STORE[c+"/"+d.id]=canon(x)}});return s.size>=1000?step(out[out.length-1].k):out})}return step(null)}
-function muatV2(cfg){
-  STORE={};STORE["cfg/main"]=canon(cfg);MIGAT=cfg.migAt||0;
-  return Promise.all(COLS.map(ambil)).then(function(R){
+function ambil(c,ST){ST=ST||STORE;var out=[];function step(last){var q=last==null?DB.collection(c).orderBy("k").limit(1000):DB.collection(c).where("k",">",last).orderBy("k").limit(1000);
+  return q.get().then(function(s){s.docs.forEach(function(d){var x=d.data();if(x){out.push(x);ST[c+"/"+d.id]=canon(x)}});return s.size>=1000?step(out[out.length-1].k):out})}return step(null)}
+// ok(): penjaga untuk muat ulang berkala. Bila sejak mulai memuat ada perubahan lokal (mis. realisasi baru),
+// hasil muat dibuang supaya data server yang lama tidak menimpa transaksi yang baru disimpan.
+function muatV2(cfg,ok){
+  var NS={};NS["cfg/main"]=canon(cfg);
+  return Promise.all(COLS.map(function(c){return ambil(c,NS)})).then(function(R){
+    if(ok&&!ok())return false;
+    STORE=NS;MIGAT=cfg.migAt||0;
     var o={MOD:cfg.MOD,REG:cfg.REG,WIL:cfg.WIL,HAK:cfg.HAK,MUT:cfg.MUT||[],CAB:cfg.CAB,CABI:cfg.CABI,pal:cfg.pal},byq=function(a,b){return (a.q||0)-(b.q||0)},fl=function(A){return [].concat.apply([],A.map(function(d){return d.L||[]}))};
     o.MEM=R[0].map(function(d){return d.v});o.LOAN=R[1].map(function(d){return d.v});
     o.PAY=fl(R[2]).sort(byq);o.TX=fl(R[3]).sort(byq);o.BU=fl(R[4]).sort(function(a,b){return (a.id||0)-(b.id||0)});o.KAR=R[5].map(function(d){return d.v});o.AJU=(R[6]||[]).map(function(d){return d.v});
@@ -1755,8 +1759,8 @@ function loadAll(){
     STORE={};MIGAT=Date.now();lastLoad=Date.now();
   }).then(afterLoad).catch(function(e){afterLoad();berhasil("Gagal memuat data","Periksa koneksi internet, lalu muat ulang halaman. ("+(e&&e.message||e)+")")});
 }
-function segarkan(){if(!DB||saving||dirty||Date.now()-lastLoad<20000)return;
-  DB.doc("cfg/main").get().then(function(sn){if(!sn||!sn.exists||saving||dirty)return;return muatV2(sn.data()).then(function(){nav();if(!$("#app").hidden&&!FORMS[cur])page()})}).catch(function(){})}
+function segarkan(){if(!DB||saving||dirty||Date.now()-lastLoad<20000)return;var v0=VER;
+  DB.doc("cfg/main").get().then(function(sn){if(!sn||!sn.exists||saving||dirty||VER!==v0)return;return muatV2(sn.data(),function(){return VER===v0&&!saving&&!dirty}).then(function(dipakai){if(dipakai===false)return;nav();if(!$("#app").hidden&&!FORMS[cur])page()})}).catch(function(){})}
 document.addEventListener("visibilitychange",function(){if(document.visibilityState=="visible")segarkan()});
 setInterval(segarkan,60000);
 /* ===== Ekspor cadangan Excel ===== */
@@ -2407,7 +2411,9 @@ function lapHK(){var bln=hkBln||today().slice(0,7),D=hkData(bln),T={baru:0,kelua
   '<p class="mutp">Setoran angsuran sudah termasuk denda. Anggota baru, keluar, top up, realisasi pinjaman, dan setoran angsuran dihitung dari tanggal 1 sampai akhir '+nm+', lalu kembali nol setiap awal bulan. Anggota aktif, kualitas pinjaman (jumlah pinjaman per Kol 1–5), NPL, dan Aset kredit · Outstanding adalah posisi berjalan. NPL = sisa pinjaman Kol 3–5 × 100 ÷ Aset kredit · Outstanding (aturan OJK).</p></div>'}
 function bindHK(){var b=$("#hkb");if(b)b.onchange=function(){hkBln=this.value;page()}}
 var prevCur="dash";
-function go(id){if(id!=cur&&cur!="set3")prevCur=cur;if(!boleh(id)){berhasil("Akses ditutup","Jabatan "+ROLE+" tidak punya hak akses ke menu ini.");id="dash"}cur=id;var p=id.replace(/[0-9]+$/,"");open={};if(p!=id)open[p]=true;nav();page();closeM();window.scrollTo(0,0)}
+function go(id){if(id!=cur&&cur!="set3")prevCur=cur;if(!boleh(id)){berhasil("Akses ditutup","Jabatan "+ROLE+" tidak punya hak akses ke menu ini.");id="dash"}cur=id;var p=id.replace(/[0-9]+$/,"");open={};if(p!=id)open[p]=true;nav();page();closeM();window.scrollTo(0,0);
+  // Pindah panel: simpan dulu, lalu tarik data terbaru dari server (perubahan dari HP/PC lain).
+  setTimeout(segarkan,2500)}
 function openM(){$("#side").classList.add("open");$("#scrim").classList.add("open")}
 function closeM(){$("#side").classList.remove("open");$("#scrim").classList.remove("open")}
 $("#nav").addEventListener("click",function(e){var b=e.target.closest(".nav");if(!b)return;if(b.dataset.grp){var g=b.dataset.grp,st=!open[g];open={};if(st)open[g]=true;nav();return}go(b.dataset.id)});
