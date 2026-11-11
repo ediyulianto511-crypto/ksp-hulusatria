@@ -445,9 +445,21 @@ var KOPKAR="Karyawan HS (Kopkar)",KOPKAR_I={kode:"KP",al:"Desa Medayu RT.01 RW.0
 var KAR=[],BU=[],MUT=[],CAB0=[KOPKAR,"Cabang 1","Cabang 2","Cabang 3","Cabang 4","Cabang 5"],CAB=CAB0.slice(),CABI={"Karyawan HS (Kopkar)":JSON.parse(JSON.stringify(KOPKAR_I)),"Cabang 1":{pusat:1,al:"Desa Medayu RT.01 RW.02, Kec. Wanadadi, Kab. Banjarnegara",jam:"Senin–Sabtu 08.00–19.00",hp:"",kep:""}};
 /* Kantor cabang: data lama tanpa cabang (atau "Kantor Pusat") dihitung sebagai Cabang 1. */
 /* Cabang bawaan untuk data lama tanpa cabang: Cabang 1 (bukan Kopkar). */
-function cabDef(){return CAB.indexOf("Cabang 1")>=0?"Cabang 1":(CAB.filter(function(c){return c!=KOPKAR})[0]||CAB[0])}
-function cabNorm(n){n=String(n||"").trim();return !n||n=="Kantor Pusat"?cabDef():n}
-function cabGabung(L){var o=CAB0.slice();(L||[]).forEach(function(c){c=cabNorm(c);if(o.indexOf(c)<0)o.push(c)});return o}
+function cabDef(){if(CAB.indexOf("Cabang 1")>=0)return "Cabang 1";var k1=CAB.filter(function(c){return c!=KOPKAR&&CABI[c]&&+CABI[c].kode==1})[0];return k1||(CAB.filter(function(c){return c!=KOPKAR})[0]||CAB[0])}
+function cabNorm(n){n=String(n||"").trim();if(!n||n=="Kantor Pusat")return cabDef();
+  // nama lama "Cabang N" yang sudah di-Edit: ikut cabang yang sekarang memegang kode N
+  var m=CAB.indexOf(n)<0&&/^Cabang (\d+)$/.exec(n);if(m){var g=CAB.filter(function(c){return CABI[c]&&+CABI[c].kode==+m[1]})[0];if(g)return g}return n}
+/* Daftar cabang tersimpan dipakai apa adanya. Cabang bawaan (Cabang 1–5) hanya dipakai bila belum ada daftar tersimpan,
+   supaya cabang yang sudah di-Edit (ganti nama) tidak muncul lagi sebagai cabang tambahan. */
+function cabGabung(L){var o=L&&L.length?[KOPKAR]:CAB0.slice();(L||[]).forEach(function(c){c=String(c||"").trim()=="Kantor Pusat"?"Cabang 1":String(c||"").trim();if(c&&o.indexOf(c)<0)o.push(c)});return o}
+/* Bersihkan cabang bawaan "Cabang N" yang muncul lagi setelah cabang itu di-Edit namanya (kodenya sudah dipakai cabang lain,
+   tidak punya data cabang, dan tidak dipakai anggota/karyawan). */
+function cabBersih(){var hapus={};CAB.forEach(function(c){var m=/^Cabang (\d+)$/.exec(c);if(!m||CABI[c])return;
+    var ganti=CAB.filter(function(x){return x!=c&&CABI[x]&&+CABI[x].kode==+m[1]})[0];if(!ganti)return;
+    if(MEM.some(function(x){return x.cab==c})||KAR.some(function(x){return x.cab==c}))return;hapus[c]=ganti});
+  if(!Object.keys(hapus).length)return;var pakai={};for(var g in hapus)pakai[hapus[g]]=1;
+  // cabang hasil edit menempati urutan cabang lamanya
+  CAB=CAB.filter(function(c){return !pakai[c]}).map(function(c){return hapus[c]||c})}
 function memCab(m){return cabNorm(m&&m.cab)}
 function loanCab(l){if(l&&l.model=="kk")return KOPKAR;var m=MEM.filter(function(x){return x.no==l.no})[0];return memCab(m)}
 var JAB=["Ketua (owner)","Akuntan","Manager Utama","Administrasi","Manager Operasional","Analis Kredit","Marketing Lapangan"];
@@ -1711,7 +1723,7 @@ function applyState(o){
   if(o.AJU){AJU.length=0;o.AJU.forEach(function(x){AJU.push(x)})}
   if(o.WIL)WIL=o.WIL;
   if(o.MUT){MUT.length=0;o.MUT.forEach(function(x){MUT.push(x)})}
-  if(o.CAB&&o.CAB.length)CAB=cabGabung(o.CAB);if(o.CABI&&typeof o.CABI=="object")CABI=o.CABI;if(!CABI[KOPKAR])CABI[KOPKAR]=JSON.parse(JSON.stringify(KOPKAR_I));
+  if(o.CAB&&o.CAB.length)CAB=cabGabung(o.CAB);if(o.CABI&&typeof o.CABI=="object")CABI=o.CABI;if(!CABI[KOPKAR])CABI[KOPKAR]=JSON.parse(JSON.stringify(KOPKAR_I));if(o.CAB&&o.CAB.length)cabBersih();
   if(typeof o.pal=="string"){pal=o.pal;if(pal)document.documentElement.setAttribute("data-palette",pal);else document.documentElement.removeAttribute("data-palette");warnaBar()}
 }
 /* ===== Penyimpanan per data (v2) ===== */
@@ -2292,7 +2304,7 @@ function bindCab(){cabFlash="";
     if(hp&&!/^(\+62|0)[0-9]{8,13}$/.test(hp)){o.className="err";o.textContent="Nomor HP tidak valid. Contoh: 0812xxxxxxxx.";return}
     if(d.pusat)CAB.forEach(function(x){if(CABI[x])delete CABI[x].pusat});
     if(cabEd){var lama=cabEd,i=CAB.indexOf(lama),kd=lama==KOPKAR?"KP":+kodeCab(lama);if(n!=lama){CAB[i]=n;delete CABI[lama];
-        MEM.forEach(function(m){if(memCab(m)==lama)m.cab=n});KAR.forEach(function(k){if(cabOf(k)==lama)k.cab=n});if(gCab==lama)setGCab(n)}
+        MEM.forEach(function(m){if(memCab(m)==lama)m.cab=n});KAR.forEach(function(k){if(cabOf(k)==lama)k.cab=n});[TX,BU,AJU,LOAN].forEach(function(A){A.forEach(function(x){if(x&&x.cab==lama)x.cab=n})});if(gCab==lama)setGCab(n)}
       d.kode=kd;CABI[n]=d;cabFlash="Data "+n+" tersimpan.";berhasil("Kantor cabang diperbarui",n)}
     else{d.kode=CAB.reduce(function(a,x){return Math.max(a,+kodeCab(x)||0)},0)+1;CAB.push(n);CABI[n]=d;cabFlash=n+" ditambahkan.";berhasil("Kantor cabang ditambahkan",n)}
     cabEd="";cabAdd=false;saveSoon();page()}}
