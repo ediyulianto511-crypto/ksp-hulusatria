@@ -109,6 +109,9 @@ label{display:block;font-size:13px;font-weight:600;color:var(--mut);margin:14px 
 main{margin-left:248px;min-height:100vh}
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:10;background:var(--bg);border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:14px 28px;font-size:14px;color:var(--mut)}
 .top b{color:var(--ink)}
+.top>span:not(.gcab){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* Tombol Cancel: selalu terlihat di bar atas, kembali ke panel sebelumnya. */
+.tcx{margin-left:auto;flex:none;border:1px solid #C0392B;background:#C0392B;color:#fff;border-radius:12px;padding:7px 16px;font:inherit;font-size:14px;font-weight:700;cursor:pointer}.tcx:hover{background:#A93226}
 #burger{display:none;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 10px;cursor:pointer}
 #scrim{display:none}
 .wrap{padding:28px;max-width:1180px}
@@ -311,7 +314,7 @@ main{margin-left:248px;min-height:100vh}
 main{margin-left:0}
 #burger{display:block}
 .top{padding:12px 16px}
-.gcab{margin-left:auto}.gcab select{font:inherit;font-size:13px;font-weight:700;color:var(--ma);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px;max-width:150px}.wrap{padding:18px 16px}.foot{padding:8px 16px 24px}
+.gcab{margin-left:auto}.gcab:not(:empty)~.tcx{margin-left:0}.gcab select{font:inherit;font-size:13px;font-weight:700;color:var(--ma);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:7px 10px;max-width:150px}.wrap{padding:18px 16px}.foot{padding:8px 16px 24px}
 .panel{padding:16px;border-radius:20px}
 }
 @media print{#side,.top,.pbtn,#scrim,.foot,.mutp,.noprint{display:none!important}main{margin:0}.tblw{overflow:visible}.tbl.wide{min-width:0;white-space:normal;font-size:11px}.tbl.wide td:first-child,.tbl.wide th:first-child{position:static}}
@@ -410,7 +413,7 @@ window.KSP_CONFIG = {
   </div>
 </section>
 
-<div id="toast" role="status" aria-live="polite"><div class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="tx"><b id="tj"></b><span id="tp"></span></div><button type="button" class="tcl" aria-label="Tutup">×</button></div>
+<div id="toast" role="status" aria-live="polite"><div class="tic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div><div class="tx"><b id="tj"></b><span id="tp"></span></div><button type="button" class="tcl" aria-label="Cancel">×</button></div>
 <div id="app" hidden>
   <aside id="side">
     <div class="sbrand2"><span class="mono">HS</span><span class="bt"><b>HULUSATRIA</b><span>GROUP</span></span></div>
@@ -420,7 +423,7 @@ window.KSP_CONFIG = {
   </aside>
   <div id="scrim"></div>
   <main>
-    <div class="top"><button id="burger" aria-label="Buka menu">Menu</button><span>HS GROUP / <b id="crumb">Dashboard</b></span><span id="gcabw" class="gcab noprint"></span></div>
+    <div class="top"><button id="burger" aria-label="Buka menu">Menu</button><span>HS GROUP / <b id="crumb">Dashboard</b></span><span id="gcabw" class="gcab noprint"></span><button type="button" id="tcx" class="tcx noprint" hidden onclick="batalPanel()" title="Tidak jadi: kembali ke panel sebelumnya tanpa menyimpan">Cancel</button></div>
     <div class="wrap" id="view"></div>
     <div class="foot">HS GROUP · KSP Hulusatria Madani · versi 6.9</div>
   </main>
@@ -583,7 +586,7 @@ function formHTML(){
   F("frb","Bank",'<input id="frb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
   F("frn","No. rekening",'<input id="frn" type="text" inputmode="numeric" placeholder="Contoh: 0004-01-000000-30-7" autocomplete="off">')+
   F("fra","Atas nama rekening",'<input id="fra" type="text" placeholder="Nama pemilik rekening" autocomplete="off">')+
-  '</div><div id="fmsg" class="ok" role="status"></div><div class="acts" style="margin:0"><button class="btn" id="fsv" type="submit" style="max-width:260px">Simpan anggota</button><button class="lnk" id="fbatal" type="button" hidden onclick="angEditSelesai()">Batal edit</button></div><p class="mutp">Periksa data sesuai KTP sebelum menyimpan. Foto KTP ikut disimpan.</p></form></div>';
+  '</div><div id="fmsg" class="ok" role="status"></div><div class="acts" style="margin:0"><button class="btn" id="fsv" type="submit" style="max-width:260px">Simpan anggota</button><button class="lnk" id="fbatal" type="button" hidden onclick="angEditSelesai()">Cancel edit</button></div><p class="mutp">Periksa data sesuai KTP sebelum menyimpan. Foto KTP ikut disimpan.</p></form></div>';
 }
 var TX=[],fSim="",simArah="masuk",simJns="Simpanan pokok",simPer="1b";
 var JNS=["Simpanan pokok","Simpanan wajib","Simpanan berjangka","Simpanan sukarela"];
@@ -891,7 +894,7 @@ function fotoBind(){var w=$("#pfw");if(!w)return;
   w.onclick=function(e){var b=e.target.closest("[data-pfx]");if(!b)return;PFOTO.splice(+b.dataset.pfx,1);w.innerHTML=fotoInner();fotoBind()};
   var inp=$("#pfin");if(inp)inp.onchange=function(){var mx=fotoMax();[].forEach.call(this.files,function(f){if(/^image\//.test(f.type)&&PFOTO.length<mx)PFOTO.push({f:f,u:URL.createObjectURL(f)})});w.innerHTML=fotoInner();fotoBind()}}
 function doneBlock(){var l=LOAN.filter(function(x){return x.id==lastPJ})[0];if(!l)return "";
-  return '<div class="pdone" role="status"><b>✓ Realisasi '+l.id+' berhasil</b><p>'+ex(l.nama)+' · '+mdl(l).n+' · terima bersih '+rp(terimaOf(l))+'. Cetak SPK pinjaman (surat perjanjian kontrak) untuk arsip kantor.</p><div class="acts"><button class="pbtn" type="button" onclick="cetakPinjaman(\''+l.id+'\')">Cetak SPK pinjaman</button><button class="lnk" type="button" onclick="lastPJ=\'\';page()">Tutup</button></div></div>'}
+  return '<div class="pdone" role="status"><b>✓ Realisasi '+l.id+' berhasil</b><p>'+ex(l.nama)+' · '+mdl(l).n+' · terima bersih '+rp(terimaOf(l))+'. Cetak SPK pinjaman (surat perjanjian kontrak) untuk arsip kantor.</p><div class="acts"><button class="pbtn" type="button" onclick="cetakPinjaman(\''+l.id+'\')">Cetak SPK pinjaman</button><button class="lnk" type="button" onclick="lastPJ=\'\';page()">Cancel</button></div></div>'}
 function simpanDoc(key,file){kecil(file,function(img){if(!img)return;if(DB)DB.doc("doc/"+key).set({img:img}).catch(function(){})})}
 /* Foto KTP anggota impor yang nomornya diganti tetap tersimpan di nomor lama (fno). */
 function ktpKey(no){var m=MEM.filter(function(x){return x.no==no})[0];return m&&m.fno||no}
@@ -1040,7 +1043,7 @@ function tagPage(){
     var h='<div class="tgc '+st+'"><div class="tgh"><div><b>'+ex(l.nama)+'</b><p>'+l.id+' · '+m.n+' · '+l.no+'</p><span class="st jn">'+m.n+'</span> <span class="st '+st+'">'+stTxt+'</span> '+kolBadge(kq0)+'</div><div class="tr"><small>'+bigL+'</small><strong>'+big+'</strong></div></div>'+
       '<div class="tgm"><span>Marketing</span><div class="field">'+mktSel("mk_"+l.id,l.mkt,false)+'</div></div><div class="tgd"><div><small>Angsuran</small><b>'+rp(l.ang)+'</b></div><div><small>Sudah bayar</small><b>'+paidN+' / '+l.tenor+'×</b></div><div><small>'+(done?"Denda":"Denda berjalan")+'</small><b>'+rp(r.denda)+'</b></div></div>'+(kq0?'<div class="kdet">Kualitas <b>'+kq0.kode+' · '+kq0.nama+'</b>'+(kq0.n>1?' · telat '+kq0.telat+' hari · kurang '+kq0.kali+' angsuran ('+rp(kq0.kurang)+')'+' · dinilai dari '+kq0.dari:' · tidak ada tunggakan')+'</div>':'');
     if(!done){var hp=String(a.hp||"").replace(/[^0-9]/g,"").replace(/^0/,"62"),msg="Yth. "+l.nama+", tagihan angsuran "+l.id+" KSP Hulusatria Madani "+(r.due.length?"sebesar "+rp(tot)+(r.denda?" (termasuk denda "+rp(r.denda)+")":"")+" sudah jatuh tempo.":"sebesar "+rp(x.sisa)+" jatuh tempo "+tgl(x.tg)+".")+" Terima kasih.";
-      h+='<div class="tga"><button class="pbtn" type="button" data-pay="'+l.id+'">'+(tagOpen==l.id?"Tutup":"Bayar angsuran")+'</button>'+(PAY.some(function(q){return q.id==l.id&&!/^Pelunasan top up/.test(q.ket||"")})?'<button type="button" class="kbtn" data-strukl="'+l.id+'">Struk setoran angsuran</button>':'')+'</div>';
+      h+='<div class="tga"><button class="pbtn" type="button" data-pay="'+l.id+'">'+(tagOpen==l.id?"Cancel":"Bayar angsuran")+'</button>'+(PAY.some(function(q){return q.id==l.id&&!/^Pelunasan top up/.test(q.ket||"")})?'<button type="button" class="kbtn" data-strukl="'+l.id+'">Struk setoran angsuran</button>':'')+'</div>';
       if(tagOpen==l.id){var def=r.due.length?tot:x.sisa+0;
         h+='<form class="tgf" data-pf="'+l.id+'" novalidate><div class="fg"><div><label for="tb_'+l.id+'">Jumlah bayar (Rp)</label><div class="field"><input id="tb_'+l.id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(def)+'" autocomplete="off"></div></div><div><label for="tt_'+l.id+'">Tanggal bayar</label><div class="field"><input id="tt_'+l.id+'" type="date" value="'+today()+'"></div></div><div><label for="tmt_'+l.id+'">Metode bayar</label><div class="field"><select id="tmt_'+l.id+'"><option value="">Pilih tunai / transfer</option><option>Tunai</option><option>Transfer</option></select></div></div></div>'+
         '<p class="mutp">Pembayaran dipakai untuk denda dulu, sisanya untuk angsuran tertua. Sisa pinjaman sekarang '+rp(sisaP(l))+'.'+(function(){var b=bdInfo(l,today());return b&&b.pb?' Kalau dilunasi/top up hari ini: bunga diakui '+b.n+' kali, potongan bunga '+rp(b.pb)+'.':''})()+'</p><div id="tm_'+l.id+'" class="err" role="alert"></div><div class="pact2"><button class="btn" type="button" data-full="'+l.id+'" style="background:var(--c2);color:var(--t2)">Lunasi semua ('+rp(lunasNet(l,today()))+')</button><button class="btn" type="submit">Simpan pembayaran</button></div>'+(saldoSim(l.no)>0?'<button class="btn" type="button" data-close="'+l.id+'" style="margin-top:8px;background:var(--c2);color:var(--t2)">Pelunasan close (pakai simpanan '+rp(saldoSim(l.no))+')</button>':"")+'</form>'}}
@@ -1187,7 +1190,7 @@ function tolakPin(no,tg){var RB=riwBuruk(no);if(RB.length){var w=RB.reduce(funct
   return null}
 var tolakNo="";
 /* Penolakan juga muncul sebagai kotak merah di tengah layar supaya langsung terlihat. */
-function tolakPop(r){var w=document.createElement("div");w.className="tpop";w.innerHTML='<div class="tpb">'+tolakHTML(r)+'<button class="btn" type="button" style="margin-top:14px;background:#C0392B">Tutup</button></div>';w.onclick=function(e){if(e.target==w||e.target.closest("button"))w.remove()};document.body.appendChild(w)}
+function tolakPop(r){var w=document.createElement("div");w.className="tpop";w.innerHTML='<div class="tpb">'+tolakHTML(r)+'<button class="btn" type="button" style="margin-top:14px;background:#C0392B">Cancel</button></div>';w.onclick=function(e){if(e.target==w||e.target.closest("button"))w.remove()};document.body.appendChild(w)}
 function tolakHTML(r){return '<div class="ptolak" role="alert"><b>PINJAMAN DITOLAK</b><span>'+ex(r.j)+'</span><small>'+ex(r.t)+'</small></div>'}
 /* Cek aturan pinjaman: dipakai saat proposal, persetujuan, dan realisasi. */
 function cekPin(P,tg){var a=MEM.filter(function(d){return d.no==P.no})[0];if(!a)return "Anggota tidak ditemukan.";
@@ -1230,7 +1233,7 @@ function realForm(x){var P=x.d,F=function(id,lb,inp,au){return '<div><label for=
   F("rl_tg","Tanggal realisasi",'<input id="rl_tg" type="date">',1)+
   F("pcm","Pencairan diterimakan secara",'<select id="pcm"><option value="">Pilih tunai / transfer</option><option>Tunai</option><option>Transfer</option></select>')+
   '<div id="prekw" hidden style="grid-column:1/-1"><div class="fg">'+F("prb","Bank tujuan",'<input id="prb" type="text" readonly placeholder="Dari data anggota">')+F("prn","No. rekening tujuan",'<input id="prn" type="text" readonly placeholder="Dari data anggota">')+F("pra","Atas nama rekening",'<input id="pra" type="text" readonly placeholder="Dari data anggota">')+'</div><p id="prekm" class="err" style="margin:4px 0 0" hidden>Rekening pencairan anggota ini belum ada. Isi dulu di panel Anggota (Rincian anggota, kolom Rekening pencairan, tombol Isi).</p></div>'+
-  '</div>'+(P.jam?'<p class="mutp">Jaminan: '+ex(P.jam.jenis)+' · taksiran '+rp(P.jam.nilai)+(P.jam.ket?' · '+ex(P.jam.ket):'')+'</p>':'')+docBlock()+'<div id="rl_rc" class="mutp" style="line-height:1.7"></div><div id="rl_msg" class="err" role="alert"></div><div class="acts"><button class="btn" type="submit" style="max-width:280px">Realisasikan pinjaman</button><button class="btn" type="button" disabled title="Aktif setelah pinjaman direalisasikan" style="max-width:280px;background:var(--c2);color:var(--t2);opacity:.6;cursor:not-allowed">SPK pinjaman</button><button class="lnk" type="button" id="rl_x">Batal pilih</button></div><p class="mutp">Saat direalisasikan, pinjaman mulai berjalan, kas berkurang, bukti pencairan dikirim, dan pinjaman lama (top up) tercatat lunas. Aturan Kol dicek ulang pada tanggal realisasi.</p></form></div>'}
+  '</div>'+(P.jam?'<p class="mutp">Jaminan: '+ex(P.jam.jenis)+' · taksiran '+rp(P.jam.nilai)+(P.jam.ket?' · '+ex(P.jam.ket):'')+'</p>':'')+docBlock()+'<div id="rl_rc" class="mutp" style="line-height:1.7"></div><div id="rl_msg" class="err" role="alert"></div><div class="acts"><button class="btn" type="submit" style="max-width:280px">Realisasikan pinjaman</button><button class="btn" type="button" disabled title="Aktif setelah pinjaman direalisasikan" style="max-width:280px;background:var(--c2);color:var(--t2);opacity:.6;cursor:not-allowed">SPK pinjaman</button><button class="lnk" type="button" id="rl_x">Cancel</button></div><p class="mutp">Saat direalisasikan, pinjaman mulai berjalan, kas berkurang, bukti pencairan dikirim, dan pinjaman lama (top up) tercatat lunas. Aturan Kol dicek ulang pada tanggal realisasi.</p></form></div>'}
 function bindReal(){document.querySelectorAll("[data-rsel]").forEach(function(b){b.onclick=function(){realSel=this.dataset.rsel;PDOC={};PFOTO=[];lastPJ="";page()}});
   var f=$("#rlform"),x=ajuOf(realSel);if(!f||!x)return;var P=x.d,a=MEM.filter(function(d){return d.no==P.no})[0]||{};$("#rl_tg").value=today();
   var rek=function(){var rk=a.rk||{};[["prb","b"],["prn","n"],["pra","a"]].forEach(function(q){$("#"+q[0]).value=rk[q[1]]||""});$("#prekw").hidden=$("#pcm").value!="Transfer";$("#prekm").hidden=rekOk(rk)};
@@ -1248,7 +1251,7 @@ function ajuCard(x){var ok=bisaSetuju(x),d=x.d,R=[],id=x.id,tl=null;
   return '<div class="panel" style="margin-bottom:14px"><div class="phead hc" style="--hb:'+(x.t=="pin"?"#00C0EF":x.t=="sim"?"#F39C12":"#DD4B39")+';--hf:#fff"><div><h3>'+AJT[x.t]+' · '+id+'</h3><p>'+rp(d.v||d.jml)+'</p></div></div>'+
   '<div class="tblw"><table class="tbl"><tbody>'+R.map(function(q){return "<tr><td style=\"width:42%\">"+q[0]+"</td><td><b>"+q[1]+"</b></td></tr>"}).join("")+'</tbody></table></div>'+(tl?tolakHTML(tl):"")+
   (ok?'<div class="fg" style="margin-top:12px">'+(x.t=="pin"?'<div><label for="av_'+id+'">Jumlah disetujui (Rp)</label><div class="field"><input id="av_'+id+'" data-rpf type="text" inputmode="numeric" value="'+fmtRp(d.v)+'"></div></div>':"")+'<div><label for="as_'+id+'">Status persetujuan</label><div class="field"><select id="as_'+id+'" data-ast="'+id+'"><option value="">Pilih status persetujuan</option><option value="ok">Disetujui</option><option value="no">Tidak disetujui</option></select></div></div><div><label for="ar_'+id+'">Keterangan (wajib kalau tidak disetujui)</label><div class="field"><input id="ar_'+id+'" type="text" autocomplete="off"></div></div></div><div id="am_'+id+'" class="err" role="alert"></div><button class="btn" type="button" data-asv="'+id+'" style="max-width:320px;margin-top:10px">Simpan status persetujuan</button>'+(x.t=="pin"?'<p class="mutp">Jumlah boleh diturunkan dari yang diajukan. Kalau masih ada jenjang di atas, ajuan naik ke jenjang berikutnya. Pinjaman baru bisa direalisasi setelah jenjang terakhir menyetujui. Kalau ditolak, ajuan berhenti.</p>':'<p class="mutp">Setelah disetujui, transaksi langsung tercatat dan saldo berubah.</p>'):
-  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?LVLN[ajuLv(x)]:"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Batalkan ajuan ini</button></div>':""))+'</div>'}
+  '<p class="mutp" style="margin-top:12px">Menunggu persetujuan '+(x.t=="pin"?LVLN[ajuLv(x)]:"Ketua, Manager Utama, atau Manager Operasional cabang")+'.</p>'+(x.oleh==siapa()?'<div class="acts"><button class="lnk" type="button" data-abt="'+id+'">Cancel ajuan ini</button></div>':""))+'</div>'}
 function apvPage(){var T=AJU.filter(function(x){return x.st=="tunggu"&&cabOk(x)}).sort(function(a,b){return a.at<b.at?-1:1});
   return T.length?T.map(ajuCard).join(""):'<div class="panel"><div class="empty"><b>Tidak ada ajuan yang menunggu persetujuan</b>Proposal pinjaman, simpanan keluar, dan pengeluaran BU yang belum disetujui akan muncul di sini.</div></div>'}
 function simTxOf(x){return {no:x.d.no,nama:x.d.nama,jenis:x.d.jenis,tipe:"keluar",jml:x.d.jml,tg:today(),ket:x.d.ket||"",cab:x.cab,aju:x.id,oleh:x.oleh,jab:x.jab}}
@@ -1272,7 +1275,7 @@ function ajuSetuju(id){var x=ajuOf(id),m=$("#am_"+id);if(!x||x.st!="tunggu")retu
 function ajuTolak(id){var x=ajuOf(id),m=$("#am_"+id),al=(($("#ar_"+id)||{}).value||"").trim();if(!x||x.st!="tunggu"||!bisaSetuju(x))return;
   if(!al){m.textContent="Tulis alasan di kolom Keterangan kalau tidak disetujui.";return}
   x.st="tolak";x.tl={oleh:siapa(),jab:ROLE,at:jamNow(),alasan:al};saveSoon();berhasil("Ajuan tidak disetujui",AJT[x.t]+" "+id+" tidak disetujui.");nav();page()}
-function ajuBatal(id){var x=ajuOf(id);if(!x||x.st!="tunggu"||!confirm("Batalkan ajuan "+id+"?"))return;x.st="batal";x.bt={oleh:siapa(),at:jamNow()};saveSoon();nav();page()}
+function ajuBatal(id){var x=ajuOf(id);if(!x||x.st!="tunggu"||!confirm("Cancel ajuan "+id+"?"))return;x.st="batal";x.bt={oleh:siapa(),at:jamNow()};saveSoon();nav();page()}
 document.addEventListener("click",function(e){var b=e.target.closest&&e.target.closest("[data-aok],[data-ano],[data-abt],[data-asv]");if(!b)return;
   if(b.dataset.asv){var v=($("#as_"+b.dataset.asv)||{}).value;if(v=="ok")ajuSetuju(b.dataset.asv);else if(v=="no")ajuTolak(b.dataset.asv);else $("#am_"+b.dataset.asv).textContent="Pilih status persetujuan: Disetujui atau Tidak disetujui.";return}
   if(b.dataset.aok)ajuSetuju(b.dataset.aok);else if(b.dataset.ano)ajuTolak(b.dataset.ano);else ajuBatal(b.dataset.abt)});
@@ -1322,7 +1325,7 @@ function edPanel(){var l=edLoan();if(!l)return "";var t=tierOf(l.model||"bl",l.p
   '<div><label for="ed_pp">Realisasi pinjaman (Rp)</label><div class="field"><input id="ed_pp" data-rpf type="text" inputmode="numeric" value="'+fmtRp(l.pokok)+'"></div></div>'+
   '<div><label for="ed_n">Jangka waktu</label><div class="field"><select id="ed_n">'+ns.map(function(x){return '<option value="'+x+'"'+(x==l.tenor?" selected":"")+'>'+tenorTxt(l.model||"bl",x)+'</option>'}).join("")+'</select></div></div></div>'+
   '<div id="ed_pv" class="mutp" style="line-height:1.7"></div><div id="ed_msg" class="err" role="alert"></div>'+
-  '<div class="acts"><button class="btn" type="button" id="ed_sv" style="max-width:260px">Simpan edit</button><button class="lnk" type="button" id="ed_x">Tutup</button></div>'+
+  '<div class="acts"><button class="btn" type="button" id="ed_sv" style="max-width:260px">Simpan edit</button><button class="lnk" type="button" id="ed_x">Cancel</button></div>'+
   '<p class="mutp">Potongan, bunga, dan angsuran dihitung ulang dari Regulasi yang berlaku sekarang. Setoran yang sudah masuk tetap tercatat.'+(top?' Tanggal pinjaman top up tidak bisa diubah; kalau salah, pakai Cancel realisasi lalu realisasi ulang.':'')+'</p></div>'}
 function edHit(){var l=edLoan(),p=dig($("#ed_pp").value),n=+$("#ed_n").value;return hitung(l.model||"bl",p,n)}
 function edPrev(){var l=edLoan(),r=edHit(),o=$("#ed_pv");if(!o)return;if(r.err){o.textContent=r.err;return}
@@ -1410,7 +1413,7 @@ var ANGH=["Nama","No HP","Saldo simpanan","Saldo pinjaman","Alamat","Kelurahan/D
 function angRows(){var MEM=memA(),q=angQ.trim().toLowerCase(),out="",ts=0,tp=0,n=0,C=ANGH.length;
   MEM.forEach(function(d){if(q&&String(d.nama).toLowerCase().indexOf(q)<0&&String(d.no).toLowerCase().indexOf(q)<0)return;n++;var a=saldoSim(d.no),b=saldoPin(d.no);ts+=a;tp+=b;
     var rb=riwBuruk(d.no),rbm=rb.reduce(function(a,x){return Math.max(a,x.n)},0),k=LOAN.filter(function(l){return l.no==d.no}).length,rtw=(d.rt||d.rw)?"RT "+(d.rt||"-")+" / RW "+(d.rw||"-"):"";
-    out+="<tr><td>"+'<button class="lnk" type="button" data-am="'+ex(d.no)+'" aria-expanded="'+!!angAct[d.no]+'" title="Klik untuk cetak buku atau edit" style="text-align:left;padding:0">'+ex(d.nama)+' <span aria-hidden="true">'+(angAct[d.no]?"▴":"▾")+'</span></button><br><small class="mutp" style="margin:0">'+ex(d.no)+"</small>"+(rb.length?'<br><small style="color:#A12B3C;font-weight:700">Riwayat buruk: pernah '+KOL[rbm][0]+'</small>':"")+"</td><td>"+ex(d.hp||"-")+'</td><td class="num">'+rp(a)+'</td><td class="num">'+rp(b)+"</td><td>"+ex([d.al,rtw].filter(Boolean).join(", ")||"-")+"</td><td>"+ex(d.kl||"-")+"</td><td>"+ex(d.kc||"-")+"</td><td>"+ex(d.kb||"-")+"</td><td>"+(rekOk(d.rk)?ex(d.rk.b+" "+d.rk.n)+'<br><small class="mutp" style="margin:0">a.n. '+ex(d.rk.a)+"</small>":'<span style="color:#A12B3C">Belum ada</span>')+(boleh("ang1")?' <button class="lnk noprint" type="button" data-rk="'+ex(d.no)+'">'+(angRk[d.no]?"Tutup":rekOk(d.rk)?"Ubah":"Isi")+"</button>":"")+"</td><td>"+ex(d.jk||"-")+"</td><td>"+lama(d.dt)+'</td><td class="noprint">'+(d.foto?'<button class="pbtn" onclick="lihatKtp(\''+d.no+'\')">Lihat</button>':"-")+'</td><td class="noprint">'+(k?'<button class="lnk" type="button" data-rp="'+ex(d.no)+'">'+(angRp[d.no]?"Tutup":k+" pinjaman")+'</button>':"-")+"</td></tr>";
+    out+="<tr><td>"+'<button class="lnk" type="button" data-am="'+ex(d.no)+'" aria-expanded="'+!!angAct[d.no]+'" title="Klik untuk cetak buku atau edit" style="text-align:left;padding:0">'+ex(d.nama)+' <span aria-hidden="true">'+(angAct[d.no]?"▴":"▾")+'</span></button><br><small class="mutp" style="margin:0">'+ex(d.no)+"</small>"+(rb.length?'<br><small style="color:#A12B3C;font-weight:700">Riwayat buruk: pernah '+KOL[rbm][0]+'</small>':"")+"</td><td>"+ex(d.hp||"-")+'</td><td class="num">'+rp(a)+'</td><td class="num">'+rp(b)+"</td><td>"+ex([d.al,rtw].filter(Boolean).join(", ")||"-")+"</td><td>"+ex(d.kl||"-")+"</td><td>"+ex(d.kc||"-")+"</td><td>"+ex(d.kb||"-")+"</td><td>"+(rekOk(d.rk)?ex(d.rk.b+" "+d.rk.n)+'<br><small class="mutp" style="margin:0">a.n. '+ex(d.rk.a)+"</small>":'<span style="color:#A12B3C">Belum ada</span>')+(boleh("ang1")?' <button class="lnk noprint" type="button" data-rk="'+ex(d.no)+'">'+(angRk[d.no]?"Cancel":rekOk(d.rk)?"Ubah":"Isi")+"</button>":"")+"</td><td>"+ex(d.jk||"-")+"</td><td>"+lama(d.dt)+'</td><td class="noprint">'+(d.foto?'<button class="pbtn" onclick="lihatKtp(\''+d.no+'\')">Lihat</button>':"-")+'</td><td class="noprint">'+(k?'<button class="lnk" type="button" data-rp="'+ex(d.no)+'">'+(angRp[d.no]?"Cancel":k+" pinjaman")+'</button>':"-")+"</td></tr>";
     if(angAct[d.no]){var LP=LOAN.filter(function(l){return l.no==d.no}).slice().sort(pinBaru);
       out+='<tr class="alrow noprint"><td colspan="'+C+'" style="background:var(--bg);white-space:normal"><div class="angrp angact"><div class="aa-l"><button class="pbtn" type="button" onclick="cetakBukuSim(\''+ex(d.no)+'\')">Cetak buku simpanan</button>'+
         (LP.length?LP.map(function(l){return '<button class="pbtn" type="button" data-kartu="'+l.id+'" data-kp="1" style="background:var(--c2);color:var(--t2)">Buku angsuran '+l.id+(l.pt?" (pemutihan)":sisaP(l)>0?"":" (lunas)")+"</button>"}).join(""):'<span class="mutp" style="margin:0;align-self:center">Belum ada pinjaman</span>')+
@@ -1507,7 +1510,7 @@ function pmtListHTML(){var L=ptList(),q=pmtQ.toLowerCase(),own=ROLE=="Ketua (own
   var V=L.filter(function(l){return !q||String(l.nama).toLowerCase().indexOf(q)>=0||String(l.no).toLowerCase().indexOf(q)>=0||String(l.id).toLowerCase().indexOf(q)>=0});
   var rows=V.map(function(l){var by=ptBayar(l),sp=sisaP(l),P=PAY.filter(function(x){return x.id==l.id&&x.pt});
     var n=function(v){return rp(v).replace("Rp ","")};
-    var tr='<tr><td><b>'+ex(l.nama)+'</b><br><small class="mutp" style="margin:0">'+ex(l.no)+' · '+l.id+'<br>'+mdl(l).n+' · realisasi '+tgl(l.tg)+'<br>pemutihan '+tgl(l.pt.tg)+'</small><div class="noprint" style="margin-top:6px"><button class="kbtn" type="button" data-ptr="'+l.id+'">'+(pmtBuka==l.id?"Tutup riwayat":"Riwayat ("+P.length+")")+'</button>'+(own&&!P.length?' <button class="kbtn" type="button" data-ptx="'+l.id+'" style="color:#C0392B">Batal pemutihan</button>':'')+'</div></td><td class="num">'+n(+l.pt.s||0)+'</td><td class="num">'+n(by)+'</td><td class="num"><b>'+n(sp)+'</b>'+(sp<=0?'<br><span class="kol k1">Lunas</span>':'')+'</td></tr>';
+    var tr='<tr><td><b>'+ex(l.nama)+'</b><br><small class="mutp" style="margin:0">'+ex(l.no)+' · '+l.id+'<br>'+mdl(l).n+' · realisasi '+tgl(l.tg)+'<br>pemutihan '+tgl(l.pt.tg)+'</small><div class="noprint" style="margin-top:6px"><button class="kbtn" type="button" data-ptr="'+l.id+'">'+(pmtBuka==l.id?"Cancel":"Riwayat ("+P.length+")")+'</button>'+(own&&!P.length?' <button class="kbtn" type="button" data-ptx="'+l.id+'" style="color:#C0392B">Cancel pemutihan</button>':'')+'</div></td><td class="num">'+n(+l.pt.s||0)+'</td><td class="num">'+n(by)+'</td><td class="num"><b>'+n(sp)+'</b>'+(sp<=0?'<br><span class="kol k1">Lunas</span>':'')+'</td></tr>';
     if(pmtBuka==l.id)tr+='<tr><td colspan="4" style="background:var(--bg)">'+'<b>Rincian angsuran pemutihan · '+ex(l.nama)+' · '+l.id+'</b>'+(function(){var run=+l.pt.s||0;return '<table class="tbl" style="margin:6px 0 0"><thead><tr><th>Ke</th><th>Tanggal</th><th>Metode</th><th class="num">Angsuran</th><th class="num">Sisa saldo</th><th class="noprint"></th></tr></thead><tbody><tr><td></td><td>'+tgl(l.pt.tg)+'</td><td colspan="2">Saldo akhir</td><td class="num">'+n(run)+'</td><td class="noprint"></td></tr>'+P.map(function(p,i){run-=(+p.jml||0);return '<tr><td>'+(i+1)+'</td><td>'+tgl(p.tg)+(p.jam?'<br><small class="mutp" style="margin:0">'+ex(p.jam)+'</small>':'')+'</td><td>'+ex(p.met||"-")+'</td><td class="num">'+n(+p.jml||0)+'</td><td class="num">'+n(Math.max(0,run))+'</td><td class="noprint"><button class="kbtn" type="button" data-pts="'+PAY.indexOf(p)+'">Struk</button></td></tr>'}).join("")+'</tbody></table>'+(P.length?'':'<p class="mutp" style="margin:6px 0 0">Belum ada angsuran setelah pemutihan.</p>')})()+'<p class="mutp" style="margin:8px 0 0">Saldo akhir ditetapkan '+tgl(l.pt.tg)+' sebesar '+rp(+l.pt.s||0)+(l.pt.oleh?' oleh '+ex(l.pt.oleh):'')+'.</p></td></tr>';
     return tr}).join("");
   return '<div class="panel"><div class="phead"><div><h3>Rincian anggota pemutihan</h3><p>Urut tanggal realisasi pinjaman, yang terbaru paling atas.</p></div><button class="pbtn noprint" type="button" onclick="window.print()">Cetak</button></div>'+sum+
@@ -1546,8 +1549,8 @@ document.addEventListener("click",function(e){var b=e.target.closest&&e.target.c
   if(b.dataset.ptr){pmtBuka=pmtBuka==b.dataset.ptr?"":b.dataset.ptr;pmtSegar();return}
   if(ROLE!="Ketua (owner)"){berhasil("Akses ditutup","Hanya Ketua (owner) yang bisa memindah atau membatalkan pemutihan.");return}
   var id=b.dataset.ptpj||b.dataset.ptx,l=LOAN.filter(function(x){return x.id==id})[0];if(!l)return;
-  if(b.dataset.ptx){if(PAY.some(function(x){return x.id==id&&x.pt}))return alert("Batal pemutihan "+id+" tidak bisa: sudah ada angsuran pemutihan.");
-    if(!confirm("Batalkan pemutihan "+id+" · "+l.nama+"?\n\nPinjaman kembali berjalan seperti biasa (bunga, denda, dan jadwal angsuran dihitung lagi)."))return;
+  if(b.dataset.ptx){if(PAY.some(function(x){return x.id==id&&x.pt}))return alert("Cancel pemutihan "+id+" tidak bisa: sudah ada angsuran pemutihan.");
+    if(!confirm("Cancel pemutihan "+id+" · "+l.nama+"?\n\nPinjaman kembali berjalan seperti biasa (bunga, denda, dan jadwal angsuran dihitung lagi)."))return;
     delete l.pt;berhasil("Pemutihan dibatalkan",l.nama+" · "+id+" kembali berjalan");nav();page();return}
   if(l.pt||sisaP(l)<=0)return;var k=ptSaldoKini(l);
   if(!confirm("Pindah ke pemutihan: "+id+" · "+l.nama+"\n\nSaldo pokok + bunga: "+rp(k.sp)+"\nSisa denda: "+rp(k.dn)+"\nSaldo akhir pemutihan: "+rp(k.sp+k.dn)+"\n\nSesudahnya bunga dan denda berhenti, dan setiap angsuran langsung mengurangi saldo akhir. Lanjutkan?"))return;
@@ -1846,7 +1849,7 @@ function webcamKtp(onFile,onGagal){
     '<div style="position:relative;width:min(100%,900px,calc(65vh * 1.6))"><video autoplay playsinline muted style="width:100%;border-radius:12px;background:#000;display:block"></video>'+
     '<div style="position:absolute;left:12%;right:12%;top:50%;transform:translateY(-50%);aspect-ratio:85.6/54;border:3px dashed rgba(255,255,255,.85);border-radius:14px;pointer-events:none"></div></div>'+
     '<div class="wcmsg" style="color:#fff;font:14px sans-serif;min-height:18px">Membuka webcam...</div>'+
-    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="pbtn wcamb" disabled style="background:#3F9C55;color:#fff;font-size:16px;padding:12px 22px">Ambil foto</button><button type="button" class="pbtn wcgnt" hidden>Ganti kamera</button><button type="button" class="pbtn wcbtl">Batal</button></div>';
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button type="button" class="pbtn wcamb" disabled style="background:#3F9C55;color:#fff;font-size:16px;padding:12px 22px">Ambil foto</button><button type="button" class="pbtn wcgnt" hidden>Ganti kamera</button><button type="button" class="pbtn wcbtl">Cancel</button></div>';
   document.body.appendChild(ov);
   var v=ov.querySelector("video"),msg=ov.querySelector(".wcmsg"),bA=ov.querySelector(".wcamb"),bG=ov.querySelector(".wcgnt"),st=null,cams=[],ci=0;
   function stop(){if(st)st.getTracks().forEach(function(t){t.stop()});st=null}
@@ -1915,7 +1918,7 @@ function karForm(){
   F("krb","Bank",'<input id="krb" type="text" placeholder="Contoh: BRI" autocomplete="off">')+
   F("krn","No. rekening",'<input id="krn" type="text" inputmode="numeric" placeholder="Contoh: 0004-01-000000-30-7" autocomplete="off">')+
   F("kra","Atas nama rekening",'<input id="kra" type="text" placeholder="Nama pemilik rekening" autocomplete="off">')+
-  '</div><div id="fmsg" class="ok" role="status"></div><button class="pbtn" type="submit" id="ksv" style="width:100%;margin-top:18px;border-radius:16px;padding:14px;font-weight:700">Simpan</button><button class="lnk" type="button" id="kbatal" hidden onclick="karEditSelesai()">Batal edit</button><p class="mutp">Username login otomatis dari nomor HP. Kata sandi dibuat oleh Ketua dan diberikan langsung ke karyawan.</p></form></div>';
+  '</div><div id="fmsg" class="ok" role="status"></div><button class="pbtn" type="submit" id="ksv" style="width:100%;margin-top:18px;border-radius:16px;padding:14px;font-weight:700">Simpan</button><button class="lnk" type="button" id="kbatal" hidden onclick="karEditSelesai()">Cancel edit</button><p class="mutp">Username login otomatis dari nomor HP. Kata sandi dibuat oleh Ketua dan diberikan langsung ke karyawan.</p></form></div>';
 }
 var karQ="";
 function masaKerja(iso){if(!iso)return "0 Bulan";var a=new Date(iso+"T00:00:00"),n=new Date(),m=(n.getFullYear()-a.getFullYear())*12+n.getMonth()-a.getMonth()-(n.getDate()<a.getDate()?1:0);if(m<0)m=0;var y=Math.floor(m/12),b=m%12;return (y?y+" Tahun ":"")+(b||!y?b+" Bulan":"")}
@@ -2150,7 +2153,7 @@ function trxHari(cab){var t=today(),R=[],LC={};LOAN.forEach(function(l){LC[l.id]
       '<div class="empty"><b>Belum ada transaksi hari ini</b>Angsuran, simpanan, realisasi pinjaman, dan pengeluaran hari ini akan muncul di sini.</div>')+'</div>'}
 function page(){
   if(cur=="sim0"||cur=="sim2"){simArah=cur=="sim2"?"keluar":"masuk";if(cur=="sim0")simJns="Modal awal KSP";cur="sim1"}
-  saveSoon();var f=find(cur),t=f[0];
+  saveSoon();var f=find(cur),t=f[0];var tcx=$("#tcx");if(tcx)tcx.hidden=cur=="dash";
   $("#crumb").textContent=cur=="ang1"||cur=="ang2"?"Anggota":cur=="pmt1"||cur=="pmt2"?"Data pemutihan":f[1]?f[1]+" / "+t:t;
   if(cur=="dash"){
     var dashCab=viewCab();
@@ -2248,7 +2251,7 @@ function cabPage(){var own=isOwner(),e=cabEd?cabInfo(cabEd):{};
   (own&&(cabEd||cabAdd)?'<div class="panel" id="cbform" style="margin-top:14px"><div class="phead"><div><h3>'+(cabEd?"Edit "+ex(cabEd):"Tambah kantor cabang")+'</h3><p>'+(cabEd?"Ubah data cabang lalu tekan Simpan. Ganti nama otomatis ikut di data anggota dan karyawan.":"Isi nama dan alamat cabang baru.")+'</p></div></div><div class="fg">'+
   I("cbn","Nama cabang",cabEd,"Contoh: Cabang 6")+I("cba","Alamat",e.al,"Alamat kantor cabang")+I("cbk","Kepala cabang",e.kep,"Nama kepala cabang")+
   F("cbh","No. HP / WhatsApp",'<input id="cbh" type="tel" inputmode="tel" autocomplete="off" value="'+ex(e.hp||"")+'" placeholder="0812xxxxxxxx">')+I("cbj","Jam buka",e.jam,"Contoh: Senin–Sabtu 08.00–17.00")+
-  '</div><label class="hrow" style="margin-top:12px"><input type="checkbox" id="cbp"'+(e.pusat?" checked":"")+'><span>Kantor pusat</span></label><div id="cbfm" class="ok" role="status"></div><div class="acts"><button class="btn" type="button" id="cbsv" style="max-width:260px">'+(cabEd?"Simpan perubahan":"Tambah cabang")+'</button>'+(cabEd?'<button class="lnk" type="button" id="cbdl" style="color:#A12B3C">Hapus cabang</button>':"")+'<button class="lnk" type="button" id="cbbt">Batal</button></div></div>':own?'':'<p class="mutp">Hanya Ketua yang bisa menambah atau mengubah kantor cabang.</p>')}
+  '</div><label class="hrow" style="margin-top:12px"><input type="checkbox" id="cbp"'+(e.pusat?" checked":"")+'><span>Kantor pusat</span></label><div id="cbfm" class="ok" role="status"></div><div class="acts"><button class="btn" type="button" id="cbsv" style="max-width:260px">'+(cabEd?"Simpan perubahan":"Tambah cabang")+'</button>'+(cabEd?'<button class="lnk" type="button" id="cbdl" style="color:#A12B3C">Hapus cabang</button>':"")+'<button class="lnk" type="button" id="cbbt">Cancel</button></div></div>':own?'':'<p class="mutp">Hanya Ketua yang bisa menambah atau mengubah kantor cabang.</p>')}
 function bindCab(){cabFlash="";
   document.querySelectorAll("[data-ced]").forEach(function(b){b.onclick=function(){cabEd=CAB[+b.dataset.ced];cabAdd=false;page();var f=$("#cbform");if(f)f.scrollIntoView({behavior:"smooth"})}});
   var bt=$("#cbbt");if(bt)bt.onclick=function(){cabEd="";cabAdd=false;page()};
@@ -2317,7 +2320,7 @@ function gajiTot(d){var a=d.P.reduce(function(s,x){return s+(+x[1]||0)},0),b=d.Q
 function gajiNmBln(b){return new Date(b+"-01T00:00:00").toLocaleDateString("id-ID",{month:"long",year:"numeric"})}
 function gajiPage(){var bln=gajiBln||today().slice(0,7),K=KAR.filter(function(k){return k.aktif!==false}),T={kotor:0,pot:0,bersih:0},ed=gajiBoleh();
   var rows=K.map(function(k){var d=gajiData(k,bln),t=gajiTot(d);T.kotor+=t.kotor;T.pot+=t.pot;T.bersih+=t.bersih;
-    return "<tr><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+'</td><td class="num">'+rp(t.kotor)+'</td><td class="num">'+rp(t.pot)+'</td><td class="num"><b>'+rp(t.bersih)+"</b></td><td>"+(d.simpan?"Tersimpan":"Hitungan otomatis")+'</td><td class="noprint" style="white-space:nowrap"><button class="pbtn" type="button" data-gk="'+ex(k.no)+'">'+(gajiNo==k.no?"Tutup":(ed?"Rincian / ubah":"Rincian"))+'</button> <button class="pbtn" type="button" data-gc="'+ex(k.no)+'">Cetak slip</button></td></tr>'}).join("");
+    return "<tr><td>"+ex(k.nama)+"</td><td>"+ex(k.jab)+"</td><td>"+(k.tm?masaKerja(k.tm):"-")+'</td><td class="num">'+rp(t.kotor)+'</td><td class="num">'+rp(t.pot)+'</td><td class="num"><b>'+rp(t.bersih)+"</b></td><td>"+(d.simpan?"Tersimpan":"Hitungan otomatis")+'</td><td class="noprint" style="white-space:nowrap"><button class="pbtn" type="button" data-gk="'+ex(k.no)+'">'+(gajiNo==k.no?"Cancel":(ed?"Rincian / ubah":"Rincian"))+'</button> <button class="pbtn" type="button" data-gc="'+ex(k.no)+'">Cetak slip</button></td></tr>'}).join("");
   var h='<div class="panel"><div class="phead"><div><h3>Penghasilan karyawan · '+gajiNmBln(bln)+'</h3><p>'+K.length+' karyawan aktif · terima bersih '+rp(T.bersih)+'</p></div><button class="pbtn" onclick="window.print()">Cetak rekap gaji</button></div>'+
     '<div class="fg noprint"><div><label for="gbl" style="margin-top:0">Bulan</label><div class="field"><input id="gbl" type="month" value="'+bln+'"></div></div></div>'+
     '<p class="mutp noprint" style="margin:6px 0 10px">Angka dihitung otomatis dari Pengaturan &gt; Regulasi Pendapatan &amp; Bunga &gt; Regulasi penghasilan karyawan. Setelah disimpan, angka bulan itu dikunci dan tidak berubah walau regulasi diganti.</p>'+
@@ -2406,8 +2409,11 @@ function lapHK(){var bln=hkBln||today().slice(0,7),D=hkData(bln),T={baru:0,kelua
     '<tr><th '+c+'><small>Baru</small></th><th '+c+'><small>Keluar</small></th><th '+c+'><small>Top up</small></th><th '+c+'><small>Aktif</small></th>'+kh+'</tr></thead><tbody>'+D.map(function(d,i){return tr(d,i)}).join("")+'</tbody><tfoot>'+tr(T,0,true)+'</tfoot></table></div>':'<div class="empty"><b>Belum ada Marketing Lapangan</b>Tambahkan karyawan berjabatan Marketing Lapangan di Data karyawan.</div>')+
   '<p class="mutp">Setoran angsuran sudah termasuk denda. Anggota baru, keluar, top up, realisasi pinjaman, dan setoran angsuran dihitung dari tanggal 1 sampai akhir '+nm+', lalu kembali nol setiap awal bulan. Anggota aktif, kualitas pinjaman (jumlah pinjaman per Kol 1–5), NPL, dan Aset kredit · Outstanding adalah posisi berjalan. NPL = sisa pinjaman Kol 3–5 × 100 ÷ Aset kredit · Outstanding (aturan OJK).</p></div>'}
 function bindHK(){var b=$("#hkb");if(b)b.onchange=function(){hkBln=this.value;page()}}
-var prevCur="dash";
-function go(id){if(id!=cur&&cur!="set3")prevCur=cur;if(!boleh(id)){berhasil("Akses ditutup","Jabatan "+ROLE+" tidak punya hak akses ke menu ini.");id="dash"}cur=id;var p=id.replace(/[0-9]+$/,"");open={};if(p!=id)open[p]=true;nav();page();closeM();window.scrollTo(0,0)}
+var prevCur="dash",HIST=[];
+/* Cancel: tidak jadi transaksi. Isian yang belum disimpan dibuang, lalu kembali ke panel sebelumnya. */
+function batalPanel(){flash="";angEdit="";karEd="";lastPJ="";tagOpen="";edPJ="";realSel="";cabEd="";cabAdd=false;gajiNo="";pmtBuka="";angRk={};angRp={};angAct={};
+  var t="";while(HIST.length){t=HIST.pop();if(t!=cur&&boleh(t))break;t=""}go(t||"dash",1)}
+function go(id,bk){if(id!=cur&&cur!="set3")prevCur=cur;if(!bk&&id!=cur){HIST.push(cur);if(HIST.length>30)HIST.shift()}if(!boleh(id)){berhasil("Akses ditutup","Jabatan "+ROLE+" tidak punya hak akses ke menu ini.");id="dash"}cur=id;var p=id.replace(/[0-9]+$/,"");open={};if(p!=id)open[p]=true;nav();page();closeM();window.scrollTo(0,0)}
 function openM(){$("#side").classList.add("open");$("#scrim").classList.add("open")}
 function closeM(){$("#side").classList.remove("open");$("#scrim").classList.remove("open")}
 $("#nav").addEventListener("click",function(e){var b=e.target.closest(".nav");if(!b)return;if(b.dataset.grp){var g=b.dataset.grp,st=!open[g];open={};if(st)open[g]=true;nav();return}go(b.dataset.id)});
@@ -2525,7 +2531,7 @@ mulaiSB();
   <button type="button" id="strukCetak">Cetak</button>
   <button type="button" id="strukBagi">Kirim WA (manual)</button>
   <button type="button" id="strukSimpan">Simpan gambar</button>
-  <button type="button" id="strukTutup">Tutup</button>
+  <button type="button" id="strukTutup">Cancel</button>
 </div></div>
 <script>
 // Rekening resmi KSP yang tampil di struk. Kosongkan bila tidak ingin ditampilkan.
